@@ -1,0 +1,27 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: sahelmarket
+      POSTGRES_USER: sahel
+      POSTGRES_PASSWORD: secret
+  
+  redis:
+    image: redis:7-alpine
+  
+  backend:
+    build: ./backend
+    command: daphne -p 8000 config.asgi:application
+    depends_on: [db, redis]
+    env_file: .env
+  
+  celery:
+    build: ./backend
+    command: celery -A config worker -l info
+    depends_on: [db, redis]
+  
+  frontend:
+    build: ./frontend
+    command: npm run dev
+    ports: ["5173:5173"]
