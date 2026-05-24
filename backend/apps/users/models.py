@@ -15,6 +15,7 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     whatsapp = models.CharField(max_length=20, blank=True)
+    loyalty_points = models.PositiveIntegerField(default=0)
 
     class Meta:
         verbose_name = 'Utilisateur'
@@ -37,6 +38,20 @@ class Suggestion(models.Model):
     def __str__(self):
         return f"Suggestion de {self.user.username} — {self.subject}"
     
+class Message(models.Model):
+    sender    = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    content   = models.TextField()
+    is_read   = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.sender.username} → {self.recipient.username}"
+
+
 class ProducerProfile(models.Model):
     user        = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='producer_profile'

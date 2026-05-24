@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CartView, CartItemView, CheckoutView, OrderViewSet, ManageOrdersView, ManageOrderDetailView
+from .views import CartView, CartItemView, CheckoutView, OrderViewSet, ManageOrdersView, ManageOrderDetailView, NotificationsView, PromoValidateView
 
 router = DefaultRouter()
 router.register('history', OrderViewSet, basename='order')
@@ -12,5 +12,7 @@ urlpatterns = [
     path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('manage/', ManageOrdersView.as_view(), name='orders-manage'),
     path('manage/<int:pk>/', ManageOrderDetailView.as_view(), name='orders-manage-detail'),
+    path('notifications/', NotificationsView.as_view(), name='notifications'),
+    path('promo/validate/', PromoValidateView.as_view(), name='promo-validate'),
     path('', include(router.urls)),
 ]

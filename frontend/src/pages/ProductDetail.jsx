@@ -6,8 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ShoppingCart, MapPin, Eye, ArrowLeft, Heart,
   Star, Share2, Shield, Truck, RotateCcw,
-  ChevronLeft, ChevronRight, Minus, Plus, Check
+  ChevronLeft, ChevronRight, Minus, Plus, Check, BadgeCheck, Package,
+  Flame, Users, MessageCircle
 } from 'lucide-react'
+import { Link, useNavigate as useNav } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { productService } from '../services/product.service.js'
 import { addItem, openCart } from '../store/cartSlice.js'
 import Rating from '../components/Rating.jsx'
@@ -39,12 +42,22 @@ export default function ProductDetail() {
   const [liked,     setLiked]     = useState(false)
   const [adding,    setAdding]    = useState(false)
 
+  const navTo = useNav()
+  const { isAuthenticated, user: me } = useSelector(s => s.auth)
+
   const { data, isLoading } = useQuery({
     queryKey: ['product', id],
     queryFn:  () => productService.getOne(id),
   })
 
   const product = data?.data
+
+  const { data: relatedData } = useQuery({
+    queryKey: ['related', product?.category?.id, id],
+    queryFn:  () => productService.getAll({ category: product.category.id, page_size: 7 }),
+    enabled:  !!product?.category?.id,
+  })
+  const related = (relatedData?.data?.results ?? []).filter(p => p.id !== Number(id)).slice(0, 6)
 
   /* ── Loading ─────────────────────────────────────────────────── */
   if (isLoading) return (
@@ -110,6 +123,9 @@ export default function ProductDetail() {
 
   const avgRating = product.average_rating || 0
   const ratingCount = product.ratings?.length || 0
+
+  /* Compteur "personnes regardent" — déterministe par id pour rester cohérent */
+  const watching = ((product.id * 7 + 13) % 18) + 5
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -317,7 +333,10 @@ export default function ProductDetail() {
             </div>
 
             {/* Vendeur */}
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
+            <Link to={`/artisans/${product.producer_name}`}
+              className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl
+                         hover:bg-orange-50 hover:border-orange-200 border border-transparent
+                         transition-colors no-underline group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400
                               to-orange-600 flex items-center justify-center
                               flex-shrink-0 shadow-sm">
@@ -325,12 +344,46 @@ export default function ProductDetail() {
                   {product.producer_name?.[0]?.toUpperCase() || 'A'}
                 </span>
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-xs text-gray-400">Vendu par</p>
-                <p className="text-sm font-bold text-gray-800">
+                <p className="text-sm font-bold text-gray-800 group-hover:text-orange-600
+                               transition-colors">
                   {product.producer_name || 'Artisan local'}
                 </p>
               </div>
+              <span className="text-xs text-orange-500 font-semibold opacity-0
+                               group-hover:opacity-100 transition-opacity">
+                Voir le profil →
+              </span>
+            </Link>
+
+            {/* Contacter l'artisan */}
+            {isAuthenticated && me?.id !== product.producer_id && (
+              <button
+                onClick={() => navTo(`/messages/${product.producer_id}`)}
+                className="flex items-center gap-2 w-full py-2.5 px-4 rounded-xl
+                           border border-orange-200 bg-orange-50 text-orange-700
+                           font-semibold text-sm hover:bg-orange-100 transition-colors"
+              >
+                <MessageCircle size={15} />
+                Contacter l'artisan pour une commande sur-mesure
+              </button>
+            )}
+
+            {/* Urgence — compteur personnes + stock */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-600
+                               bg-gray-100 px-3 py-1.5 rounded-full">
+                <Users size={12} className="text-orange-500" />
+                <span><span className="text-orange-600 font-bold">{watching}</span> personnes regardent ce produit</span>
+              </div>
+              {isLowStock && (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-red-600
+                                 bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
+                  <Flame size={12} className="fill-red-500 text-red-500" />
+                  Commandez vite — derniers en stock !
+                </div>
+              )}
             </div>
 
             {/* Description */}
@@ -474,9 +527,19 @@ export default function ProductDetail() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                      <span className="text-sm font-bold text-gray-800">
-                        {r.user_name}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-gray-800">
+                          {r.user_name}
+                        </span>
+                        {r.is_verified_purchase && (
+                          <span className="flex items-center gap-1 text-[11px] font-semibold
+                                           text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full
+                                           border border-emerald-100">
+                            <BadgeCheck size={11} className="text-emerald-600" />
+                            Achat vérifié
+                          </span>
+                        )}
+                      </div>
                       <StarDisplay score={r.score} size={12} />
                     </div>
                     {r.comment && (
@@ -492,6 +555,59 @@ export default function ProductDetail() {
                   </div>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════════════════════
+            VOUS AIMEREZ AUSSI — cross-sell même catégorie
+        ════════════════════════════════════════════════════════ */}
+        {related.length > 0 && (
+          <div className="mt-10 bg-white rounded-3xl border border-gray-100 p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Vous aimerez aussi</h2>
+                <p className="text-sm text-gray-400 mt-0.5">
+                  D'autres créations dans {product.category?.name}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {related.map((p, i) => {
+                const src = imgUrl(p.main_image)
+                return (
+                  <motion.a
+                    key={p.id}
+                    href={`/products/${p.id}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className="group flex flex-col bg-gray-50 rounded-2xl overflow-hidden
+                               border border-gray-100 hover:border-orange-300
+                               hover:shadow-md transition-all duration-200 no-underline"
+                  >
+                    <div className="aspect-square overflow-hidden bg-white">
+                      {src
+                        ? <img src={src} alt={p.name}
+                               className="w-full h-full object-cover group-hover:scale-105
+                                          transition-transform duration-300" />
+                        : <div className="w-full h-full flex items-center justify-center">
+                            <Package size={24} className="text-gray-200" />
+                          </div>
+                      }
+                    </div>
+                    <div className="p-3">
+                      <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug
+                                   group-hover:text-orange-600 transition-colors mb-1">
+                        {p.name}
+                      </p>
+                      <p className="text-sm font-black text-orange-600">
+                        {Number(p.price).toLocaleString('fr-FR')} F
+                      </p>
+                    </div>
+                  </motion.a>
+                )
+              })}
             </div>
           </div>
         )}

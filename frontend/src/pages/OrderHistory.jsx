@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { Package, MapPin, ChevronDown, ChevronUp } from 'lucide-react'
+import { Package, MapPin, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react'
 import { orderService } from '../services/order.service.js'
+import { addItem, openCart } from '../store/cartSlice.js'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import toast from 'react-hot-toast'
 
 const OR = '#f97316'
 const BG = '#f0f2f5'
@@ -32,8 +35,26 @@ const STEP_LABELS = {
 
 function OrderCard({ order }) {
   const [open, setOpen] = useState(false)
+  const dispatch = useDispatch()
   const s = STATUS[order.status] || STATUS.pending
   const currentStep = STEPS.indexOf(order.status)
+
+  function handleReorder(e) {
+    e.stopPropagation()
+    order.items.forEach(item => {
+      if (!item.product_id) return
+      for (let i = 0; i < item.quantity; i++) {
+        dispatch(addItem({
+          id:         item.product_id,
+          name:       item.product_name,
+          price:      parseFloat(item.unit_price),
+          main_image: item.main_image || null,
+        }))
+      }
+    })
+    dispatch(openCart())
+    toast.success('Articles ajoutés au panier !')
+  }
 
   return (
     <div style={{
@@ -168,6 +189,20 @@ function OrderCard({ order }) {
               </p>
             </div>
           </div>
+
+          {/* Bouton commander à nouveau */}
+          <button
+            onClick={handleReorder}
+            style={{
+              marginTop: 14, width: '100%', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', gap: 7, padding: '11px 0',
+              background: OR, color: '#fff', border: 'none', borderRadius: 12,
+              fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: '0.01em',
+            }}
+          >
+            <RotateCcw size={14} />
+            Commander à nouveau
+          </button>
         </div>
       )}
     </div>

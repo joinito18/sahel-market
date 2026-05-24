@@ -2,15 +2,17 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   ShoppingBag, User, LogOut, LayoutDashboard,
-  Menu, X, Search, ChevronDown, Package, Grid3x3, Store, Heart
+  Menu, X, Search, ChevronDown, Package, Grid3x3, Store, Heart,
+  Bell, CheckCheck, ShoppingCart, MessageCircle
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toggleCart } from '../store/cartSlice.js'
 import { logout } from '../store/authSlice.js'
 import { authService } from '../services/auth.service.js'
 import { productService } from '../services/product.service.js'
+import api from '../services/api.js'
 import toast from 'react-hot-toast'
 import { imgUrl } from '../utils/media.js'
 
@@ -32,10 +34,27 @@ export default function Navbar() {
   const [menuOpen,      setMenuOpen]      = useState(false)
   const [userDropdown,  setUserDropdown]  = useState(false)
   const [catOpen,       setCatOpen]       = useState(false)
+  const [notifOpen,     setNotifOpen]     = useState(false)
   const [searchQuery,   setSearchQuery]   = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const dropdownRef = useRef(null)
   const catRef      = useRef(null)
+  const notifRef    = useRef(null)
+  const qc          = useQueryClient()
+
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn:  () => api.get('/orders/notifications/').then(r => r.data),
+    enabled:  isAuthenticated,
+    refetchInterval: 30000,
+  })
+  const notifications = notifData?.results ?? []
+  const unread        = notifData?.unread ?? 0
+
+  const markAllRead = useMutation({
+    mutationFn: () => api.patch('/orders/notifications/'),
+    onSuccess:  () => qc.invalidateQueries(['notifications']),
+  })
 
   const dashboardPath = {
     admin:    '/dashboard/admin',
@@ -62,6 +81,8 @@ export default function Navbar() {
         setUserDropdown(false)
       if (catRef.current && !catRef.current.contains(e.target))
         setCatOpen(false)
+      if (notifRef.current && !notifRef.current.contains(e.target))
+        setNotifOpen(false)
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
@@ -71,6 +92,7 @@ export default function Navbar() {
     setMenuOpen(false)
     setUserDropdown(false)
     setCatOpen(false)
+    setNotifOpen(false)
   }, [location.pathname])
 
   const handleLogout = async () => {
@@ -274,6 +296,154 @@ export default function Navbar() {
                 <span className="hidden lg:block" style={{ fontSize: 12, fontWeight: 600, color: '#ef4444' }}>
                   Favoris
                 </span>
+              </Link>
+            )}
+
+            {/* Cloche notifications */}
+            {isAuthenticated && (
+              <div className="relative" ref={notifRef}>
+                <button
+                  onClick={() => { setNotifOpen(v => !v); if (!notifOpen && unread > 0) markAllRead.mutate() }}
+                  style={{
+                    position: 'relative', display: 'flex', alignItems: 'center',
+                    padding: '7px 10px', borderRadius: 10, background: 'transparent',
+                    border: 'none', cursor: 'pointer', transition: 'background .15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <Bell size={22} color={unread > 0 ? '#f97316' : '#374151'} />
+                  {unread > 0 && (
+                    <span style={{
+                      position: 'absolute', top: 2, right: 2,
+                      background: '#ef4444', color: '#fff',
+                      fontSize: 9, fontWeight: 900,
+                      minWidth: 16, height: 16, padding: '0 3px',
+                      borderRadius: 8, display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', lineHeight: 1,
+                    }}>
+                      {unread > 9 ? '9+' : unread}
+                    </span>
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {notifOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                        width: 340, background: '#fff', borderRadius: 16,
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
+                        border: '1px solid #f3f4f6', overflow: 'hidden', zIndex: 60,
+                      }}
+                    >
+                      <div style={{
+                        padding: '12px 16px', borderBottom: '1px solid #f3f4f6',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      }}>
+                        <p style={{ fontWeight: 700, fontSize: 13, color: '#111827' }}>
+                          Notifications
+                        </p>
+                        {unread === 0 && (
+                          <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                            <CheckCheck size={14} style={{ display: 'inline', marginRight: 4 }} />
+                            Tout lu
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+                        {notifications.length === 0 ? (
+                          <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                            <Bell size={32} color="#e5e7eb" style={{ margin: '0 auto 8px' }} />
+                            <p style={{ color: '#9ca3af', fontSize: 13 }}>Aucune notification</p>
+                          </div>
+                        ) : (
+                          notifications.map(n => (
+                            <Link
+                              key={n.id}
+                              to={n.order_id ? `/orders` : '#'}
+                              style={{
+                                display: 'flex', gap: 12, padding: '12px 16px',
+                                textDecoration: 'none', borderBottom: '1px solid #f9fafb',
+                                background: n.is_read ? '#fff' : '#fff7ed',
+                                transition: 'background .12s',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+                              onMouseLeave={e => e.currentTarget.style.background = n.is_read ? '#fff' : '#fff7ed'}
+                            >
+                              <div style={{
+                                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                                background: n.is_read ? '#f3f4f6' : '#fff7ed',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}>
+                                <ShoppingCart size={16} color={n.is_read ? '#9ca3af' : '#f97316'} />
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{
+                                  fontSize: 12, fontWeight: n.is_read ? 500 : 700,
+                                  color: '#111827', marginBottom: 2,
+                                }}>
+                                  {n.title}
+                                </p>
+                                <p style={{
+                                  fontSize: 11, color: '#6b7280', lineHeight: 1.4,
+                                  overflow: 'hidden', display: '-webkit-box',
+                                  WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                                }}>
+                                  {n.message}
+                                </p>
+                                <p style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>
+                                  {new Date(n.created_at).toLocaleDateString('fr-FR', {
+                                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                                  })}
+                                </p>
+                              </div>
+                              {!n.is_read && (
+                                <div style={{
+                                  width: 7, height: 7, borderRadius: '50%',
+                                  background: '#f97316', flexShrink: 0, marginTop: 4,
+                                }} />
+                              )}
+                            </Link>
+                          ))
+                        )}
+                      </div>
+
+                      <Link to="/orders" style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '10px', fontSize: 12, fontWeight: 700, color: '#f97316',
+                        textDecoration: 'none', borderTop: '1px solid #f3f4f6',
+                        background: '#fff', transition: 'background .12s',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#fff7ed'}
+                        onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                      >
+                        Voir mes commandes →
+                      </Link>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Messages */}
+            {isAuthenticated && (
+              <Link
+                to="/messages"
+                style={{
+                  position: 'relative', display: 'flex', alignItems: 'center',
+                  padding: '7px 10px', borderRadius: 10,
+                  background: 'transparent', textDecoration: 'none', transition: 'background .15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                <MessageCircle size={22} color="#3b82f6" />
               </Link>
             )}
 

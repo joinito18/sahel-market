@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Camera, Check, AlertCircle, LogOut, ShoppingBag, User } from 'lucide-react'
+import { Camera, Check, AlertCircle, LogOut, ShoppingBag, User, Star, Gift } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../services/auth.service.js'
 import { updateUser, logout } from '../store/authSlice.js'
@@ -162,6 +162,68 @@ export default function Profile() {
             </div>
             <span style={{ color: OR, fontSize: 18 }}>→</span>
           </Link>
+        )}
+
+        {/* Carte de fidélité */}
+        {user?.loyalty_points !== undefined && (
+          <div style={{
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2a1800 60%, #1a1a1a 100%)',
+            borderRadius: 20, padding: '24px', overflow: 'hidden', position: 'relative',
+          }}>
+            <div style={{
+              position: 'absolute', top: -20, right: -20, width: 120, height: 120,
+              borderRadius: '50%', background: 'rgba(249,115,22,0.08)',
+            }} />
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div>
+                <p style={{ color: '#fdba74', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4 }}>
+                  Programme de fidélité
+                </p>
+                <p style={{ color: '#fff', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                  {user.loyalty_points} <span style={{ fontSize: 14, fontWeight: 600, color: '#9ca3af' }}>points</span>
+                </p>
+              </div>
+              <div style={{
+                width: 44, height: 44, borderRadius: 12, background: 'rgba(249,115,22,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Star size={20} color={OR} fill={OR} />
+              </div>
+            </div>
+
+            {/* Barre de progression vers récompense */}
+            {(() => {
+              const nextReward = 100
+              const progress = Math.min((user.loyalty_points % nextReward) / nextReward, 1)
+              const remaining = nextReward - (user.loyalty_points % nextReward)
+              const value = Math.floor(user.loyalty_points / 100) * 500
+              return (
+                <>
+                  <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 999, height: 6, marginBottom: 8, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 999, background: OR, width: `${progress * 100}%`, transition: 'width .4s' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
+                      Encore <span style={{ color: '#fdba74', fontWeight: 700 }}>{remaining} pts</span> pour une récompense
+                    </p>
+                    {value > 0 && (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        background: 'rgba(249,115,22,0.2)', borderRadius: 20,
+                        padding: '4px 10px',
+                      }}>
+                        <Gift size={11} color={OR} />
+                        <span style={{ color: OR, fontSize: 11, fontWeight: 700 }}>{value.toLocaleString('fr-FR')} FCFA disponibles</span>
+                      </div>
+                    )}
+                  </div>
+                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, marginTop: 10 }}>
+                    1 point offert par tranche de 500 FCFA dépensés · 100 pts = 500 FCFA de réduction
+                  </p>
+                </>
+              )
+            })()}
+          </div>
         )}
 
         {/* Historique commandes */}

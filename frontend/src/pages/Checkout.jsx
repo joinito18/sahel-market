@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin, Smartphone, ChevronRight, ArrowLeft,
-  ShoppingBag, Check, Copy, Phone, Clock, Package
+  ShoppingBag, Check, Copy, Phone, Clock, Package, Gift, Star, Tag, X,
 } from 'lucide-react'
 import { orderService } from '../services/order.service.js'
 import { clearCart } from '../store/cartSlice.js'
@@ -50,7 +50,7 @@ const DELIVERY_FEES = [
 ]
 
 /* ── État de confirmation post-commande ──────────────────────── */
-function Confirmation({ order, paymentMethod, instructions }) {
+function Confirmation({ order, paymentMethod, instructions, loyaltyDiscount, promoDiscount }) {
   const [copied, setCopied] = useState(false)
   const navigate = useNavigate()
   const pm = PAYMENT_METHODS.find(p => p.id === paymentMethod)
@@ -88,6 +88,30 @@ function Confirmation({ order, paymentMethod, instructions }) {
         <p style={{ fontSize: 13, color: '#6b7280' }}>
           Référence : <strong style={{ color: '#f97316' }}>{order.payment_reference || `CMD-${order.id}`}</strong>
         </p>
+        {loyaltyDiscount > 0 && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            marginTop: 10, background: '#f0fdf4', border: '1px solid #bbf7d0',
+            borderRadius: 20, padding: '5px 14px',
+          }}>
+            <Gift size={13} color="#16a34a" />
+            <span style={{ fontSize: 12, color: '#15803d', fontWeight: 700 }}>
+              {fcfa(loyaltyDiscount)} de réduction fidélité appliquée
+            </span>
+          </div>
+        )}
+        {promoDiscount > 0 && (
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            marginTop: 8, background: '#fff7ed', border: '1px solid #fed7aa',
+            borderRadius: 20, padding: '5px 14px',
+          }}>
+            <Tag size={13} color="#f97316" />
+            <span style={{ fontSize: 12, color: '#c2410c', fontWeight: 700 }}>
+              {fcfa(promoDiscount)} de remise code promo
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Instructions paiement */}
@@ -208,11 +232,45 @@ function Confirmation({ order, paymentMethod, instructions }) {
 /* ── Page Checkout ───────────────────────────────────────────── */
 export default function Checkout() {
   const { items, total } = useSelector(s => s.cart)
+  const user             = useSelector(s => s.auth.user)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [paymentMethod, setPaymentMethod] = useState('orange_money')
-  const [deliveryFee, setDeliveryFee] = useState(1500)
-  const [confirmed, setConfirmed] = useState(null)
+  const [deliveryFee, setDeliveryFee]     = useState(1500)
+  const [confirmed, setConfirmed]         = useState(null)
+  const [applyLoyalty, setApplyLoyalty]   = useState(false)
+  const [promoInput, setPromoInput]       = useState('')
+  const [promoResult, setPromoResult]     = useState(null)
+  const [promoLoading, setPromoLoading]   = useState(false)
+  const [promoError, setPromoError]       = useState('')
+
+  const loyaltyPts   = user?.loyalty_points || 0
+  const loyaltyValue = Math.floor(loyaltyPts / 100) * 500
+
+  const applyPromo = async () => {
+    if (!promoInput.trim()) return
+    setPromoLoading(true)
+    setPromoError('')
+    try {
+      const res = await orderService.validatePromo({
+        code: promoInput.trim().toUpperCase(),
+        cart_total: total,
+      })
+      setPromoResult(res.data)
+      toast.success(`Code "${res.data.code}" appliqué !`)
+    } catch (err) {
+      setPromoError(err.response?.data?.error || 'Code invalide')
+      setPromoResult(null)
+    } finally {
+      setPromoLoading(false)
+    }
+  }
+
+  const removePromo = () => {
+    setPromoResult(null)
+    setPromoInput('')
+    setPromoError('')
+  }
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm()
 
@@ -242,6 +300,8 @@ export default function Checkout() {
           order={confirmed.order}
           paymentMethod={paymentMethod}
           instructions={confirmed.instructions}
+          loyaltyDiscount={confirmed.loyaltyDiscount}
+          promoDiscount={confirmed.promoDiscount || 0}
         />
       </div>
     )
@@ -254,11 +314,15 @@ export default function Checkout() {
         delivery_fee:     deliveryFee,
         payment_method:   paymentMethod,
         payment_phone:    data.payment_phone || '',
+        apply_loyalty:    applyLoyalty && loyaltyValue > 0,
+        promo_code:       promoResult?.code || '',
       })
       dispatch(clearCart())
       setConfirmed({
-        order:        res.data.order,
-        instructions: res.data.instructions,
+        order:           res.data.order,
+        instructions:    res.data.instructions,
+        loyaltyDiscount: res.data.loyalty_discount || 0,
+        promoDiscount:   res.data.promo_discount   || 0,
       })
     } catch (err) {
       const msg = err.response?.data?.error || 'Erreur lors de la commande'
@@ -266,7 +330,12 @@ export default function Checkout() {
     }
   }
 
-  const grandTotal = total + deliveryFee
+  const loyaltyDiscount = applyLoyalty && loyaltyValue > 0 ? Math.min(loyaltyValue, total) : 0
+  const promoDiscount = promoResult
+    ? (promoResult.discount_type === 'free_delivery' ? deliveryFee : (promoResult.discount_amount || 0))
+    : 0
+  const effectiveDelivery = promoResult?.discount_type === 'free_delivery' ? 0 : deliveryFee
+  const grandTotal = Math.max(0, total + effectiveDelivery - loyaltyDiscount - promoDiscount)
 
   return (
     <div style={{ minHeight: '100vh', background: '#f0f2f5' }}>
@@ -522,6 +591,87 @@ export default function Checkout() {
               })}
             </div>
 
+            {/* Champ code promo */}
+            <div style={{ padding: '12px 20px', borderTop: '1px solid #f3f4f6' }}>
+              <AnimatePresence mode="wait">
+                {promoResult ? (
+                  <motion.div
+                    key="promo-applied"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      background: '#f0fdf4', border: '1px solid #bbf7d0',
+                      borderRadius: 10, padding: '9px 12px',
+                    }}
+                  >
+                    <Tag size={13} color="#16a34a" style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: '#15803d' }}>
+                        {promoResult.code}
+                      </p>
+                      <p style={{ fontSize: 11, color: '#4ade80', marginTop: 1 }}>
+                        {promoResult.description}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removePromo}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        padding: 4, flexShrink: 0,
+                      }}
+                    >
+                      <X size={13} color="#6b7280" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div key="promo-input" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <div style={{
+                        flex: 1, display: 'flex', alignItems: 'center', gap: 6,
+                        border: `1.5px solid ${promoError ? '#ef4444' : '#e5e7eb'}`,
+                        borderRadius: 8, padding: '0 10px', background: '#fff',
+                      }}>
+                        <Tag size={13} color="#9ca3af" style={{ flexShrink: 0 }} />
+                        <input
+                          type="text"
+                          value={promoInput}
+                          onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError('') }}
+                          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), applyPromo())}
+                          placeholder="Code promo"
+                          style={{
+                            flex: 1, border: 'none', outline: 'none',
+                            fontSize: 13, fontFamily: 'inherit',
+                            padding: '9px 0', background: 'transparent',
+                            letterSpacing: '0.05em',
+                          }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={applyPromo}
+                        disabled={promoLoading || !promoInput.trim()}
+                        style={{
+                          padding: '0 14px', background: promoInput.trim() ? '#f97316' : '#e5e7eb',
+                          color: promoInput.trim() ? '#fff' : '#9ca3af',
+                          border: 'none', borderRadius: 8, cursor: promoInput.trim() ? 'pointer' : 'default',
+                          fontSize: 12, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap',
+                          transition: 'all .15s',
+                        }}
+                      >
+                        {promoLoading ? '...' : 'Appliquer'}
+                      </button>
+                    </div>
+                    {promoError && (
+                      <p style={{ fontSize: 11, color: '#ef4444', marginTop: 5 }}>{promoError}</p>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {/* Totaux */}
             <div style={{ padding: '14px 20px', borderTop: '1px solid #f3f4f6',
                            display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -531,10 +681,80 @@ export default function Checkout() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#6b7280' }}>
                 <span>Livraison</span>
-                <span style={{ color: deliveryFee === 0 ? '#16a34a' : '#6b7280' }}>
-                  {deliveryFee === 0 ? 'Gratuit' : fcfa(deliveryFee)}
+                <span style={{ color: effectiveDelivery === 0 ? '#16a34a' : '#6b7280' }}>
+                  {effectiveDelivery === 0
+                    ? <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ textDecoration: deliveryFee > 0 && promoResult?.discount_type === 'free_delivery' ? 'line-through' : 'none', color: '#9ca3af', fontSize: 11 }}>
+                          {deliveryFee > 0 && promoResult?.discount_type === 'free_delivery' ? fcfa(deliveryFee) : ''}
+                        </span>
+                        Gratuit
+                      </span>
+                    : fcfa(deliveryFee)
+                  }
                 </span>
               </div>
+
+              {/* ── Réduction fidélité ── */}
+              {loyaltyValue > 0 && (
+                <div style={{
+                  background: 'linear-gradient(135deg, #1a3a2a 0%, #111827 100%)',
+                  borderRadius: 10, padding: '12px 14px',
+                  border: '1px solid rgba(249,115,22,0.25)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <Star size={13} color="#f97316" fill="#f97316" />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f97316' }}>
+                      {loyaltyPts} points fidélité disponibles
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <button
+                      type="button"
+                      onClick={() => setApplyLoyalty(v => !v)}
+                      style={{
+                        width: 36, height: 20, borderRadius: 999, border: 'none',
+                        cursor: 'pointer', position: 'relative', flexShrink: 0,
+                        background: applyLoyalty ? '#f97316' : 'rgba(255,255,255,0.15)',
+                        transition: 'background .2s',
+                      }}
+                    >
+                      <div style={{
+                        width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                        position: 'absolute', top: 3,
+                        left: applyLoyalty ? 19 : 3,
+                        transition: 'left .2s',
+                      }} />
+                    </button>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', flex: 1 }}>
+                      Utiliser{' '}
+                      <span style={{ color: '#fb923c', fontWeight: 700 }}>
+                        {fcfa(Math.min(loyaltyValue, total))}
+                      </span>{' '}
+                      de réduction
+                    </span>
+                    {applyLoyalty && (
+                      <Gift size={14} color="#22c55e" />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {loyaltyDiscount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#22c55e' }}>
+                  <span>Réduction fidélité</span>
+                  <span style={{ fontWeight: 700 }}>− {fcfa(loyaltyDiscount)}</span>
+                </div>
+              )}
+
+              {promoDiscount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#f97316' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Tag size={12} /> Code promo
+                  </span>
+                  <span style={{ fontWeight: 700 }}>− {fcfa(promoDiscount)}</span>
+                </div>
+              )}
+
               <div style={{
                 display: 'flex', justifyContent: 'space-between', paddingTop: 10,
                 borderTop: '2px solid #f3f4f6',

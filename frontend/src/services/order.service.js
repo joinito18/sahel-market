@@ -9,4 +9,5 @@ export const orderService = {
   getOrder:        (id)        => api.get(`/orders/history/${id}/`),
   confirmDelivery: (id)        => api.patch(`/orders/history/${id}/`, { is_delivery_confirmed: true }),
   getTracking:     (orderId)   => api.get(`/delivery/${orderId}/`),
+  validatePromo:   (data)      => api.post('/orders/promo/validate/', data),
 }

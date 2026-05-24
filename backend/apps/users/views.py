@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import User, ProducerProfile
-from .serializers import RegisterSerializer, UserSerializer, UpdateProfileSerializer, ProducerProfileSerializer
+from .models import User, ProducerProfile, Message
+from .serializers import RegisterSerializer, UserSerializer, UpdateProfileSerializer, ProducerProfileSerializer, MessageSerializer
+from django.db import models as djmodels
 from django.core.mail import send_mail
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
@@ -197,3 +198,91 @@ class ProducerPublicProfileView(APIView):
             'profile': ProducerProfileSerializer(profile).data,
             'products': ProductListSerializer(products, many=True).data,
         })
+
+
+class ConversationsView(APIView):
+    """Liste toutes les conversations de l'utilisateur connecté."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        me = request.user
+        # Tous les interlocuteurs avec qui on a échangé
+        partner_ids = Message.objects.filter(
+            djmodels.Q(sender=me) | djmodels.Q(recipient=me)
+        ).values_list('sender_id', 'recipient_id')
+
+        seen = set()
+        for s, r in partner_ids:
+            other = r if s == me.id else s
+            seen.add(other)
+
+        conversations = []
+        for uid in seen:
+            try:
+                other = User.objects.get(pk=uid)
+            except User.DoesNotExist:
+                continue
+            thread = Message.objects.filter(
+                djmodels.Q(sender=me, recipient=other) |
+                djmodels.Q(sender=other, recipient=me)
+            )
+            last = thread.last()
+            unread = thread.filter(recipient=me, is_read=False).count()
+            conversations.append({
+                'user_id':    other.id,
+                'username':   other.username,
+                'first_name': other.first_name,
+                'last_name':  other.last_name,
+                'avatar':     request.build_absolute_uri(other.avatar.url) if other.avatar else None,
+                'role':       other.role,
+                'last_message':   last.content if last else '',
+                'last_message_at': last.created_at if last else None,
+                'unread':     unread,
+            })
+
+        conversations.sort(key=lambda c: c['last_message_at'] or '', reverse=True)
+        return Response(conversations)
+
+
+class ThreadView(APIView):
+    """Récupère ou envoie des messages avec un utilisateur donné."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        me = request.user
+        try:
+            other = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Utilisateur introuvable.'}, status=404)
+
+        messages = Message.objects.filter(
+            djmodels.Q(sender=me, recipient=other) |
+            djmodels.Q(sender=other, recipient=me)
+        )
+        # Marquer comme lus
+        messages.filter(recipient=me, is_read=False).update(is_read=True)
+        return Response({
+            'other': {
+                'id':         other.id,
+                'username':   other.username,
+                'first_name': other.first_name,
+                'last_name':  other.last_name,
+                'avatar':     request.build_absolute_uri(other.avatar.url) if other.avatar else None,
+                'role':       other.role,
+            },
+            'messages': MessageSerializer(messages, many=True).data,
+        })
+
+    def post(self, request, user_id):
+        me = request.user
+        try:
+            other = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Utilisateur introuvable.'}, status=404)
+
+        content = request.data.get('content', '').strip()
+        if not content:
+            return Response({'error': 'Message vide.'}, status=400)
+
+        msg = Message.objects.create(sender=me, recipient=other, content=content)
+        return Response(MessageSerializer(msg).data, status=201)

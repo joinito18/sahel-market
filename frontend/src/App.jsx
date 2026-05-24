@@ -4,11 +4,12 @@ import { useSelector, useDispatch } from 'react-redux'
 import { setWishlist, clearWishlist } from './store/wishlistSlice.js'
 import { productService } from './services/product.service.js'
 
-import Navbar         from './components/Navbar.jsx'
-import CartDrawer     from './components/CartDrawer.jsx'
-import ChatWidget     from './components/ChatWidget.jsx'
-import Footer         from './components/Footer.jsx'
-import SuggestionWidget from './components/SuggestionWidget.jsx'
+import Navbar            from './components/Navbar.jsx'
+import CartDrawer        from './components/CartDrawer.jsx'
+import ChatWidget        from './components/ChatWidget.jsx'
+import Footer            from './components/Footer.jsx'
+import SuggestionWidget  from './components/SuggestionWidget.jsx'
+import PwaInstallBanner  from './components/PwaInstallBanner.jsx'
 
 // Lazy-loaded pages — code splitting automatique par route
 const Home              = lazy(() => import('./pages/Home.jsx'))
@@ -32,6 +33,8 @@ const Returns           = lazy(() => import('./pages/legal/Returns.jsx'))
 const Delivery          = lazy(() => import('./pages/legal/Delivery.jsx'))
 const Faq               = lazy(() => import('./pages/legal/Faq.jsx'))
 const Wishlist          = lazy(() => import('./pages/Wishlist.jsx'))
+const Messages          = lazy(() => import('./pages/Messages.jsx'))
+const Roadmap           = lazy(() => import('./pages/Roadmap.jsx'))
 
 function PageLoader() {
   return (
@@ -97,6 +100,7 @@ export default function App() {
       <ChatWidget />
       <SuggestionWidget />
 
+      <PwaInstallBanner />
       <div className="flex-1">
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -108,6 +112,7 @@ export default function App() {
             <Route path="/login"         element={<Login />} />
             <Route path="/register"      element={<Register />} />
             <Route path="/how-it-works"      element={<HowItWorks />} />
+            <Route path="/roadmap"           element={<Roadmap />} />
             <Route path="/artisans/:username" element={<ProducerPublicProfile />} />
 
             {/* ── Pages légales ───────────────────────────────── */}
@@ -120,6 +125,12 @@ export default function App() {
             {/* ── Pages privées (client) ───────────────────────── */}
             <Route path="/wishlist" element={
               <PrivateRoute><Wishlist /></PrivateRoute>
+            } />
+            <Route path="/messages" element={
+              <PrivateRoute><Messages /></PrivateRoute>
+            } />
+            <Route path="/messages/:userId" element={
+              <PrivateRoute><Messages /></PrivateRoute>
             } />
             <Route path="/cart" element={
               <PrivateRoute><Cart /></PrivateRoute>

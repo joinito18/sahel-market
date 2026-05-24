@@ -5,11 +5,12 @@ import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, X, SlidersHorizontal, ChevronRight,
-  ArrowUpDown, PackageX, Package
+  ArrowUpDown, PackageX, Package, MapPin, ChevronDown
 } from 'lucide-react'
 import { productService } from '../services/product.service.js'
 import { setFilters, setPage } from '../store/productSlice.js'
 import ProductCard from '../components/ProductCard.jsx'
+import api from '../services/api.js'
 
 import { imgUrl } from '../utils/media.js'
 
@@ -42,9 +43,21 @@ export default function Products() {
   const dispatch = useDispatch()
   const [searchParams]   = useSearchParams()
   const { filters, currentPage } = useSelector(s => s.product)
-  const [search,    setSearch]   = useState(filters.search || '')
-  const [sortOpen,  setSortOpen] = useState(false)
-  const sortRef = useRef(null)
+  const [search,     setSearch]    = useState(filters.search || '')
+  const [sortOpen,   setSortOpen]  = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [location,   setLocation]  = useState('')
+  const [priceMin,   setPriceMin]  = useState('')
+  const [priceMax,   setPriceMax]  = useState('')
+  const sortRef   = useRef(null)
+  const filterRef = useRef(null)
+
+  const { data: locsData } = useQuery({
+    queryKey: ['locations'],
+    queryFn:  () => api.get('/products/locations/').then(r => r.data),
+    staleTime: 300000,
+  })
+  const locations = locsData || []
 
   useEffect(() => {
     const cat = searchParams.get('category')
@@ -57,6 +70,8 @@ export default function Products() {
     function handle(e) {
       if (sortRef.current && !sortRef.current.contains(e.target))
         setSortOpen(false)
+      if (filterRef.current && !filterRef.current.contains(e.target))
+        setFilterOpen(false)
     }
     document.addEventListener('mousedown', handle)
     return () => document.removeEventListener('mousedown', handle)
@@ -73,10 +88,13 @@ export default function Products() {
       : []
 
   const qParams = {
-    search:   filters.search   || undefined,
-    category: filters.category || undefined,
-    ordering: filters.ordering || '-created_at',
-    page:     currentPage,
+    search:    filters.search    || undefined,
+    category:  filters.category  || undefined,
+    location:  location          || undefined,
+    price_min: priceMin          || undefined,
+    price_max: priceMax          || undefined,
+    ordering:  filters.ordering  || '-created_at',
+    page:      currentPage,
   }
   const { data, isLoading } = useQuery({
     queryKey: ['products', qParams],
@@ -108,11 +126,11 @@ export default function Products() {
 
   const clearAll = () => {
     dispatch(setFilters({ category: '', search: '' }))
-    setSearch('')
+    setSearch(''); setLocation(''); setPriceMin(''); setPriceMax('')
     dispatch(setPage(1))
   }
 
-  const hasFilters = filters.category || filters.search
+  const hasFilters = filters.category || filters.search || location || priceMin || priceMax
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -205,6 +223,103 @@ export default function Products() {
                         {opt.label}
                       </button>
                     ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Filtres avancés — bouton */}
+            <div className="relative flex-shrink-0" ref={filterRef}>
+              <button
+                onClick={() => setFilterOpen(v => !v)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium
+                            rounded-xl border transition-all duration-150
+                            ${filterOpen || location || priceMin || priceMax
+                              ? 'bg-orange-50 border-orange-300 text-orange-600'
+                              : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-orange-300'
+                            }`}
+              >
+                <SlidersHorizontal size={14} />
+                <span className="hidden sm:inline">Filtres</span>
+                {(location || priceMin || priceMax) && (
+                  <span className="w-5 h-5 bg-orange-500 text-white rounded-full
+                                   text-[10px] font-bold flex items-center justify-center">
+                    {[location, priceMin, priceMax].filter(Boolean).length}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {filterOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl
+                               shadow-xl border border-gray-100 overflow-hidden z-50 p-4"
+                  >
+                    {/* Région */}
+                    <div className="mb-4">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <MapPin size={11} /> Région / Ville
+                      </p>
+                      <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto">
+                        <button
+                          onClick={() => { setLocation(''); dispatch(setPage(1)) }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors
+                                      ${!location ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`}
+                        >
+                          Toutes
+                        </button>
+                        {locations.map(loc => (
+                          <button
+                            key={loc}
+                            onClick={() => { setLocation(loc); dispatch(setPage(1)) }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors truncate
+                                        ${location === loc ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-orange-50'}`}
+                          >
+                            {loc}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Prix */}
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        Prix (FCFA)
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          placeholder="Min"
+                          value={priceMin}
+                          onChange={e => { setPriceMin(e.target.value); dispatch(setPage(1)) }}
+                          className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-lg
+                                     focus:outline-none focus:border-orange-400 bg-gray-50"
+                        />
+                        <span className="text-gray-400 text-xs">—</span>
+                        <input
+                          type="number"
+                          placeholder="Max"
+                          value={priceMax}
+                          onChange={e => { setPriceMax(e.target.value); dispatch(setPage(1)) }}
+                          className="flex-1 px-3 py-2 text-xs border border-gray-200 rounded-lg
+                                     focus:outline-none focus:border-orange-400 bg-gray-50"
+                        />
+                      </div>
+                    </div>
+
+                    {(location || priceMin || priceMax) && (
+                      <button
+                        onClick={() => { setLocation(''); setPriceMin(''); setPriceMax(''); dispatch(setPage(1)) }}
+                        className="mt-3 w-full py-2 text-xs font-bold text-red-500
+                                   bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                      >
+                        Effacer ces filtres
+                      </button>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>

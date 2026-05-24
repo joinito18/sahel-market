@@ -12,12 +12,20 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'is_main']
 
 class RatingSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source='user.username', read_only=True)
+    user_name            = serializers.CharField(source='user.username', read_only=True)
+    is_verified_purchase = serializers.SerializerMethodField()
 
     class Meta:
         model = Rating
-        fields = ['id', 'user_name', 'score', 'comment', 'created_at']
-        read_only_fields = ['id', 'user_name', 'created_at']
+        fields = ['id', 'user_name', 'score', 'comment', 'created_at', 'is_verified_purchase']
+        read_only_fields = ['id', 'user_name', 'created_at', 'is_verified_purchase']
+
+    def get_is_verified_purchase(self, obj):
+        from apps.orders.models import OrderItem
+        return OrderItem.objects.filter(
+            order__user=obj.user,
+            product=obj.product,
+        ).exists()
 
 class ProductListSerializer(serializers.ModelSerializer):
     main_image     = serializers.SerializerMethodField()

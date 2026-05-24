@@ -14,6 +14,8 @@ from .views import (
     ProducerProfileView,
     ProducerPublicProfileView,
     ProducerValidationView,
+    ConversationsView,
+    ThreadView,
 )
 
 urlpatterns = [
@@ -42,4 +44,8 @@ urlpatterns = [
     # Validation admin
     path('producers/pending/', ProducerValidationView.as_view(), name='producers-pending'),
     path('producers/<int:user_id>/validate/', ProducerValidationView.as_view(), name='producer-validate'),
+
+    # Messagerie
+    path('messages/', ConversationsView.as_view(), name='conversations'),
+    path('messages/<int:user_id>/', ThreadView.as_view(), name='thread'),
 ]

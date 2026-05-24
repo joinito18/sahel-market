@@ -134,6 +134,7 @@ export default function Footer() {
                 { to: '/',             label: 'Accueil'           },
                 { to: '/products',     label: 'Catalogue produits' },
                 { to: '/how-it-works', label: 'Comment ça marche' },
+                { to: '/roadmap',      label: 'Notre roadmap'     },
                 { to: '/register',     label: 'Devenir artisan'   },
                 { to: '/orders',       label: 'Suivi de commande' },
                 { to: '/profile',      label: 'Mon compte'        },

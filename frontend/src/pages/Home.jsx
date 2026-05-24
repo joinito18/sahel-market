@@ -420,43 +420,22 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          BARRE STATS + GARANTIES — fond blanc net
+          BARRE GARANTIES — fond blanc compact
       ══════════════════════════════════════════════════════════ */}
       <div className="bg-white border-b border-gray-200">
         <div className="w-full px-4 sm:px-6 lg:px-10">
           <div className="flex items-center overflow-x-auto scrollbar-hide divide-x divide-gray-100">
-
-            {stats.artisans !== undefined && [
-              { v: stats.artisans,   l: 'Artisans',   Icon: Users },
-              { v: stats.produits,   l: 'Produits',   Icon: Package },
-              { v: stats.categories, l: 'Catégories', Icon: Award },
-              { v: stats.regions,    l: 'Régions',    Icon: MapPin },
-            ].map(({ v, l, Icon }) => (
-              <div key={l} className="flex-shrink-0 flex items-center gap-2.5 px-5 py-3.5">
-                <Icon size={16} className="text-orange-400 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-black text-gray-900 leading-none">
-                    {Number(v).toLocaleString('fr-FR')}+
-                  </p>
-                  <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">{l}</p>
-                </div>
-              </div>
-            ))}
-
-            <div className="flex-shrink-0 w-px h-8 bg-gray-100 mx-2 hidden sm:block" />
-
             {[
               { Icon: Shield, l: 'Paiement sécurisé',  c: '#16a34a' },
               { Icon: Truck,  l: 'Livraison suivie',   c: '#2563eb' },
               { Icon: Award,  l: 'Artisans certifiés', c: '#ea580c' },
               { Icon: Users,  l: 'Support Cameroun',   c: '#7c3aed' },
             ].map(({ Icon, l, c }) => (
-              <div key={l} className="flex-shrink-0 flex items-center gap-2 px-4 py-3.5">
-                <Icon size={15} style={{ color: c }} />
+              <div key={l} className="flex-shrink-0 flex items-center gap-2 px-5 py-3">
+                <Icon size={14} style={{ color: c }} />
                 <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">{l}</span>
               </div>
             ))}
-
           </div>
         </div>
       </div>
@@ -624,6 +603,177 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          IMPACT — section chiffres-clés pour pitch investisseurs
+      ══════════════════════════════════════════════════════════ */}
+      {stats.artisans !== undefined && (
+        <div className="w-full px-4 sm:px-6 lg:px-10 mt-3">
+          <div className="rounded-2xl overflow-hidden relative"
+               style={{ background: 'linear-gradient(135deg, #0f2027 0%, #1a3a2a 50%, #0f2027 100%)' }}>
+
+            {/* Motif de fond subtil */}
+            <div className="absolute inset-0 opacity-[0.04]"
+                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='%23fff'/%3E%3C/svg%3E")` }} />
+
+            <div className="relative px-6 py-8 md:py-10">
+
+              {/* Titre */}
+              <div className="text-center mb-8">
+                <span className="inline-block px-4 py-1 rounded-full text-xs font-bold
+                                 uppercase tracking-widest mb-3"
+                      style={{ background: 'rgba(249,115,22,0.15)',
+                               color: '#fb923c', border: '1px solid rgba(249,115,22,0.3)' }}>
+                  Notre impact
+                </span>
+                <h2 style={{ fontFamily: 'Inter', fontWeight: 900, fontSize: 'clamp(20px,3vw,28px)',
+                             color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                  L'artisanat camerounais<br />
+                  <span style={{ color: '#f97316' }}>en chiffres réels</span>
+                </h2>
+              </div>
+
+              {/* Grille de stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-3xl mx-auto">
+                {[
+                  { v: stats.artisans,   l: 'Artisans soutenus',   sub: 'actifs sur la plateforme', Icon: Users,   accent: '#f97316', bg: 'rgba(249,115,22,0.12)',   border: 'rgba(249,115,22,0.25)'  },
+                  { v: stats.produits,   l: 'Créations listées',   sub: 'faites à la main',         Icon: Package, accent: '#3b82f6', bg: 'rgba(59,130,246,0.12)',   border: 'rgba(59,130,246,0.25)'  },
+                  { v: stats.commandes || 0, l: 'Commandes livrées', sub: 'à travers le Cameroun',  Icon: Truck,   accent: '#22c55e', bg: 'rgba(34,197,94,0.12)',    border: 'rgba(34,197,94,0.25)'   },
+                  { v: stats.regions,    l: 'Régions couvertes',   sub: 'sur 10 au Cameroun',       Icon: MapPin,  accent: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.25)' },
+                ].map(({ v, l, sub, Icon, accent, bg, border }) => (
+                  <motion.div
+                    key={l}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    style={{
+                      background: bg, border: `1px solid ${border}`,
+                      borderRadius: 16, padding: '16px 20px',
+                    }}
+                  >
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10, marginBottom: 10,
+                      background: `${accent}22`, display: 'flex',
+                      alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Icon size={18} style={{ color: accent }} />
+                    </div>
+                    <p style={{
+                      fontFamily: 'Inter', fontWeight: 900, color: '#ffffff',
+                      fontSize: 'clamp(24px,3.5vw,36px)', lineHeight: 1,
+                      letterSpacing: '-0.03em', marginBottom: 4,
+                    }}>
+                      {Number(v).toLocaleString('fr-FR')}
+                      <span style={{ color: accent, fontSize: '0.6em' }}>+</span>
+                    </p>
+                    <p style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 13, marginBottom: 2 }}>
+                      {l}
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
+                      {sub}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Note de bas */}
+              <p className="text-center text-xs mt-6"
+                 style={{ color: 'rgba(255,255,255,0.3)' }}>
+                Données en temps réel · mise à jour automatique
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+          PARTENAIRES INSTITUTIONNELS
+      ══════════════════════════════════════════════════════════ */}
+      <div className="w-full px-4 sm:px-6 lg:px-10 mt-3">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="text-center mb-6">
+            <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold
+                             uppercase tracking-widest bg-gray-100 text-gray-500 mb-2">
+              Ils nous font confiance
+            </span>
+            <h2 style={{ fontFamily: 'Inter', fontWeight: 800, fontSize: 16, color: '#111827', margin: 0 }}>
+              Partenaires institutionnels
+            </h2>
+            <p className="text-xs text-gray-400 mt-1">
+              Sahel Market est soutenu par des acteurs majeurs du développement et du numérique au Cameroun
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              {
+                name: 'Orange Cameroun',
+                role: 'Partenaire paiement mobile',
+                color: '#ff6600',
+                bg: '#fff7f0',
+                border: '#ffe0cc',
+                initial: 'O',
+                desc: 'Orange Money',
+              },
+              {
+                name: 'MTN Cameroun',
+                role: 'Partenaire paiement MoMo',
+                color: '#c8960a',
+                bg: '#fffbea',
+                border: '#fef08a',
+                initial: 'M',
+                desc: 'MTN MoMo',
+              },
+              {
+                name: 'GIZ',
+                role: 'Coopération au développement',
+                color: '#4a7c3f',
+                bg: '#f0f7ee',
+                border: '#bbf0aa',
+                initial: 'G',
+                desc: 'Deutsche GIZ',
+              },
+              {
+                name: 'MINCOMMERCE',
+                role: 'Ministère du Commerce',
+                color: '#1e3a8a',
+                bg: '#eff6ff',
+                border: '#bfdbfe',
+                initial: 'MC',
+                desc: 'Rép. du Cameroun',
+              },
+            ].map(({ name, role, color, bg, border, initial, desc }) => (
+              <div key={name} style={{
+                background: bg, border: `1px solid ${border}`,
+                borderRadius: 14, padding: '18px 16px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                textAlign: 'center', gap: 10,
+              }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 14,
+                  background: color, display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontWeight: 900, fontSize: 16, letterSpacing: '-0.01em',
+                  boxShadow: `0 4px 12px ${color}33`,
+                }}>
+                  {initial}
+                </div>
+                <div>
+                  <p style={{ fontWeight: 800, fontSize: 13, color: '#111827', marginBottom: 2 }}>
+                    {name}
+                  </p>
+                  <p style={{ fontSize: 10, color, fontWeight: 700, marginBottom: 3 }}>{desc}</p>
+                  <p style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.4 }}>{role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-[10px] text-gray-300 mt-5">
+            Partenariats en cours de finalisation — données confidentielles
+          </p>
         </div>
       </div>
 

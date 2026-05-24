@@ -30,6 +30,30 @@ class ProductViewSet(viewsets.ModelViewSet):
     search_fields = ['name', 'description', 'location']
     ordering_fields = ['price', 'created_at', 'views_count']
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        location = self.request.query_params.get('location')
+        price_min = self.request.query_params.get('price_min')
+        price_max = self.request.query_params.get('price_max')
+        if location:
+            qs = qs.filter(location__icontains=location)
+        if price_min:
+            qs = qs.filter(price__gte=price_min)
+        if price_max:
+            qs = qs.filter(price__lte=price_max)
+        return qs
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+    def locations(self, request):
+        locs = (
+            Product.objects.exclude(location='')
+            .filter(is_available=True)
+            .values_list('location', flat=True)
+            .distinct()
+            .order_by('location')
+        )
+        return Response(sorted(set(locs)))
+
     def get_serializer_class(self):
         if self.action == 'list':
             return ProductListSerializer

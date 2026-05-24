@@ -62,3 +62,59 @@ class OrderItem(models.Model):
     @property
     def subtotal(self):
         return self.unit_price * self.quantity
+
+
+class PromoCode(models.Model):
+    DISCOUNT_TYPES = [
+        ('fixed',         'Montant fixe (FCFA)'),
+        ('percent',       'Pourcentage (%)'),
+        ('free_delivery', 'Livraison gratuite'),
+    ]
+    code             = models.CharField(max_length=30, unique=True, db_index=True)
+    discount_type    = models.CharField(max_length=20, choices=DISCOUNT_TYPES, default='fixed')
+    discount_value   = models.DecimalField(max_digits=10, decimal_places=0, default=0)
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=0, default=0)
+    description      = models.CharField(max_length=200, blank=True)
+    is_active        = models.BooleanField(default=True)
+    expiry_date      = models.DateField(null=True, blank=True)
+    max_uses         = models.PositiveIntegerField(null=True, blank=True)
+    used_count       = models.PositiveIntegerField(default=0)
+    created_at       = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.code
+
+    def get_validity_error(self):
+        from django.utils import timezone
+        if not self.is_active:
+            return 'Code promo inactif.'
+        if self.expiry_date and self.expiry_date < timezone.now().date():
+            return 'Code promo expiré.'
+        if self.max_uses and self.used_count >= self.max_uses:
+            return 'Ce code promo a atteint son nombre maximum d\'utilisations.'
+        return None
+
+
+class Notification(models.Model):
+    TYPE_CHOICES = [
+        ('order_placed',    'Commande passée'),
+        ('order_paid',      'Paiement confirmé'),
+        ('order_processing','En préparation'),
+        ('order_shipped',   'Expédié'),
+        ('order_delivered', 'Livré'),
+        ('order_cancelled', 'Annulé'),
+        ('new_order',       'Nouvelle commande'),
+    ]
+    user      = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    type      = models.CharField(max_length=30, choices=TYPE_CHOICES)
+    title     = models.CharField(max_length=200)
+    message   = models.TextField()
+    order     = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
+    is_read   = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.type}] {self.user.username} — {self.title}"

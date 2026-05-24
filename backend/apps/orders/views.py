@@ -3,8 +3,73 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 import uuid
-from .models import Cart, CartItem, Order, OrderItem
-from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer
+from .models import Cart, CartItem, Order, OrderItem, Notification, PromoCode
+from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer, NotificationSerializer
+
+STATUS_MESSAGES = {
+    'paid':       ('Paiement confirmé',    'Votre paiement pour la commande #{id} a été confirmé. Merci !'),
+    'processing': ('En préparation',       'Votre commande #{id} est en cours de préparation par l\'artisan.'),
+    'shipped':    ('Commande expédiée 🚚', 'Votre commande #{id} est en route ! Suivez sa livraison.'),
+    'delivered':  ('Commande livrée ✅',   'Votre commande #{id} a été livrée. Bonne réception !'),
+    'cancelled':  ('Commande annulée',     'Votre commande #{id} a été annulée. Contactez-nous si besoin.'),
+}
+
+def create_order_notification(order, new_status):
+    info = STATUS_MESSAGES.get(new_status)
+    if not info:
+        return
+    title, msg_tpl = info
+    Notification.objects.create(
+        user=order.user,
+        type=f'order_{new_status}',
+        title=title,
+        message=msg_tpl.replace('{id}', str(order.id)),
+        order=order,
+    )
+
+class PromoValidateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        code = request.data.get('code', '').strip().upper()
+        cart_total = int(request.data.get('cart_total', 0))
+
+        try:
+            promo = PromoCode.objects.get(code=code)
+        except PromoCode.DoesNotExist:
+            return Response({'error': 'Code promo invalide.'}, status=400)
+
+        error = promo.get_validity_error()
+        if error:
+            return Response({'error': error}, status=400)
+
+        if cart_total < int(promo.min_order_amount):
+            return Response({
+                'error': f'Montant minimum requis : {int(promo.min_order_amount):,} FCFA.'.replace(',', ' ')
+            }, status=400)
+
+        if promo.discount_type == 'fixed':
+            discount = min(int(promo.discount_value), cart_total)
+        elif promo.discount_type == 'percent':
+            discount = int(cart_total * int(promo.discount_value) / 100)
+        else:  # free_delivery
+            discount = 0
+
+        return Response({
+            'valid': True,
+            'code': promo.code,
+            'discount_type': promo.discount_type,
+            'discount_value': int(promo.discount_value),
+            'discount_amount': discount,
+            'description': promo.description or (
+                f'{int(promo.discount_value):,} FCFA de remise'.replace(',', ' ')
+                if promo.discount_type == 'fixed' else
+                f'{int(promo.discount_value)}% de remise'
+                if promo.discount_type == 'percent' else
+                'Livraison gratuite'
+            ),
+        })
+
 
 class CartView(generics.RetrieveAPIView):
     serializer_class = CartSerializer
@@ -47,11 +112,45 @@ class CheckoutView(APIView):
         if not cart.items.exists():
             return Response({'error': 'Panier vide.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        user = request.user
+        loyalty_discount = 0
+        if serializer.validated_data.get('apply_loyalty') and user.loyalty_points >= 100:
+            full_rewards = user.loyalty_points // 100
+            loyalty_discount = full_rewards * 500
+            loyalty_discount = min(loyalty_discount, int(cart.total))
+            points_used = (loyalty_discount // 500) * 100
+            user.loyalty_points -= points_used
+            user.save(update_fields=['loyalty_points'])
+
+        # Code promo
+        promo_discount = 0
+        promo_free_delivery = False
+        promo_obj = None
+        raw_code = serializer.validated_data.get('promo_code', '').strip().upper()
+        if raw_code:
+            try:
+                promo_obj = PromoCode.objects.get(code=raw_code)
+                if not promo_obj.get_validity_error():
+                    if promo_obj.discount_type == 'fixed':
+                        promo_discount = min(int(promo_obj.discount_value), int(cart.total))
+                    elif promo_obj.discount_type == 'percent':
+                        promo_discount = int(int(cart.total) * int(promo_obj.discount_value) / 100)
+                    elif promo_obj.discount_type == 'free_delivery':
+                        promo_free_delivery = True
+            except PromoCode.DoesNotExist:
+                pass
+
+        delivery_fee = int(serializer.validated_data['delivery_fee'])
+        if promo_free_delivery:
+            delivery_fee = 0
+
+        total_amount = max(0, int(cart.total) + delivery_fee - loyalty_discount - promo_discount)
+
         order = Order.objects.create(
             user=request.user,
-            total_amount=cart.total + serializer.validated_data['delivery_fee'],
+            total_amount=total_amount,
             delivery_address=serializer.validated_data['delivery_address'],
-            delivery_fee=serializer.validated_data['delivery_fee'],
+            delivery_fee=delivery_fee,
         )
 
         for item in cart.items.all():
@@ -62,6 +161,31 @@ class CheckoutView(APIView):
                 quantity=item.quantity,
                 unit_price=item.product.price,
             )
+            # Déduire le stock
+            product = item.product
+            product.stock = max(0, product.stock - item.quantity)
+            product.save(update_fields=['stock'])
+            # Notifier l'artisan si stock bas (≤ 3)
+            if product.stock <= 3 and product.producer:
+                Notification.objects.get_or_create(
+                    user=product.producer,
+                    type='order_placed',
+                    title=f'Stock faible — {product.name[:40]}',
+                    defaults={
+                        'message': (
+                            f'Il ne reste que {product.stock} exemplaire(s) de "{product.name}". '
+                            f'Pensez à réapprovisionner.'
+                        ),
+                    },
+                )
+            # Notifier l'artisan d'une nouvelle commande
+            Notification.objects.create(
+                user=product.producer,
+                type='new_order',
+                title='Nouvelle commande reçue 🛍️',
+                message=f'Vous avez reçu une commande pour "{product.name}" (×{item.quantity}).',
+                order=order,
+            )
 
         payment_ref = 'CMD-' + str(uuid.uuid4()).replace('-', '')[:8].upper()
         order.payment_reference = payment_ref
@@ -69,12 +193,26 @@ class CheckoutView(APIView):
         order.payment_phone     = serializer.validated_data.get('payment_phone', '')
         order.save()
 
+        if promo_obj:
+            promo_obj.used_count += 1
+            promo_obj.save(update_fields=['used_count'])
+
         cart.items.all().delete()
 
+        Notification.objects.create(
+            user=request.user,
+            type='order_placed',
+            title='Commande passée ✓',
+            message=f'Votre commande #{order.id} a bien été enregistrée. Procédez au paiement pour la confirmer.',
+            order=order,
+        )
+
         return Response({
-            'order':          OrderSerializer(order).data,
-            'payment_ref':    payment_ref,
-            'payment_method': order.payment_method,
+            'order':            OrderSerializer(order).data,
+            'payment_ref':      payment_ref,
+            'payment_method':   order.payment_method,
+            'loyalty_discount': loyalty_discount,
+            'promo_discount':   promo_discount,
             'instructions': {
                 'orange_money': {
                     'numero': '+237 680 757 871',
@@ -99,10 +237,15 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         order = self.get_object()
-        if request.data.get('is_delivery_confirmed'):
+        if request.data.get('is_delivery_confirmed') and order.status != 'delivered':
             order.is_delivery_confirmed = True
             order.status = 'delivered'
             order.save()
+            points = int(order.total_amount) // 500
+            if points > 0:
+                order.user.loyalty_points += points
+                order.user.save(update_fields=['loyalty_points'])
+            create_order_notification(order, 'delivered')
         return Response(OrderSerializer(order).data)
 
 
@@ -134,8 +277,31 @@ class ManageOrderDetailView(APIView):
 
         new_status = request.data.get('status')
         if new_status and new_status in [s[0] for s in Order.STATUS_CHOICES]:
+            was_delivered = order.status == 'delivered'
             order.status = new_status
             if new_status == 'delivered':
                 order.is_delivery_confirmed = True
             order.save()
+            create_order_notification(order, new_status)
+            if new_status == 'delivered' and not was_delivered:
+                points = int(order.total_amount) // 500
+                if points > 0:
+                    order.user.loyalty_points += points
+                    order.user.save(update_fields=['loyalty_points'])
         return Response(OrderSerializer(order).data)
+
+
+class NotificationsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = Notification.objects.filter(user=request.user)[:30]
+        unread = Notification.objects.filter(user=request.user, is_read=False).count()
+        return Response({
+            'results': NotificationSerializer(qs, many=True).data,
+            'unread':  unread,
+        })
+
+    def patch(self, request):
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return Response({'ok': True})

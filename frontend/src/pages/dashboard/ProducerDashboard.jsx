@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import ProducerOnboarding from '../../components/ProducerOnboarding.jsx'
 import { Link } from 'react-router-dom'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -8,7 +9,7 @@ import {
 import {
   Package, Eye, TrendingUp, ShoppingBag, Pencil, Trash2,
   ToggleLeft, ToggleRight, X, Upload, ChevronRight, AlertCircle, Info,
-  User, Check, Camera,
+  User, Check, Camera, Calendar, Download, AlertTriangle,
 } from 'lucide-react'
 import api from '../../services/api.js'
 
@@ -61,8 +62,55 @@ function Overview({ stats }) {
     .slice(0, 8)
     .map(p => ({ name: p.name.length > 14 ? p.name.slice(0, 14) + '…' : p.name, views: p.views }))
 
+  const lowStock = stats?.low_stock_products || []
+
+  const exportCsv = () => {
+    const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token')
+    const base  = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+    const url   = `${base}/dashboard/producer/export/`
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.blob())
+      .then(blob => {
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = 'ventes_sahel_market.csv'
+        a.click()
+        URL.revokeObjectURL(a.href)
+      })
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* Alertes stock bas */}
+      {lowStock.length > 0 && (
+        <div style={{
+          background: '#fffbeb', border: '1px solid #fde68a',
+          borderLeft: '4px solid #f59e0b', borderRadius: 12, padding: '14px 18px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <AlertTriangle size={16} color="#d97706" />
+            <p style={{ fontWeight: 700, fontSize: 13, color: '#92400e' }}>
+              {lowStock.length} produit{lowStock.length > 1 ? 's' : ''} en stock bas
+            </p>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {lowStock.map(p => (
+              <span key={p.id} style={{
+                fontSize: 11, fontWeight: 700, padding: '3px 10px',
+                background: p.stock === 0 ? '#fef2f2' : '#fff7ed',
+                border: `1px solid ${p.stock === 0 ? '#fecaca' : '#fed7aa'}`,
+                color: p.stock === 0 ? '#dc2626' : '#d97706',
+                borderRadius: 20,
+              }}>
+                {p.name.length > 20 ? p.name.slice(0, 20) + '…' : p.name}
+                {' — '}
+                {p.stock === 0 ? 'Rupture' : `${p.stock} restant${p.stock > 1 ? 's' : ''}`}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       {chartData.length > 0 ? (
         <div style={{
           background: '#fff', borderRadius: 16, border: '1px solid #e5e7eb', padding: 24,
@@ -99,7 +147,7 @@ function Overview({ stats }) {
       )}
 
       {/* Actions rapides */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
         <a href="/products" style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14,
@@ -107,7 +155,7 @@ function Overview({ stats }) {
         }}>
           <div>
             <p style={{ fontWeight: 700, fontSize: 14 }}>Voir le catalogue</p>
-            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Voir vos produits en ligne</p>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Vos produits en ligne</p>
           </div>
           <ChevronRight size={16} color="#d1d5db" />
         </a>
@@ -122,6 +170,17 @@ function Overview({ stats }) {
           </div>
           <ChevronRight size={16} color="#d1d5db" />
         </Link>
+        <button onClick={exportCsv} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: '#fff', border: '1px solid #e5e7eb', borderRadius: 14,
+          padding: '16px 20px', cursor: 'pointer', textAlign: 'left',
+        }}>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>Exporter mes ventes</p>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Télécharger CSV</p>
+          </div>
+          <Download size={16} color="#22c55e" />
+        </button>
       </div>
     </div>
   )
@@ -401,10 +460,23 @@ function ProductList({ products, categories }) {
             padding: '14px 20px', alignItems: 'center',
             borderBottom: i < products.length - 1 ? '1px solid #f9fafb' : 'none',
           }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>
-              {p.name}
-            </p>
-            <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'right' }}>{p.stock}</p>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', lineHeight: 1.3 }}>
+                {p.name}
+              </p>
+              {p.stock <= 3 && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: '2px 7px',
+                  borderRadius: 20, marginTop: 3, display: 'inline-block',
+                  background: p.stock === 0 ? '#fef2f2' : '#fffbeb',
+                  color: p.stock === 0 ? '#dc2626' : '#d97706',
+                  border: `1px solid ${p.stock === 0 ? '#fecaca' : '#fde68a'}`,
+                }}>
+                  {p.stock === 0 ? '⚠ Rupture de stock' : `⚠ Stock bas (${p.stock})`}
+                </span>
+              )}
+            </div>
+            <p style={{ fontSize: 13, color: p.stock <= 3 ? '#d97706' : '#6b7280', fontWeight: p.stock <= 3 ? 700 : 400, textAlign: 'right' }}>{p.stock}</p>
             <p style={{ fontSize: 13, color: '#6b7280', textAlign: 'right' }}>{p.views}</p>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <button
@@ -718,6 +790,15 @@ function PendingValidation({ user }) {
 export default function ProducerDashboard() {
   const user = useSelector(s => s.auth.user)
   const [tab, setTab] = useState('overview')
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
+  useEffect(() => {
+    const key = `onboarding_done_${user?.id}`
+    if (!localStorage.getItem(key)) {
+      setShowOnboarding(true)
+      localStorage.setItem(key, '1')
+    }
+  }, [user?.id])
 
   if (!user?.is_verified) return <PendingValidation user={user} />
 
@@ -747,6 +828,10 @@ export default function ProducerDashboard() {
   return (
     <div style={{ minHeight: '100vh', background: BG }}>
 
+      {showOnboarding && (
+        <ProducerOnboarding onClose={() => setShowOnboarding(false)} />
+      )}
+
       {/* Header */}
       <div style={{ background: '#1a1a1a', padding: '36px 0' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px' }}>
@@ -765,9 +850,37 @@ export default function ProducerDashboard() {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 60px' }}>
 
         {/* KPIs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 16 }}>
           {kpis.map(k => (
             <KpiCard key={k.label} {...k} />
+          ))}
+        </div>
+
+        {/* Analytics hebdomadaires */}
+        <div style={{
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #111827 100%)',
+          borderRadius: 16, padding: '16px 24px', marginBottom: 32,
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, gridColumn: '1/-1', marginBottom: 12 }}>
+            <Calendar size={13} color='#f97316' />
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)',
+                           textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              Performances récentes
+            </span>
+          </div>
+          {[
+            { label: '7 derniers jours', value: stats?.weekly_revenue != null ? `${FCFA(stats.weekly_revenue)} FCFA` : '—', sub: `${stats?.weekly_orders ?? 0} commande${(stats?.weekly_orders ?? 0) !== 1 ? 's' : ''}`, color: '#fb923c', last: false },
+            { label: '30 derniers jours', value: stats?.monthly_revenue != null ? `${FCFA(stats.monthly_revenue)} FCFA` : '—', sub: 'revenus du mois', color: '#34d399', last: false },
+            { label: 'Total cumulé', value: stats?.revenue != null ? `${FCFA(stats.revenue)} FCFA` : '—', sub: "depuis l'ouverture", color: '#60a5fa', last: true },
+          ].map(({ label, value, sub, color, last }) => (
+            <div key={label} style={{ paddingRight: last ? 0 : 20, borderRight: last ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>{label}</p>
+              <p style={{ fontSize: 18, fontWeight: 800, color, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                {value}
+              </p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 3 }}>{sub}</p>
+            </div>
           ))}
         </div>
 
