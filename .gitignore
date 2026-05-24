@@ -20,3 +20,5 @@ frontend/vite
 *.log
 .idea/
 .vscode/
+backend/upload_media_to_cloudinary.py
+database/dump_prod.sql
