@@ -3,7 +3,7 @@ import { store } from '../store/index.js'
 import { setCredentials, logout } from '../store/authSlice.js'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -24,7 +24,7 @@ api.interceptors.response.use(
       const refreshToken = store.getState().auth.refreshToken
       if (refreshToken) {
         try {
-          const { data } = await axios.post('/api/auth/token/refresh/', { refresh: refreshToken })
+          const { data } = await axios.post(`${import.meta.env.VITE_API_URL || '/api'}/auth/token/refresh/`, { refresh: refreshToken })
           store.dispatch(setCredentials({
             user:   store.getState().auth.user,
             tokens: { access: data.access, refresh: refreshToken },
