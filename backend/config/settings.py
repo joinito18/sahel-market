@@ -68,17 +68,24 @@ TEMPLATES = [
 
 ASGI_APPLICATION = 'config.asgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME':     env('DB_NAME'),
-        'USER':     env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST':     env('DB_HOST', default='localhost'),
-        'PORT':     env('DB_PORT', default='5432'),
-        'CONN_MAX_AGE': 60,
+DATABASE_URL = env('DATABASE_URL', default=None)
+if DATABASE_URL:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=60)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME':     env('DB_NAME', default='sahel'),
+            'USER':     env('DB_USER', default='postgres'),
+            'PASSWORD': env('DB_PASSWORD', default=''),
+            'HOST':     env('DB_HOST', default='localhost'),
+            'PORT':     env('DB_PORT', default='5432'),
+            'CONN_MAX_AGE': 60,
+        }
+    }
 
 CHANNEL_LAYERS = {
     'default': {
@@ -134,8 +141,10 @@ CLOUDINARY_STORAGE = {
     'API_KEY':    env('CLOUDINARY_API_KEY',    default=''),
     'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
 }
-# En prod : mettre DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+if not DEBUG and CLOUDINARY_STORAGE.get('CLOUD_NAME'):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+else:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL  = '/media/'
 

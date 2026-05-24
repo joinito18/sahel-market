@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: sahel-market-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        value: "postgresql://neondb_owner:npg_XAYgU59wIDke@ep-lingering-firefly-abz5i26k-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require"
+      - key: REDIS_URL
+        value: "rediss://default:gQAAAAAAAV1UAAIgcDI5YWI0YWFiZmFlYzI0NWZjODlkNmVlYmFjNWQ5MTI0Zg@finer-dragon-89428.upstash.io:6379"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://sahel-market.vercel.app"
+      - key: CLOUDINARY_CLOUD_NAME
+        value: ""
+      - key: CLOUDINARY_API_KEY
+        value: ""
+      - key: CLOUDINARY_API_SECRET
+        value: ""
+      - key: EMAIL_HOST_USER
+        value: ""
+      - key: EMAIL_HOST_PASSWORD
+        value: ""
