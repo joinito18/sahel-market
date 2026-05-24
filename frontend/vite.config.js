@@ -3,10 +3,15 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+
   server: {
     port: 5173,
     proxy: {
       '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/media': {
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
@@ -15,5 +20,21 @@ export default defineConfig({
         ws: true,
       },
     },
+  },
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor:    ['react', 'react-dom', 'react-router-dom'],
+          state:     ['@reduxjs/toolkit', 'react-redux'],
+          ui:        ['framer-motion', 'lucide-react', '@headlessui/react'],
+          charts:    ['recharts'],
+          forms:     ['react-hook-form', '@hookform/resolvers', 'zod'],
+          query:     ['@tanstack/react-query', 'axios'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
   },
 })

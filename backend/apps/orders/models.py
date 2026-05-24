@@ -34,7 +34,14 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=12, decimal_places=0)
     delivery_address = models.TextField()
     delivery_fee = models.DecimalField(max_digits=8, decimal_places=0, default=0)
-    cinetpay_transaction_id = models.CharField(max_length=100, blank=True)
+    PAYMENT_METHOD_CHOICES = [
+        ('orange_money', 'Orange Money'),
+        ('mtn_momo',     'MTN Mobile Money'),
+        ('cash',         'Espèces à la livraison'),
+    ]
+    payment_reference  = models.CharField(max_length=100, blank=True)
+    payment_method     = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='orange_money')
+    payment_phone      = models.CharField(max_length=20, blank=True)
     is_delivery_confirmed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { MapPin, Wifi, WifiOff } from 'lucide-react'
 
+const OR = '#f97316'
+
 export default function DeliveryTracker({ orderId }) {
-  const [position, setPosition]   = useState(null)
+  const [position,  setPosition]  = useState(null)
   const [connected, setConnected] = useState(false)
   const wsRef = useRef(null)
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:8000/ws/delivery/${orderId}/`)
+    const wsBase = import.meta.env.VITE_WS_URL ?? `ws://${location.host}`
+    const ws = new WebSocket(`${wsBase}/ws/delivery/${orderId}/`)
     wsRef.current = ws
 
-    ws.onopen  = () => setConnected(true)
-    ws.onclose = () => setConnected(false)
+    ws.onopen    = () => setConnected(true)
+    ws.onclose   = () => setConnected(false)
     ws.onmessage = (e) => {
       const data = JSON.parse(e.data)
       setPosition({ lat: data.latitude, lng: data.longitude })
@@ -21,28 +24,40 @@ export default function DeliveryTracker({ orderId }) {
   }, [orderId])
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display font-semibold text-sahel-dark">Suivi en temps réel</h3>
-        <div className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-full ${connected ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+    <div style={{
+      background: '#fff', border: '1px solid #e5e7eb',
+      borderRadius: 16, padding: 24,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <p style={{ fontWeight: 700, fontSize: 15, color: '#111827' }}>Suivi en temps réel</p>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          fontSize: 12, padding: '4px 10px', borderRadius: 20,
+          background: connected ? '#f0fdf4' : '#f3f4f6',
+          color: connected ? '#16a34a' : '#9ca3af',
+        }}>
           {connected ? <Wifi size={12} /> : <WifiOff size={12} />}
           {connected ? 'Connecté' : 'Déconnecté'}
         </div>
       </div>
 
-      <div className="bg-sahel-light rounded-xl h-48 flex items-center justify-center">
+      <div style={{
+        background: '#f9fafb', borderRadius: 12, height: 192,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        border: '1px dashed #e5e7eb',
+      }}>
         {position ? (
-          <div className="text-center">
-            <MapPin size={32} className="text-sahel-primary mx-auto mb-2" />
-            <p className="text-sm font-medium text-sahel-dark">Livreur en route</p>
-            <p className="text-xs text-gray-500 mt-1">
+          <div style={{ textAlign: 'center' }}>
+            <MapPin size={32} color={OR} style={{ margin: '0 auto 8px' }} />
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#111827' }}>Livreur en route</p>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4, fontFamily: 'monospace' }}>
               {position.lat.toFixed(4)}, {position.lng.toFixed(4)}
             </p>
           </div>
         ) : (
-          <div className="text-center text-gray-400">
-            <MapPin size={32} className="mx-auto mb-2" strokeWidth={1} />
-            <p className="text-sm">En attente de la position...</p>
+          <div style={{ textAlign: 'center' }}>
+            <MapPin size={32} color="#d1d5db" strokeWidth={1} style={{ margin: '0 auto 8px' }} />
+            <p style={{ fontSize: 13, color: '#9ca3af' }}>En attente de la position du livreur…</p>
           </div>
         )}
       </div>

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 export default function ChatWidget() {
   const { user } = useSelector(s => s.auth)
-  const phone = '+237600000000'
+  const phone = '+237680757871'
   const message = encodeURIComponent(`Bonjour Sahel Market ! Je suis ${user?.username || 'un client'} et j'ai besoin d'aide.`)
 
   return (

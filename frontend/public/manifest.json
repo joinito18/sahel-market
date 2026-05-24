@@ -1,0 +1,45 @@
+{
+  "name": "Sahel Market — Artisanat du Cameroun",
+  "short_name": "Sahel Market",
+  "description": "La première plateforme dédiée à l'artisanat authentique du Sahel. Sacs, bijoux, chaussures, pagnes — fabriqués à la main par des artisans camerounais.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#f97316",
+  "background_color": "#1a1a1a",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Catalogue",
+      "short_name": "Catalogue",
+      "description": "Parcourir tous les produits artisanaux",
+      "url": "/products",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Devenir artisan",
+      "short_name": "S'inscrire",
+      "description": "Créer un compte artisan",
+      "url": "/register",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    }
+  ]
+}

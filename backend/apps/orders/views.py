@@ -2,8 +2,6 @@ from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.conf import settings
-import requests
 import uuid
 from .models import Cart, CartItem, Order, OrderItem
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer
@@ -65,36 +63,32 @@ class CheckoutView(APIView):
                 unit_price=item.product.price,
             )
 
-        transaction_id = str(uuid.uuid4()).replace('-', '')[:20].upper()
+        payment_ref = 'CMD-' + str(uuid.uuid4()).replace('-', '')[:8].upper()
+        order.payment_reference = payment_ref
+        order.payment_method    = serializer.validated_data.get('payment_method', 'orange_money')
+        order.payment_phone     = serializer.validated_data.get('payment_phone', '')
+        order.save()
 
-        cinetpay_data = {
-            'apikey': settings.env('CINETPAY_API_KEY', default=''),
-            'site_id': settings.env('CINETPAY_SITE_ID', default=''),
-            'transaction_id': transaction_id,
-            'amount': int(order.total_amount),
-            'currency': 'XAF',
-            'description': f'Commande #{order.id} - Sahel Market',
-            'return_url': f'{settings.FRONTEND_URL}/orders/{order.id}',
-            'notify_url': f'https://ton-domaine.com/api/orders/webhook/',
-            'customer_name': request.user.username,
-            'customer_email': request.user.email,
-        }
+        cart.items.all().delete()
 
-        try:
-            resp = requests.post('https://api-checkout.cinetpay.com/v2/payment', json=cinetpay_data, timeout=10)
-            resp_data = resp.json()
-            if resp_data.get('code') == '201':
-                order.cinetpay_transaction_id = transaction_id
-                order.save()
-                cart.items.all().delete()
-                return Response({
-                    'order': OrderSerializer(order).data,
-                    'payment_url': resp_data['data']['payment_url'],
-                })
-        except Exception:
-            pass
-
-        return Response({'order': OrderSerializer(order).data, 'payment_url': None})
+        return Response({
+            'order':          OrderSerializer(order).data,
+            'payment_ref':    payment_ref,
+            'payment_method': order.payment_method,
+            'instructions': {
+                'orange_money': {
+                    'numero': '+237 680 757 871',
+                    'nom':    'Sahel Market',
+                    'ref':    payment_ref,
+                },
+                'mtn_momo': {
+                    'numero': '+237 680 757 871',
+                    'nom':    'Sahel Market',
+                    'ref':    payment_ref,
+                },
+                'cash': None,
+            }.get(order.payment_method),
+        })
 
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = OrderSerializer
@@ -108,5 +102,40 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         if request.data.get('is_delivery_confirmed'):
             order.is_delivery_confirmed = True
             order.status = 'delivered'
+            order.save()
+        return Response(OrderSerializer(order).data)
+
+
+class IsAgentOrAdmin(IsAuthenticated):
+    def has_permission(self, request, view):
+        return super().has_permission(request, view) and request.user.role in ['agent', 'admin']
+
+
+STATUS_FLOW = ['pending', 'paid', 'processing', 'shipped', 'delivered']
+
+class ManageOrdersView(APIView):
+    permission_classes = [IsAgentOrAdmin]
+
+    def get(self, request):
+        qs = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')
+        status_filter = request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        return Response(OrderSerializer(qs, many=True).data)
+
+class ManageOrderDetailView(APIView):
+    permission_classes = [IsAgentOrAdmin]
+
+    def patch(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+        except Order.DoesNotExist:
+            return Response({'error': 'Commande introuvable.'}, status=404)
+
+        new_status = request.data.get('status')
+        if new_status and new_status in [s[0] for s in Order.STATUS_CHOICES]:
+            order.status = new_status
+            if new_status == 'delivered':
+                order.is_delivery_confirmed = True
             order.save()
         return Response(OrderSerializer(order).data)

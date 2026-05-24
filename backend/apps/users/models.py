@@ -22,3 +22,38 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.role})"
+    
+
+
+class Suggestion(models.Model):
+    user    = models.ForeignKey(User, on_delete=models.CASCADE, related_name='suggestions')
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Suggestion de {self.user.username} — {self.subject}"
+    
+class ProducerProfile(models.Model):
+    user        = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name='producer_profile'
+    )
+    bio         = models.TextField(blank=True)
+    workshop_video = models.FileField(
+        upload_to='producer_videos/',
+        blank=True, null=True,
+        help_text='Vidéo de fabrication — 30 secondes max'
+    )
+    workshop_photo = models.ImageField(
+        upload_to='producer_photos/',
+        blank=True, null=True
+    )
+    years_experience = models.PositiveIntegerField(default=0)
+    speciality  = models.CharField(max_length=200, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Profil artisan — {self.user.username}"

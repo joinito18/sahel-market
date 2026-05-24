@@ -13,13 +13,7 @@ import { addItem, openCart } from '../store/cartSlice.js'
 import Rating from '../components/Rating.jsx'
 import toast from 'react-hot-toast'
 
-const API = 'http://localhost:8000'
-function imgUrl(path) {
-  if (!path) return null
-  if (path.startsWith('http')) return path
-  return `${API}${path}`
-}
-const FCFA = (n) => Number(n).toLocaleString('fr-FR') + ' FCFA'
+import { imgUrl, fcfa as FCFA } from '../utils/media.js'
 
 function StarDisplay({ score, size = 14 }) {
   return (
@@ -66,7 +60,9 @@ export default function ProductDetail() {
   /* ── 404 ─────────────────────────────────────────────────────── */
   if (!product) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-      <p className="text-4xl">📦</p>
+      <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+        <ShoppingCart size={28} className="text-gray-300" />
+      </div>
       <p className="font-semibold text-gray-700">Produit introuvable</p>
       <button onClick={() => navigate(-1)}
         className="text-sm text-orange-500 hover:underline">
@@ -120,7 +116,7 @@ export default function ProductDetail() {
 
       {/* ── Breadcrumb / retour ───────────────────────────────── */}
       <div className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="w-full px-4 sm:px-6 lg:px-10 py-3">
           <div className="flex items-center gap-2 text-xs text-gray-400">
             <button
               onClick={() => navigate(-1)}
@@ -139,7 +135,7 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
 
           {/* ════════════════════════════════════════════════════
@@ -167,10 +163,8 @@ export default function ProductDetail() {
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center
-                                    justify-center gap-3 bg-gradient-to-br
-                                    from-amber-50 to-orange-50">
-                      <span className="text-7xl">🏺</span>
-                      <p className="text-xs text-gray-300">Pas de photo</p>
+                                    justify-center gap-3 bg-gray-50">
+                      <ShoppingCart size={48} className="text-gray-200" />
                     </div>
                   )}
                 </motion.div>
@@ -263,7 +257,7 @@ export default function ProductDetail() {
                     >
                       {src
                         ? <img src={src} alt="" className="w-full h-full object-cover" />
-                        : <div className="w-full h-full bg-amber-50 flex items-center justify-center text-xl">🏺</div>
+                        : <div className="w-full h-full bg-gray-50 flex items-center justify-center"><ShoppingCart size={18} className="text-gray-200" /></div>
                       }
                     </button>
                   )
@@ -294,8 +288,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Nom */}
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-gray-900
-                           leading-snug">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
               {product.name}
             </h1>
 
@@ -453,7 +446,7 @@ export default function ProductDetail() {
         {ratingCount > 0 && (
           <div className="mt-10 bg-white rounded-3xl border border-gray-100 p-6 md:p-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-display font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900">
                 Avis clients
               </h2>
               <div className="flex items-center gap-2">

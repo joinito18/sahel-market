@@ -9,7 +9,7 @@ environ.Env.read_env(BASE_DIR / '.env')
 
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
 INSTALLED_APPS = [
     'daphne',
@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'cloudinary',
     'cloudinary_storage',
@@ -70,18 +71,19 @@ ASGI_APPLICATION = 'config.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
+        'NAME':     env('DB_NAME'),
+        'USER':     env('DB_USER'),
         'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST', default='localhost'),
-        'PORT': env('DB_PORT', default='5432'),
+        'HOST':     env('DB_HOST', default='localhost'),
+        'PORT':     env('DB_PORT', default='5432'),
+        'CONN_MAX_AGE': 60,
     }
 }
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {'hosts': [env('REDIS_URL')]},
+        'CONFIG':  {'hosts': [env('REDIS_URL')]},
     }
 }
 
@@ -102,48 +104,85 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/min',
+        'user': '300/min',
+    },
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
+    'ACCESS_TOKEN_LIFETIME':  timedelta(hours=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': False,
+    'ROTATE_REFRESH_TOKENS':  True,
+    'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CORS_ALLOWED_ORIGINS = [
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-]
+])
 CORS_ALLOW_CREDENTIALS = True
 
+# ── Stockage fichiers ────────────────────────────────────────────────
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': env('CLOUDINARY_API_KEY'),
-    'API_SECRET': env('CLOUDINARY_API_SECRET'),
+    'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY':    env('CLOUDINARY_API_KEY',    default=''),
+    'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
 }
+# En prod : mettre DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 MEDIA_ROOT = BASE_DIR / 'media'
-MEDIA_URL = '/media/'
+MEDIA_URL  = '/media/'
 
-STATIC_URL = '/static/'
+STATIC_URL  = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_URL = '/media/'
 
+# ── Localisation ─────────────────────────────────────────────────────
 LANGUAGE_CODE = 'fr-fr'
-TIME_ZONE = 'Africa/Douala'
+TIME_ZONE     = 'Africa/Douala'
 USE_I18N = True
-USE_TZ = True
+USE_TZ   = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BROKER_URL = env('REDIS_URL')
+# ── Celery ───────────────────────────────────────────────────────────
+CELERY_BROKER_URL    = env('REDIS_URL')
 CELERY_RESULT_BACKEND = env('REDIS_URL')
-CELERY_TIMEZONE = 'Africa/Douala'
+CELERY_TIMEZONE      = 'Africa/Douala'
 
+# ── Documentation API ────────────────────────────────────────────────
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Sahel Market API',
-    'VERSION': '1.0.0',
+    'TITLE':       'Sahel Market API',
+    'DESCRIPTION': 'API de la plateforme e-commerce artisanale du Cameroun',
+    'VERSION':     '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'CONTACT': {'email': 'dev@sahelmarket.cm'},
+    'LICENSE': {'name': 'Propriétaire'},
 }
+
+# ── Email ────────────────────────────────────────────────────────────
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = env('EMAIL_HOST_USER',     default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL  = 'Sahel Market <sahelmarket@gmail.com>'
+
+# ── Sécurité production (ignoré en DEBUG) ────────────────────────────
+if not DEBUG:
+    SECURE_SSL_REDIRECT          = True
+    SECURE_HSTS_SECONDS          = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD          = True
+    SESSION_COOKIE_SECURE        = True
+    CSRF_COOKIE_SECURE           = True
+    SECURE_BROWSER_XSS_FILTER   = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS              = 'DENY'

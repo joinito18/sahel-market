@@ -1,24 +1,19 @@
 import { Link } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Heart, Star, ShoppingCart, MapPin, Zap } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { addItem, openCart } from '../store/cartSlice.js'
+import { toggleLike } from '../store/wishlistSlice.js'
 import { productService } from '../services/product.service.js'
 import toast from 'react-hot-toast'
 
-const API = 'http://localhost:8000'
-function imgUrl(path) {
-  if (!path) return null
-  if (path.startsWith('http')) return path
-  return `${API}${path}`
-}
-
-const FCFA = (n) => Number(n).toLocaleString('fr-FR')
+import { imgUrl, fcfa as FCFA } from '../utils/media.js'
 
 export default function ProductCard({ product, index = 0 }) {
-  const dispatch = useDispatch()
-  const [liked,    setLiked]    = useState(false)
+  const dispatch   = useDispatch()
+  const likedIds   = useSelector(s => s.wishlist.ids)
+  const liked      = likedIds.includes(product.id)
   const [imgError, setImgError] = useState(false)
   const [adding,   setAdding]   = useState(false)
 
@@ -37,11 +32,11 @@ export default function ProductCard({ product, index = 0 }) {
   const handleLike = async (e) => {
     e.preventDefault()
     e.stopPropagation()
-    setLiked(l => !l)
+    dispatch(toggleLike(product.id))
     try {
       await productService.like(product.id)
     } catch {
-      setLiked(l => !l)
+      dispatch(toggleLike(product.id))
       toast.error('Connectez-vous pour ajouter aux favoris')
     }
   }
@@ -78,9 +73,8 @@ export default function ProductCard({ product, index = 0 }) {
                          transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-              <span className="text-5xl">🏺</span>
-              <span className="text-xs text-gray-300">Pas de photo</span>
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gray-50">
+              <ShoppingCart size={32} className="text-gray-200" />
             </div>
           )}
 
@@ -193,7 +187,7 @@ export default function ProductCard({ product, index = 0 }) {
             <div className="min-w-0">
               <div className="flex items-baseline gap-1">
                 <span className="text-base font-black text-orange-600 tabular-nums">
-                  {FCFA(product.price)}
+                  {Number(product.price).toLocaleString('fr-FR')}
                 </span>
                 <span className="text-[11px] text-gray-400 font-normal">FCFA</span>
               </div>

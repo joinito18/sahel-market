@@ -1,23 +1,45 @@
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { setWishlist, clearWishlist } from './store/wishlistSlice.js'
+import { productService } from './services/product.service.js'
 
 import Navbar         from './components/Navbar.jsx'
 import CartDrawer     from './components/CartDrawer.jsx'
 import ChatWidget     from './components/ChatWidget.jsx'
+import Footer         from './components/Footer.jsx'
+import SuggestionWidget from './components/SuggestionWidget.jsx'
 
-import Home           from './pages/Home.jsx'
-import Products       from './pages/Products.jsx'
-import ProductDetail  from './pages/ProductDetail.jsx'
-import Login          from './pages/Login.jsx'
-import Register       from './pages/Register.jsx'
-import Cart           from './pages/Cart.jsx'
-import Checkout       from './pages/Checkout.jsx'
-import OrderHistory   from './pages/OrderHistory.jsx'
-import TrackOrder     from './pages/TrackOrder.jsx'
-import Profile        from './pages/Profile.jsx'
-import ProducerDashboard from './pages/dashboard/ProducerDashboard.jsx'
-import AdminDashboard    from './pages/dashboard/AdminDashboard.jsx'
-import AgentDashboard    from './pages/dashboard/AgentDashboard.jsx'
+// Lazy-loaded pages — code splitting automatique par route
+const Home              = lazy(() => import('./pages/Home.jsx'))
+const Products          = lazy(() => import('./pages/Products.jsx'))
+const ProductDetail     = lazy(() => import('./pages/ProductDetail.jsx'))
+const Login             = lazy(() => import('./pages/Login.jsx'))
+const Register          = lazy(() => import('./pages/Register.jsx'))
+const Cart              = lazy(() => import('./pages/Cart.jsx'))
+const Checkout          = lazy(() => import('./pages/Checkout.jsx'))
+const OrderHistory      = lazy(() => import('./pages/OrderHistory.jsx'))
+const TrackOrder        = lazy(() => import('./pages/TrackOrder.jsx'))
+const Profile           = lazy(() => import('./pages/Profile.jsx'))
+const HowItWorks        = lazy(() => import('./pages/HowItWorks.jsx'))
+const ProducerDashboard = lazy(() => import('./pages/dashboard/ProducerDashboard.jsx'))
+const AdminDashboard    = lazy(() => import('./pages/dashboard/AdminDashboard.jsx'))
+const AgentDashboard    = lazy(() => import('./pages/dashboard/AgentDashboard.jsx'))
+const ProducerPublicProfile = lazy(() => import('./pages/ProducerPublicProfile.jsx'))
+const Terms             = lazy(() => import('./pages/legal/Terms.jsx'))
+const Privacy           = lazy(() => import('./pages/legal/Privacy.jsx'))
+const Returns           = lazy(() => import('./pages/legal/Returns.jsx'))
+const Delivery          = lazy(() => import('./pages/legal/Delivery.jsx'))
+const Faq               = lazy(() => import('./pages/legal/Faq.jsx'))
+const Wishlist          = lazy(() => import('./pages/Wishlist.jsx'))
+
+function PageLoader() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
 
 function PrivateRoute({ children }) {
   const { isAuthenticated } = useSelector(s => s.auth)
@@ -31,44 +53,113 @@ function RoleRoute({ children, roles }) {
   return children
 }
 
+function NotFound() {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-4">
+      <p className="text-6xl">404</p>
+      <h1 className="text-2xl font-bold text-gray-800">Page introuvable</h1>
+      <p className="text-gray-500 text-sm max-w-sm">
+        La page que vous cherchez n'existe pas ou a été déplacée.
+      </p>
+      <a href="/"
+        className="mt-2 inline-flex items-center gap-2 px-6 py-3 bg-orange-500
+                   text-white font-bold rounded-xl hover:bg-orange-600 transition-colors text-sm">
+        Retour à l'accueil
+      </a>
+    </div>
+  )
+}
+
+function WishlistSync() {
+  const dispatch = useDispatch()
+  const { isAuthenticated } = useSelector(s => s.auth)
+
+  useEffect(() => {
+    if (!isAuthenticated) { dispatch(clearWishlist()); return }
+    productService.getWishlist()
+      .then(res => {
+        const products = Array.isArray(res.data) ? res.data
+          : Array.isArray(res.data?.results) ? res.data.results : []
+        dispatch(setWishlist(products.map(p => p.id)))
+      })
+      .catch(() => {})
+  }, [isAuthenticated, dispatch])
+
+  return null
+}
+
 export default function App() {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
+      <WishlistSync />
       <Navbar />
       <CartDrawer />
       <ChatWidget />
-      <Routes>
-        <Route path="/"            element={<Home />} />
-        <Route path="/products"    element={<Products />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
-        <Route path="/login"       element={<Login />} />
-        <Route path="/register"    element={<Register />} />
+      <SuggestionWidget />
 
-        <Route path="/cart" element={
-          <PrivateRoute><Cart /></PrivateRoute>
-        } />
-        <Route path="/checkout" element={
-          <PrivateRoute><Checkout /></PrivateRoute>
-        } />
-        <Route path="/orders" element={
-          <PrivateRoute><OrderHistory /></PrivateRoute>
-        } />
-        <Route path="/orders/:id/track" element={
-          <PrivateRoute><TrackOrder /></PrivateRoute>
-        } />
-        <Route path="/profile" element={
-          <PrivateRoute><Profile /></PrivateRoute>
-        } />
-        <Route path="/dashboard/producer" element={
-          <RoleRoute roles={['producer']}><ProducerDashboard /></RoleRoute>
-        } />
-        <Route path="/dashboard/admin" element={
-          <RoleRoute roles={['admin']}><AdminDashboard /></RoleRoute>
-        } />
-        <Route path="/dashboard/agent" element={
-          <RoleRoute roles={['agent']}><AgentDashboard /></RoleRoute>
-        } />
-      </Routes>
-    </>
+      <div className="flex-1">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+
+            {/* ── Pages publiques ─────────────────────────────── */}
+            <Route path="/"              element={<Home />} />
+            <Route path="/products"      element={<Products />} />
+            <Route path="/products/:id"  element={<ProductDetail />} />
+            <Route path="/login"         element={<Login />} />
+            <Route path="/register"      element={<Register />} />
+            <Route path="/how-it-works"      element={<HowItWorks />} />
+            <Route path="/artisans/:username" element={<ProducerPublicProfile />} />
+
+            {/* ── Pages légales ───────────────────────────────── */}
+            <Route path="/legal/terms"    element={<Terms />}    />
+            <Route path="/legal/privacy"  element={<Privacy />}  />
+            <Route path="/legal/returns"  element={<Returns />}  />
+            <Route path="/legal/delivery" element={<Delivery />} />
+            <Route path="/legal/faq"      element={<Faq />}      />
+
+            {/* ── Pages privées (client) ───────────────────────── */}
+            <Route path="/wishlist" element={
+              <PrivateRoute><Wishlist /></PrivateRoute>
+            } />
+            <Route path="/cart" element={
+              <PrivateRoute><Cart /></PrivateRoute>
+            } />
+            <Route path="/checkout" element={
+              <PrivateRoute><Checkout /></PrivateRoute>
+            } />
+            <Route path="/orders" element={
+              <PrivateRoute><OrderHistory /></PrivateRoute>
+            } />
+            <Route path="/orders/:id/track" element={
+              <PrivateRoute><TrackOrder /></PrivateRoute>
+            } />
+            <Route path="/profile" element={
+              <PrivateRoute><Profile /></PrivateRoute>
+            } />
+
+            {/* ── Dashboards (rôles) ──────────────────────────── */}
+            <Route path="/dashboard/producer" element={
+              <RoleRoute roles={['producer']}>
+                <ProducerDashboard />
+              </RoleRoute>
+            } />
+            <Route path="/dashboard/admin" element={
+              <RoleRoute roles={['admin']}>
+                <AdminDashboard />
+              </RoleRoute>
+            } />
+            <Route path="/dashboard/agent" element={
+              <RoleRoute roles={['agent', 'admin']}>
+                <AgentDashboard />
+              </RoleRoute>
+            } />
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </div>
+
+      <Footer />
+    </div>
   )
 }

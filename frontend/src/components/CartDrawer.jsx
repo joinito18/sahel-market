@@ -4,14 +4,8 @@ import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Tag } from 'lucide-rea
 import { Link } from 'react-router-dom'
 import { closeCart, removeItem, updateQuantity } from '../store/cartSlice.js'
 
-const API = 'http://localhost:8000'
-function imgUrl(path) {
-  if (!path) return null
-  if (path.startsWith('http')) return path
-  return `${API}${path}`
-}
+import { imgUrl, fcfa as FCFA } from '../utils/media.js'
 
-const FCFA = (n) => Number(n).toLocaleString('fr-FR') + ' FCFA'
 
 export default function CartDrawer() {
   const dispatch = useDispatch()
@@ -53,7 +47,7 @@ export default function CartDrawer() {
                   <ShoppingBag size={18} className="text-orange-500" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-gray-900 font-display leading-none">
+                  <h2 className="text-base font-bold text-gray-900 leading-none">
                     Mon panier
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5">

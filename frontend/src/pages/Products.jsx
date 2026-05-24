@@ -5,29 +5,14 @@ import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search, X, SlidersHorizontal, ChevronRight,
-  ArrowUpDown, PackageX
+  ArrowUpDown, PackageX, Package
 } from 'lucide-react'
 import { productService } from '../services/product.service.js'
 import { setFilters, setPage } from '../store/productSlice.js'
 import ProductCard from '../components/ProductCard.jsx'
 
-const API = 'http://localhost:8000'
-function imgUrl(path) {
-  if (!path) return null
-  if (path.startsWith('http')) return path
-  return `${API}${path}`
-}
+import { imgUrl } from '../utils/media.js'
 
-function catEmoji(name = '') {
-  const n = name.toLowerCase()
-  if (n.includes('maroquin') || n.includes('cuir'))   return '👜'
-  if (n.includes('tissu')    || n.includes('pagne'))   return '🧵'
-  if (n.includes('poter')    || n.includes('canari'))  return '🏺'
-  if (n.includes('bijou')    || n.includes('collier')) return '💎'
-  if (n.includes('vannier')  || n.includes('panier'))  return '🧺'
-  if (n.includes('salon'))                             return '🛋️'
-  return '📦'
-}
 
 function Skeleton() {
   return (
@@ -136,7 +121,7 @@ export default function Products() {
           BARRE STICKY — recherche + catégories
       ══════════════════════════════════════════════════════════ */}
       <div className="sticky top-[64px] z-30 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-10">
 
           {/* Ligne recherche + tri */}
           <div className="flex items-center gap-3 py-3">
@@ -239,7 +224,7 @@ export default function Products() {
                             : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:text-orange-500'
                           }`}
             >
-              <span className="text-sm">🛍️</span> Tout
+              Tout
             </button>
 
             <div className="w-px h-5 bg-gray-200 flex-shrink-0" />
@@ -266,7 +251,7 @@ export default function Products() {
                   >
                     {src
                       ? <img src={src} alt={cat.name} className="w-full h-full object-cover" />
-                      : <span style={{ fontSize: 11 }}>{catEmoji(cat.name)}</span>
+                      : <Package size={12} className="text-gray-300" />
                     }
                   </div>
                   {cat.name}
@@ -280,7 +265,7 @@ export default function Products() {
       {/* ══════════════════════════════════════════════════════════
           HEADER RÉSULTATS
       ══════════════════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-4">
+      <div className="w-full px-4 sm:px-6 lg:px-10 pt-5 pb-4">
         <div className="flex items-center justify-between gap-4">
 
           {/* Breadcrumb + titre */}
@@ -342,10 +327,10 @@ export default function Products() {
       {/* ══════════════════════════════════════════════════════════
           GRILLE PRODUITS
       ══════════════════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="w-full px-4 sm:px-6 lg:px-10 pb-16">
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
             {Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} />)}
           </div>
 
@@ -385,7 +370,7 @@ export default function Products() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4"
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4"
             >
               {products.map((p, i) => (
                 <ProductCard key={p.id} product={p} index={i} />

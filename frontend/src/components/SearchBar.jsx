@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom'
 
 export default function SearchBar({ placeholder = 'Rechercher un produit...' }) {
   const [query, setQuery] = useState('')
-  const dispatch  = useDispatch()
-  const navigate  = useNavigate()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -16,22 +16,31 @@ export default function SearchBar({ placeholder = 'Rechercher un produit...' }) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative flex items-center">
-      <Search size={18} className="absolute left-4 text-gray-400 pointer-events-none" />
+    <form onSubmit={handleSubmit} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      <Search size={18} color="#9ca3af" style={{ position: 'absolute', left: 14, pointerEvents: 'none' }} />
       <input
         type="text"
         value={query}
         onChange={e => setQuery(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-11 pr-10 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sahel-primary/30 focus:border-sahel-primary transition-all"
+        style={{
+          width: '100%', padding: '12px 40px 12px 42px',
+          background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12,
+          fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif',
+          color: '#111827', boxSizing: 'border-box',
+        }}
       />
       {query && (
         <button
           type="button"
           onClick={() => { setQuery(''); dispatch(setFilters({ search: '' })) }}
-          className="absolute right-4 text-gray-400 hover:text-gray-600"
+          style={{
+            position: 'absolute', right: 14, background: 'none',
+            border: 'none', cursor: 'pointer', padding: 0,
+            display: 'flex', alignItems: 'center',
+          }}
         >
-          <X size={16} />
+          <X size={16} color="#9ca3af" />
         </button>
       )}
     </form>

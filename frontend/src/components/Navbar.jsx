@@ -2,21 +2,17 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   ShoppingBag, User, LogOut, LayoutDashboard,
-  Menu, X, Search, ChevronDown, Package
+  Menu, X, Search, ChevronDown, Package, Grid3x3, Store, Heart
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import { toggleCart } from '../store/cartSlice.js'
 import { logout } from '../store/authSlice.js'
 import { authService } from '../services/auth.service.js'
+import { productService } from '../services/product.service.js'
 import toast from 'react-hot-toast'
-
-const API = 'http://localhost:8000'
-function imgUrl(path) {
-  if (!path) return null
-  if (path.startsWith('http')) return path
-  return `${API}${path}`
-}
+import { imgUrl } from '../utils/media.js'
 
 const ROLE_LABELS = {
   admin:    { label: 'Administrateur', color: 'bg-red-100 text-red-700' },
@@ -25,6 +21,7 @@ const ROLE_LABELS = {
   client:   { label: 'Client',         color: 'bg-orange-100 text-orange-700' },
 }
 
+
 export default function Navbar() {
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
@@ -32,11 +29,13 @@ export default function Navbar() {
   const { isAuthenticated, user } = useSelector(s => s.auth)
   const { itemCount, total }      = useSelector(s => s.cart)
 
-  const [menuOpen,     setMenuOpen]     = useState(false)
-  const [userDropdown, setUserDropdown] = useState(false)
-  const [searchQuery,  setSearchQuery]  = useState('')
+  const [menuOpen,      setMenuOpen]      = useState(false)
+  const [userDropdown,  setUserDropdown]  = useState(false)
+  const [catOpen,       setCatOpen]       = useState(false)
+  const [searchQuery,   setSearchQuery]   = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const dropdownRef = useRef(null)
+  const catRef      = useRef(null)
 
   const dashboardPath = {
     admin:    '/dashboard/admin',
@@ -46,10 +45,23 @@ export default function Navbar() {
 
   const roleInfo = ROLE_LABELS[user?.role] || ROLE_LABELS.client
 
+  const { data: catsData } = useQuery({
+    queryKey: ['categories'],
+    queryFn:  () => productService.getCategories(),
+    staleTime: 5 * 60 * 1000,
+  })
+  const categories = Array.isArray(catsData?.data)
+    ? catsData.data
+    : Array.isArray(catsData?.data?.results)
+      ? catsData.data.results
+      : []
+
   useEffect(() => {
     function handleClick(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target))
         setUserDropdown(false)
+      if (catRef.current && !catRef.current.contains(e.target))
+        setCatOpen(false)
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
@@ -58,6 +70,7 @@ export default function Navbar() {
   useEffect(() => {
     setMenuOpen(false)
     setUserDropdown(false)
+    setCatOpen(false)
   }, [location.pathname])
 
   const handleLogout = async () => {
@@ -79,29 +92,149 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 bg-white shadow-sm">
 
       {/* ════════════════════════ BARRE PRINCIPALE ══════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-10">
         <div className="flex items-center gap-4 h-16">
 
           {/* ── Logo ─────────────────────────────────────────────────── */}
-          <Link to="/" className="flex-shrink-0 flex items-center gap-2 mr-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600
-                            rounded-xl flex items-center justify-center shadow-md shadow-orange-200">
-              <span className="text-white font-black text-base font-display leading-none">S</span>
+          <Link to="/" className="flex-shrink-0 flex items-center gap-2 mr-1">
+            <div style={{
+              width: 36, height: 36, background: '#f97316',
+              borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(249,115,22,0.25)',
+            }}>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: 18, lineHeight: 1 }}>S</span>
             </div>
             <div className="hidden sm:block">
-              <span className="text-xl font-display font-black text-gray-900 tracking-tight">
-                Sahel<span className="text-orange-500">Market</span>
+              <span style={{ fontSize: 18, fontWeight: 900, color: '#111827', letterSpacing: '-0.02em' }}>
+                Sahel<span style={{ color: '#f97316' }}>Market</span>
               </span>
             </div>
           </Link>
 
+          {/* ── Catégories dropdown ──────────────────────────────────── */}
+          <div className="relative hidden lg:block flex-shrink-0" ref={catRef}>
+            <button
+              onClick={() => setCatOpen(v => !v)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                color: catOpen ? '#f97316' : '#374151',
+                background: catOpen ? '#fff7ed' : 'transparent',
+                border: catOpen ? '1px solid #fed7aa' : '1px solid transparent',
+                cursor: 'pointer', transition: 'all .15s',
+              }}
+            >
+              <Grid3x3 size={15} />
+              Catégories
+              <ChevronDown size={13} style={{
+                transition: 'transform .2s',
+                transform: catOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              }} />
+            </button>
+
+            <AnimatePresence>
+              {catOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
+                  style={{
+                    position: 'absolute', top: 'calc(100% + 8px)', left: 0,
+                    width: 480, background: '#fff', borderRadius: 16,
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.12)', border: '1px solid #f3f4f6',
+                    zIndex: 60, overflow: 'hidden',
+                  }}
+                >
+                  {/* Header */}
+                  <div style={{
+                    padding: '14px 18px 10px', background: 'linear-gradient(135deg,#fff7ed,#fff)',
+                    borderBottom: '1px solid #fed7aa22',
+                  }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#f97316',
+                                 textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                      Nos collections
+                    </p>
+                    <p style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
+                      {categories.length} catégories d'artisanat authentique
+                    </p>
+                  </div>
+
+                  {/* Grid catégories */}
+                  <div style={{
+                    display: 'grid', gridTemplateColumns: '1fr 1fr',
+                    gap: 1, background: '#f9fafb', padding: 1,
+                  }}>
+                    {categories.map(cat => {
+                      const src = imgUrl(cat.image)
+                      return (
+                        <Link
+                          key={cat.id}
+                          to={`/products?category=${cat.id}`}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '10px 14px', background: '#fff',
+                            textDecoration: 'none', transition: 'background .12s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#fff7ed'}
+                          onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                        >
+                          <div style={{
+                            width: 36, height: 36, borderRadius: 10, overflow: 'hidden',
+                            flexShrink: 0, background: '#f5f0eb',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            {src
+                              ? <img src={src} alt={cat.name}
+                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              : <Package size={18} color="#d1d5db" />
+                            }
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: '#111827' }}>
+                              {cat.name}
+                            </p>
+                            {cat.description && (
+                              <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 1,
+                                           overflow: 'hidden', whiteSpace: 'nowrap',
+                                           textOverflow: 'ellipsis', maxWidth: 160 }}>
+                                {cat.description}
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+
+                  {/* Tout voir */}
+                  <Link
+                    to="/products"
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '12px', fontSize: 12, fontWeight: 700,
+                      color: '#f97316', textDecoration: 'none',
+                      borderTop: '1px solid #f3f4f6', background: '#fff',
+                      transition: 'background .12s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#fff7ed'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                  >
+                    Voir tout le catalogue →
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* ── Barre de recherche (desktop) ─────────────────────────── */}
-          <form onSubmit={handleSearch}
-                className="hidden md:flex flex-1 max-w-2xl">
-            <div className={`flex w-full rounded-2xl overflow-hidden border-2 transition-all duration-200
-                            ${searchFocused
-                              ? 'border-orange-400 shadow-lg shadow-orange-100'
-                              : 'border-gray-100 hover:border-gray-200'}`}>
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-2xl">
+            <div style={{
+              display: 'flex', width: '100%', borderRadius: 12, overflow: 'hidden',
+              border: `2px solid ${searchFocused ? '#f97316' : '#e5e7eb'}`,
+              boxShadow: searchFocused ? '0 0 0 3px rgba(249,115,22,0.1)' : 'none',
+              transition: 'all .2s',
+            }}>
               <input
                 type="text"
                 value={searchQuery}
@@ -109,13 +242,16 @@ export default function Navbar() {
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
                 placeholder="Rechercher un produit artisanal..."
-                className="flex-1 px-5 py-3 text-sm outline-none bg-gray-50
-                           text-gray-800 placeholder-gray-400 font-body"
+                style={{
+                  flex: 1, padding: '10px 16px', fontSize: 13, outline: 'none',
+                  background: '#f9fafb', color: '#111827', border: 'none',
+                }}
               />
-              <button type="submit"
-                className="px-5 bg-orange-500 hover:bg-orange-600 transition-colors
-                           flex items-center justify-center group">
-                <Search size={18} className="text-white group-hover:scale-110 transition-transform" />
+              <button type="submit" style={{
+                padding: '0 18px', background: '#f97316', border: 'none',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Search size={17} color="#fff" />
               </button>
             </div>
           </form>
@@ -123,37 +259,60 @@ export default function Navbar() {
           {/* ── Actions droite ───────────────────────────────────────── */}
           <div className="flex items-center gap-1 ml-auto">
 
+            {/* Favoris */}
+            {isAuthenticated && (
+              <Link
+                to="/wishlist"
+                style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 6,
+                          padding: '7px 10px', borderRadius: 10,
+                          background: 'transparent', transition: 'background .15s',
+                          textDecoration: 'none' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#fff1f2'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                <Heart size={22} color="#ef4444" />
+                <span className="hidden lg:block" style={{ fontSize: 12, fontWeight: 600, color: '#ef4444' }}>
+                  Favoris
+                </span>
+              </Link>
+            )}
+
             {/* Panier */}
             <button
               onClick={() => dispatch(toggleCart())}
-              className="relative flex items-center gap-2 px-3 py-2 rounded-2xl
-                         hover:bg-orange-50 transition-all duration-150 group"
+              style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '7px 12px', borderRadius: 10, cursor: 'pointer',
+                        background: 'transparent', border: 'none', transition: 'background .15s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#fff7ed'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div className="relative">
-                <ShoppingBag
-                  size={22}
-                  className="text-gray-600 group-hover:text-orange-500 transition-colors"
-                />
+              <div style={{ position: 'relative' }}>
+                <ShoppingBag size={22} color="#374151" />
                 <AnimatePresence>
                   {itemCount > 0 && (
                     <motion.span
                       key="badge"
-                      initial={{ scale: 0, rotate: -15 }}
-                      animate={{ scale: 1, rotate: 0 }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                      className="absolute -top-2 -right-2 bg-orange-500 text-white
-                                 text-[10px] font-black min-w-[18px] h-[18px] px-1
-                                 rounded-full flex items-center justify-center leading-none"
+                      style={{
+                        position: 'absolute', top: -8, right: -8,
+                        background: '#f97316', color: '#fff',
+                        fontSize: 10, fontWeight: 900,
+                        minWidth: 18, height: 18, padding: '0 4px',
+                        borderRadius: 9, display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', lineHeight: 1,
+                      }}
                     >
                       {itemCount > 99 ? '99+' : itemCount}
                     </motion.span>
                   )}
                 </AnimatePresence>
               </div>
-              <div className="hidden lg:block text-left">
-                <p className="text-[10px] text-gray-400 leading-none font-body">Mon panier</p>
-                <p className="text-xs font-bold text-gray-800 leading-none mt-0.5">
+              <div className="hidden lg:block" style={{ textAlign: 'left' }}>
+                <p style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1 }}>Mon panier</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: '#111827', lineHeight: 1, marginTop: 2 }}>
                   {itemCount > 0
                     ? `${Number(total).toLocaleString('fr-FR')} FCFA`
                     : 'Vide'}
@@ -163,137 +322,183 @@ export default function Navbar() {
 
             {/* ── Connecté : avatar + dropdown ─────────────────────── */}
             {isAuthenticated ? (
-              <>
-                {/* Desktop dropdown */}
-                <div className="relative hidden md:block" ref={dropdownRef}>
-                  <button
-                    onClick={() => setUserDropdown(v => !v)}
-                    className={`flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-2xl
-                                transition-all duration-150
-                                ${userDropdown ? 'bg-orange-50 border border-orange-200' : 'hover:bg-gray-100'}`}
-                  >
-                    {/* Avatar */}
-                    <div className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0
-                                    ring-2 ring-orange-200 ring-offset-1">
-                      {user?.avatar
-                        ? <img src={imgUrl(user.avatar)} alt=""
-                               className="w-full h-full object-cover" />
-                        : <div className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600
-                                          flex items-center justify-center">
-                            <span className="text-white font-black text-sm">
-                              {user?.username?.[0]?.toUpperCase() || 'U'}
-                            </span>
+              <div className="relative hidden md:block" ref={dropdownRef}>
+                <button
+                  onClick={() => setUserDropdown(v => !v)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '6px 12px 6px 6px', borderRadius: 10, cursor: 'pointer',
+                    background: userDropdown ? '#fff7ed' : 'transparent',
+                    border: userDropdown ? '1px solid #fed7aa' : '1px solid transparent',
+                    transition: 'all .15s',
+                  }}
+                >
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 8, overflow: 'hidden',
+                    flexShrink: 0, outline: '2px solid #fed7aa', outlineOffset: 1,
+                  }}>
+                    {user?.avatar
+                      ? <img src={imgUrl(user.avatar)} alt=""
+                             style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <div style={{
+                          width: '100%', height: '100%',
+                          background: 'linear-gradient(135deg,#fb923c,#ea580c)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <span style={{ color: '#fff', fontWeight: 900, fontSize: 13 }}>
+                            {user?.username?.[0]?.toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                    }
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#111827', lineHeight: 1 }}>
+                      {user?.first_name || user?.username}
+                    </p>
+                    <p style={{
+                      fontSize: 10, fontWeight: 600, lineHeight: 1, marginTop: 2,
+                      padding: '1px 6px', borderRadius: 4, display: 'inline-block',
+                      ...(user?.role === 'producer'
+                        ? { background: '#dcfce7', color: '#15803d' }
+                        : user?.role === 'admin'
+                          ? { background: '#fee2e2', color: '#dc2626' }
+                          : { background: '#fff7ed', color: '#ea580c' })
+                    }}>
+                      {roleInfo.label}
+                    </p>
+                  </div>
+                  <ChevronDown size={13} color="#9ca3af" style={{
+                    transition: 'transform .2s',
+                    transform: userDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }} />
+                </button>
+
+                <AnimatePresence>
+                  {userDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                        width: 240, background: '#fff', borderRadius: 16,
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.12)', border: '1px solid #f3f4f6',
+                        overflow: 'hidden', zIndex: 60,
+                      }}
+                    >
+                      <div style={{
+                        padding: '14px 16px', background: 'linear-gradient(135deg,#fff7ed,#fff)',
+                        borderBottom: '1px solid #f3f4f6',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{
+                            width: 40, height: 40, borderRadius: 10, overflow: 'hidden',
+                            outline: '2px solid #fed7aa', flexShrink: 0,
+                          }}>
+                            {user?.avatar
+                              ? <img src={imgUrl(user.avatar)} alt=""
+                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              : <div style={{
+                                  width: '100%', height: '100%',
+                                  background: 'linear-gradient(135deg,#fb923c,#ea580c)',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                  <span style={{ color: '#fff', fontWeight: 900 }}>
+                                    {user?.username?.[0]?.toUpperCase()}
+                                  </span>
+                                </div>
+                            }
                           </div>
-                      }
-                    </div>
-
-                    <div className="text-left">
-                      <p className="text-xs font-bold text-gray-800 leading-none">
-                        {user?.first_name || user?.username}
-                      </p>
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5
-                                       rounded-full ${roleInfo.color} leading-none mt-0.5 inline-block`}>
-                        {roleInfo.label}
-                      </span>
-                    </div>
-
-                    <ChevronDown
-                      size={14}
-                      className={`text-gray-400 transition-transform duration-200
-                                  ${userDropdown ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-
-                  {/* Dropdown */}
-                  <AnimatePresence>
-                    {userDropdown && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6, scale: 0.97 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                        transition={{ duration: 0.15, ease: 'easeOut' }}
-                        className="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl
-                                   shadow-2xl shadow-gray-200/80 border border-gray-100
-                                   overflow-hidden z-50"
-                      >
-                        {/* Header */}
-                        <div className="px-4 py-3.5 bg-gradient-to-r from-orange-50 to-amber-50
-                                        border-b border-orange-100">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-orange-200">
-                              {user?.avatar
-                                ? <img src={imgUrl(user.avatar)} alt=""
-                                       className="w-full h-full object-cover" />
-                                : <div className="w-full h-full bg-gradient-to-br from-orange-400
-                                                  to-orange-600 flex items-center justify-center">
-                                    <span className="text-white font-black">
-                                      {user?.username?.[0]?.toUpperCase()}
-                                    </span>
-                                  </div>
-                              }
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-bold text-gray-900 truncate">
-                                {user?.first_name
-                                  ? `${user.first_name} ${user.last_name || ''}`
-                                  : user?.username}
-                              </p>
-                              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                            </div>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: 13, fontWeight: 700, color: '#111827',
+                                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username}
+                            </p>
+                            <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 1,
+                                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {user?.email}
+                            </p>
                           </div>
                         </div>
+                      </div>
 
-                        {/* Items */}
-                        <div className="py-2">
-                          {[
-                            { to: '/profile', icon: User,            label: 'Mon profil' },
-                            { to: '/orders',  icon: Package,         label: 'Mes commandes' },
-                            ...(dashboardPath
-                              ? [{ to: dashboardPath, icon: LayoutDashboard, label: 'Tableau de bord' }]
-                              : []),
-                          ].map(({ to, icon: Icon, label }) => (
-                            <Link key={to} to={to}
-                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700
-                                         hover:bg-orange-50 hover:text-orange-600 transition-colors group">
-                              <div className="w-7 h-7 rounded-lg bg-gray-100 group-hover:bg-orange-100
-                                              flex items-center justify-center transition-colors">
-                                <Icon size={14} className="text-gray-500 group-hover:text-orange-500" />
-                              </div>
-                              {label}
-                            </Link>
-                          ))}
-                        </div>
-
-                        <div className="border-t border-gray-100 py-2">
-                          <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
-                                       text-red-500 hover:bg-red-50 transition-colors group"
+                      <div style={{ padding: '6px 0' }}>
+                        {[
+                          { to: '/profile', icon: User,            label: 'Mon profil' },
+                          { to: '/orders',  icon: Package,         label: 'Mes commandes' },
+                          ...(dashboardPath
+                            ? [{ to: dashboardPath, icon: LayoutDashboard, label: 'Tableau de bord' }]
+                            : []),
+                        ].map(({ to, icon: Icon, label }) => (
+                          <Link key={to} to={to}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 10,
+                              padding: '10px 16px', fontSize: 13, color: '#374151',
+                              textDecoration: 'none', transition: 'background .12s',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = '#fff7ed'; e.currentTarget.style.color = '#f97316' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#374151' }}
                           >
-                            <div className="w-7 h-7 rounded-lg bg-gray-100 group-hover:bg-red-100
-                                            flex items-center justify-center transition-colors">
-                              <LogOut size={14} className="text-gray-500 group-hover:text-red-500" />
+                            <div style={{
+                              width: 28, height: 28, borderRadius: 8, background: '#f3f4f6',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              <Icon size={14} color="#6b7280" />
                             </div>
-                            Déconnexion
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </>
+                            {label}
+                          </Link>
+                        ))}
+                      </div>
+
+                      <div style={{ borderTop: '1px solid #f3f4f6', padding: '6px 0' }}>
+                        <button
+                          onClick={handleLogout}
+                          style={{
+                            width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '10px 16px', fontSize: 13, color: '#ef4444',
+                            background: 'transparent', border: 'none', cursor: 'pointer',
+                            transition: 'background .12s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <div style={{
+                            width: 28, height: 28, borderRadius: 8, background: '#fee2e2',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          }}>
+                            <LogOut size={14} color="#ef4444" />
+                          </div>
+                          Déconnexion
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
-              /* Non connecté */
               <div className="hidden md:flex items-center gap-2">
                 <Link to="/login"
-                  className="px-4 py-2 text-sm font-semibold text-gray-700
-                             hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-colors">
+                  style={{
+                    padding: '8px 16px', fontSize: 13, fontWeight: 600,
+                    color: '#374151', textDecoration: 'none', borderRadius: 10,
+                    transition: 'all .15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#f97316'; e.currentTarget.style.background = '#fff7ed' }}
+                  onMouseLeave={e => { e.currentTarget.style.color = '#374151'; e.currentTarget.style.background = 'transparent' }}
+                >
                   Connexion
                 </Link>
                 <Link to="/register"
-                  className="px-5 py-2 text-sm font-bold text-white bg-orange-500
-                             rounded-xl hover:bg-orange-600 transition-all duration-150
-                             shadow-md shadow-orange-200 hover:shadow-orange-300">
+                  style={{
+                    padding: '8px 18px', fontSize: 13, fontWeight: 700,
+                    color: '#fff', background: '#f97316', borderRadius: 10,
+                    textDecoration: 'none', transition: 'all .15s',
+                    boxShadow: '0 4px 12px rgba(249,115,22,0.3)',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#ea580c'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#f97316'}
+                >
                   S'inscrire
                 </Link>
               </div>
@@ -302,7 +507,11 @@ export default function Navbar() {
             {/* Burger mobile */}
             <button
               onClick={() => setMenuOpen(v => !v)}
-              className="md:hidden p-2.5 rounded-xl hover:bg-gray-100 transition-colors ml-1"
+              className="md:hidden"
+              style={{
+                padding: '8px', borderRadius: 10, background: 'transparent',
+                border: 'none', cursor: 'pointer', marginLeft: 4,
+              }}
             >
               <AnimatePresence mode="wait">
                 {menuOpen
@@ -311,14 +520,14 @@ export default function Navbar() {
                       animate={{ rotate: 0, opacity: 1 }}
                       exit={{ rotate: 90, opacity: 0 }}
                       transition={{ duration: 0.15 }}>
-                      <X size={21} className="text-gray-700" />
+                      <X size={21} color="#374151" />
                     </motion.div>
                   : <motion.div key="menu"
                       initial={{ rotate: 90, opacity: 0 }}
                       animate={{ rotate: 0, opacity: 1 }}
                       exit={{ rotate: -90, opacity: 0 }}
                       transition={{ duration: 0.15 }}>
-                      <Menu size={21} className="text-gray-700" />
+                      <Menu size={21} color="#374151" />
                     </motion.div>
                 }
               </AnimatePresence>
@@ -334,94 +543,156 @@ export default function Navbar() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="md:hidden border-t border-gray-100 overflow-hidden bg-white"
+            transition={{ duration: 0.2 }}
+            className="md:hidden overflow-hidden"
+            style={{ borderTop: '1px solid #f3f4f6', background: '#fff' }}
           >
             {/* Recherche mobile */}
-            <form onSubmit={handleSearch} className="flex gap-2 px-4 pt-4 pb-2">
+            <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, padding: '12px 16px 8px' }}>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Rechercher un produit..."
-                className="flex-1 px-4 py-3 text-sm border border-gray-200 rounded-xl
-                           outline-none focus:border-orange-400 bg-gray-50 transition-colors"
+                style={{
+                  flex: 1, padding: '10px 14px', fontSize: 13,
+                  border: '1px solid #e5e7eb', borderRadius: 10,
+                  outline: 'none', background: '#f9fafb',
+                }}
               />
-              <button type="submit"
-                className="px-4 py-3 bg-orange-500 text-white rounded-xl
-                           hover:bg-orange-600 transition-colors">
+              <button type="submit" style={{
+                padding: '10px 14px', background: '#f97316', color: '#fff',
+                border: 'none', borderRadius: 10, cursor: 'pointer',
+              }}>
                 <Search size={16} />
               </button>
             </form>
 
             {/* Profil mobile */}
             {isAuthenticated && (
-              <div className="flex items-center gap-3 mx-4 mb-2 p-3
-                              bg-orange-50 rounded-2xl border border-orange-100">
-                <div className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-orange-200 flex-shrink-0">
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                margin: '0 16px 8px', padding: '10px 12px',
+                background: '#fff7ed', borderRadius: 12, border: '1px solid #fed7aa',
+              }}>
+                <div style={{
+                  width: 38, height: 38, borderRadius: 8, overflow: 'hidden',
+                  flexShrink: 0, outline: '2px solid #fed7aa',
+                }}>
                   {user?.avatar
                     ? <img src={imgUrl(user.avatar)} alt=""
-                           className="w-full h-full object-cover" />
-                    : <div className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600
-                                      flex items-center justify-center">
-                        <span className="text-white font-black">
+                           style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <div style={{
+                        width: '100%', height: '100%',
+                        background: 'linear-gradient(135deg,#fb923c,#ea580c)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <span style={{ color: '#fff', fontWeight: 900 }}>
                           {user?.username?.[0]?.toUpperCase()}
                         </span>
                       </div>
                   }
                 </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-gray-800 text-sm truncate">{user?.username}</p>
-                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${roleInfo.color}`}>
+                <div>
+                  <p style={{ fontWeight: 700, color: '#111827', fontSize: 13 }}>{user?.username}</p>
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, padding: '1px 6px', borderRadius: 4,
+                    background: '#fef9c3', color: '#92400e',
+                  }}>
                     {roleInfo.label}
                   </span>
                 </div>
               </div>
             )}
 
-            {/* Liens */}
-            <div className="px-4 pb-4 space-y-0.5">
-              {[
-                { to: '/products', icon: ShoppingBag, label: 'Catalogue' },
-                ...(isAuthenticated ? [
-                  { to: '/orders',      icon: Package,         label: 'Mes commandes' },
-                  { to: '/profile',     icon: User,            label: 'Mon profil' },
-                  ...(dashboardPath
-                    ? [{ to: dashboardPath, icon: LayoutDashboard, label: 'Tableau de bord' }]
-                    : []),
-                ] : []),
-              ].map(({ to, icon: Icon, label }) => (
-                <Link key={to} to={to}
-                  className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm
-                             font-semibold text-gray-700 hover:bg-orange-50
-                             hover:text-orange-600 transition-colors">
-                  <Icon size={17} className="text-gray-400" /> {label}
-                </Link>
-              ))}
-
-              {isAuthenticated ? (
-                <button onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl
-                             text-sm font-semibold text-red-500 hover:bg-red-50
-                             transition-colors mt-2 border-t border-gray-100 pt-3">
-                  <LogOut size={17} /> Déconnexion
-                </button>
-              ) : (
-                <div className="flex flex-col gap-2 pt-3 mt-2 border-t border-gray-100">
-                  <Link to="/login"
-                    className="flex items-center justify-center py-3 rounded-2xl text-sm
-                               font-bold border-2 border-orange-500 text-orange-500
-                               hover:bg-orange-50 transition-colors">
-                    Connexion
-                  </Link>
-                  <Link to="/register"
-                    className="flex items-center justify-center py-3 rounded-2xl text-sm
-                               font-bold bg-orange-500 text-white hover:bg-orange-600
-                               transition-colors shadow-md shadow-orange-200">
-                    S'inscrire gratuitement
-                  </Link>
+            {/* Catégories mobile */}
+            {categories.length > 0 && (
+              <div style={{ padding: '4px 16px 8px' }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af',
+                             textTransform: 'uppercase', letterSpacing: '0.1em',
+                             padding: '8px 4px 6px' }}>
+                  Catégories
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+                  {categories.map(cat => (
+                    <Link key={cat.id} to={`/products?category=${cat.id}`}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '8px 10px', borderRadius: 10, textDecoration: 'none',
+                        background: '#f9fafb', border: '1px solid #f3f4f6',
+                      }}
+                    >
+                      <Package size={16} color="#d1d5db" />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>
+                        {cat.name.split(' ')[0]}
+                      </span>
+                    </Link>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
+
+            {/* Liens nav */}
+            <div style={{ padding: '0 16px 16px' }}>
+              <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 8, marginTop: 4 }}>
+                {[
+                  { to: '/products', icon: ShoppingBag, label: 'Tout le catalogue' },
+                  ...(isAuthenticated ? [
+                    { to: '/orders',      icon: Package,         label: 'Mes commandes' },
+                    { to: '/profile',     icon: User,            label: 'Mon profil' },
+                    ...(dashboardPath
+                      ? [{ to: dashboardPath, icon: LayoutDashboard, label: 'Tableau de bord' }]
+                      : []),
+                  ] : []),
+                ].map(({ to, icon: Icon, label }) => (
+                  <Link key={to} to={to}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 12px', borderRadius: 10, fontSize: 13,
+                      fontWeight: 600, color: '#374151', textDecoration: 'none',
+                      transition: 'background .12s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#fff7ed'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <Icon size={16} color="#9ca3af" /> {label}
+                  </Link>
+                ))}
+
+                {isAuthenticated ? (
+                  <button onClick={handleLogout}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                      color: '#ef4444', background: 'transparent', border: 'none',
+                      cursor: 'pointer', marginTop: 4, borderTop: '1px solid #f3f4f6',
+                      paddingTop: 12,
+                    }}>
+                    <LogOut size={16} /> Déconnexion
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8,
+                                 paddingTop: 12, marginTop: 4, borderTop: '1px solid #f3f4f6' }}>
+                    <Link to="/login"
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '11px', borderRadius: 10, fontSize: 13, fontWeight: 700,
+                        border: '2px solid #f97316', color: '#f97316', textDecoration: 'none',
+                      }}>
+                      Connexion
+                    </Link>
+                    <Link to="/register"
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '11px', borderRadius: 10, fontSize: 13, fontWeight: 700,
+                        background: '#f97316', color: '#fff', textDecoration: 'none',
+                        boxShadow: '0 4px 12px rgba(249,115,22,0.3)',
+                      }}>
+                      S'inscrire gratuitement
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

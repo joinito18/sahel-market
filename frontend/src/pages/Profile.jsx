@@ -1,90 +1,260 @@
-import { useForm } from 'react-hook-form'
+import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useRef } from 'react'
-import { Camera } from 'lucide-react'
+import { Camera, Check, AlertCircle, LogOut, ShoppingBag, User } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../services/auth.service.js'
-import { updateUser } from '../store/authSlice.js'
-import toast from 'react-hot-toast'
+import { updateUser, logout } from '../store/authSlice.js'
+
+const OR = '#f97316'
+const BG = '#f0f2f5'
+
+const ROLE_LABELS = {
+  client:   'Client',
+  producer: 'Artisan',
+  agent:    'Agent',
+  admin:    'Administrateur',
+}
+
+const DASHBOARD_LINKS = {
+  producer: { to: '/dashboard/producer', label: 'Tableau de bord artisan' },
+  agent:    { to: '/dashboard/agent',    label: 'Tableau de bord agent' },
+  admin:    { to: '/dashboard/admin',    label: 'Administration' },
+}
 
 export default function Profile() {
-  const { user }   = useSelector(s => s.auth)
-  const dispatch   = useDispatch()
-  const fileRef    = useRef()
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm()
+  const { user } = useSelector(s => s.auth)
+  const dispatch  = useDispatch()
+  const navigate  = useNavigate()
+  const fileRef   = useRef()
 
-  useEffect(() => { if (user) reset(user) }, [user])
+  const [form, setForm] = useState({
+    username: '', email: '', phone: '', whatsapp: '', address: '',
+  })
+  const [saving, setSaving]   = useState(false)
+  const [saved, setSaved]     = useState(false)
+  const [err, setErr]         = useState(null)
 
-  const onSubmit = async (data) => {
-    const fd = new FormData()
-    Object.entries(data).forEach(([k, v]) => { if (v) fd.append(k, v) })
+  useEffect(() => {
+    if (user) setForm({
+      username: user.username  || '',
+      email:    user.email     || '',
+      phone:    user.phone     || '',
+      whatsapp: user.whatsapp  || '',
+      address:  user.address   || '',
+    })
+  }, [user])
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+    setSaving(true); setErr(null); setSaved(false)
     try {
+      const fd = new FormData()
+      Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v) })
       const res = await authService.updateMe(fd)
       dispatch(updateUser(res.data))
-      toast.success('Profil mis à jour')
-    } catch {
-      toast.error('Erreur lors de la mise à jour')
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch (e) {
+      setErr('Erreur lors de la mise à jour du profil.')
+    } finally {
+      setSaving(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-lg mx-auto px-4">
-        <h1 className="text-2xl font-display font-semibold text-sahel-dark mb-6">Mon profil</h1>
+  const handleAvatar = e => {
+    const file = e.target.files[0]
+    if (!file) return
+    const fd = new FormData()
+    fd.append('avatar', file)
+    authService.updateMe(fd).then(res => dispatch(updateUser(res.data)))
+  }
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden bg-sahel-light border-2 border-sahel-primary/20">
-                {user?.avatar
-                  ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                  : <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-sahel-primary">
-                      {user?.username?.[0]?.toUpperCase()}
-                    </div>
-                }
+  const handleLogout = () => {
+    dispatch(logout())
+    navigate('/')
+  }
+
+  const inputStyle = {
+    width: '100%', padding: '11px 14px', border: '1px solid #d1d5db',
+    borderRadius: 10, fontSize: 14, outline: 'none', background: '#fff',
+    fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', color: '#111827',
+  }
+  const lbl = { fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 4, display: 'block' }
+
+  const dashLink = DASHBOARD_LINKS[user?.role]
+
+  return (
+    <div style={{ minHeight: '100vh', background: BG }}>
+
+      {/* Header */}
+      <div style={{ background: '#1a1a1a', padding: '40px 0' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 24px' }}>
+          <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+            Mon compte
+          </p>
+          <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em' }}>
+            Mon profil
+          </h1>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 24px 60px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+        {/* Avatar + identité */}
+        <div style={{
+          background: '#fff', borderRadius: 20, border: '1px solid #e5e7eb',
+          padding: '28px 24px', display: 'flex', alignItems: 'center', gap: 20,
+        }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{
+              width: 80, height: 80, borderRadius: '50%', overflow: 'hidden',
+              background: '#fff7ed', border: `3px solid ${OR}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {user?.avatar
+                ? <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: 28, fontWeight: 900, color: OR }}>
+                    {(user?.username || '?')[0].toUpperCase()}
+                  </span>
+              }
+            </div>
+            <button
+              onClick={() => fileRef.current?.click()}
+              style={{
+                position: 'absolute', bottom: 0, right: 0,
+                width: 28, height: 28, borderRadius: '50%',
+                background: OR, border: '2px solid #fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <Camera size={13} color="#fff" />
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatar} />
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <p style={{ fontWeight: 800, fontSize: 18, color: '#111827' }}>
+              {user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.username}
+            </p>
+            <p style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>{user?.email}</p>
+            <span style={{
+              display: 'inline-block', marginTop: 8, fontSize: 11, fontWeight: 700,
+              padding: '3px 10px', borderRadius: 20, background: '#fff7ed', color: OR,
+            }}>
+              {ROLE_LABELS[user?.role] || 'Membre'}
+            </span>
+          </div>
+        </div>
+
+        {/* Lien dashboard selon rôle */}
+        {dashLink && (
+          <Link to={dashLink.to} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb',
+            padding: '14px 20px', textDecoration: 'none', color: '#111827',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <User size={16} color={OR} />
+              <p style={{ fontSize: 13, fontWeight: 600 }}>{dashLink.label}</p>
+            </div>
+            <span style={{ color: OR, fontSize: 18 }}>→</span>
+          </Link>
+        )}
+
+        {/* Historique commandes */}
+        <Link to="/orders" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb',
+          padding: '14px 20px', textDecoration: 'none', color: '#111827',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ShoppingBag size={16} color="#6b7280" />
+            <p style={{ fontSize: 13, fontWeight: 600 }}>Mes commandes</p>
+          </div>
+          <span style={{ color: '#9ca3af', fontSize: 18 }}>→</span>
+        </Link>
+
+        {/* Formulaire */}
+        <form onSubmit={handleSubmit} style={{
+          background: '#fff', borderRadius: 20, border: '1px solid #e5e7eb', padding: 24,
+        }}>
+          <p style={{ fontWeight: 700, fontSize: 15, color: '#111827', marginBottom: 20 }}>
+            Informations personnelles
+          </p>
+
+          {err && (
+            <div style={{
+              background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10,
+              padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#dc2626',
+              display: 'flex', gap: 8,
+            }}>
+              <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+              {err}
+            </div>
+          )}
+
+          {saved && (
+            <div style={{
+              background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10,
+              padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#15803d',
+              display: 'flex', gap: 8, alignItems: 'center',
+            }}>
+              <Check size={15} />
+              Profil mis à jour avec succès.
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={lbl}>Nom d'utilisateur</label>
+                <input style={inputStyle} value={form.username} onChange={e => set('username', e.target.value)} />
               </div>
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="absolute bottom-0 right-0 w-7 h-7 bg-sahel-primary rounded-full flex items-center justify-center shadow-md"
-              >
-                <Camera size={13} className="text-white" />
-              </button>
-              <input type="file" ref={fileRef} className="hidden" accept="image/*"
-                onChange={e => {
-                  const file = e.target.files[0]
-                  if (file) {
-                    const fd = new FormData()
-                    fd.append('avatar', file)
-                    authService.updateMe(fd).then(res => dispatch(updateUser(res.data)))
-                  }
-                }}
-              />
+              <div>
+                <label style={lbl}>Email</label>
+                <input style={inputStyle} type="email" value={form.email} onChange={e => set('email', e.target.value)} />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={lbl}>Téléphone</label>
+                <input style={inputStyle} type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+237 6XX XXX XXX" />
+              </div>
+              <div>
+                <label style={lbl}>WhatsApp</label>
+                <input style={inputStyle} type="tel" value={form.whatsapp} onChange={e => set('whatsapp', e.target.value)} placeholder="+237 6XX XXX XXX" />
+              </div>
+            </div>
+            <div>
+              <label style={lbl}>Adresse de livraison</label>
+              <textarea style={{ ...inputStyle, resize: 'vertical', minHeight: 72 }}
+                value={form.address} onChange={e => set('address', e.target.value)}
+                placeholder="Quartier, ville, région…" />
             </div>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {[
-              { name: 'username', label: 'Nom d\'utilisateur', type: 'text' },
-              { name: 'email',    label: 'Email',               type: 'email' },
-              { name: 'phone',    label: 'Téléphone',           type: 'tel' },
-              { name: 'whatsapp', label: 'WhatsApp',            type: 'tel' },
-            ].map(f => (
-              <div key={f.name}>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">{f.label}</label>
-                <input type={f.type} {...register(f.name)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sahel-primary/30 focus:border-sahel-primary transition-all" />
-              </div>
-            ))}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse</label>
-              <textarea {...register('address')} rows={2}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sahel-primary/30 resize-none" />
-            </div>
-            <button type="submit" disabled={isSubmitting}
-              className="w-full py-3.5 bg-sahel-primary text-white font-semibold rounded-xl hover:bg-sahel-primary/90 transition-colors disabled:opacity-60 text-sm">
-              {isSubmitting ? 'Sauvegarde...' : 'Enregistrer'}
-            </button>
-          </form>
-        </div>
+          <button type="submit" disabled={saving} style={{
+            marginTop: 20, width: '100%', padding: '13px 0', borderRadius: 12, border: 'none',
+            background: saving ? '#fdba74' : OR, color: '#fff',
+            fontWeight: 700, fontSize: 14, cursor: 'pointer',
+          }}>
+            {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
+          </button>
+        </form>
+
+        {/* Déconnexion */}
+        <button onClick={handleLogout} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          background: '#fff', border: '1px solid #fee2e2', borderRadius: 14,
+          padding: '14px 20px', color: '#dc2626', fontWeight: 600,
+          fontSize: 14, cursor: 'pointer', width: '100%',
+        }}>
+          <LogOut size={16} />
+          Se déconnecter
+        </button>
       </div>
     </div>
   )
