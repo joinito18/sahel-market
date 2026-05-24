@@ -46,3 +46,48 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
+
+/* ── Responsive layouts ──────────────────────────────────────── */
+
+/* Panier — grille 2 colonnes desktop, 1 colonne mobile */
+.cart-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .cart-layout-grid       { grid-template-columns: 1fr 320px; }
+  .cart-summary-sticky    { position: sticky; top: 24px; }
+}
+
+/* Checkout — grille 2 colonnes desktop, 1 colonne mobile */
+.checkout-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .checkout-layout-grid    { grid-template-columns: 1fr 360px; }
+  .checkout-sidebar-sticky { position: sticky; top: 90px; }
+}
+
+/* Checkout header — masquer séparateur et étapes sur petit écran */
+@media (max-width: 639px) {
+  .checkout-steps-divider  { display: none !important; }
+  .checkout-steps-breadcrumb { display: none !important; }
+}
+
+/* Notifications dropdown — plein largeur sur mobile */
+@media (max-width: 639px) {
+  .notif-dropdown {
+    position: fixed !important;
+    top: 64px !important;
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+}

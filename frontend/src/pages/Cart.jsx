@@ -53,7 +53,7 @@ export default function Cart() {
       </div>
 
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px 60px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
+        <div className="cart-layout-grid">
 
           {/* Liste articles */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -156,9 +156,8 @@ export default function Cart() {
           </div>
 
           {/* Récapitulatif */}
-          <div style={{
-            background: '#fff', borderRadius: 16, border: '1px solid #e5e7eb',
-            padding: 24, position: 'sticky', top: 24,
+          <div className="cart-summary-sticky" style={{
+            background: '#fff', borderRadius: 16, border: '1px solid #e5e7eb', padding: 24,
           }}>
             <p style={{ fontWeight: 700, fontSize: 15, color: '#111827', marginBottom: 20 }}>
               Récapitulatif

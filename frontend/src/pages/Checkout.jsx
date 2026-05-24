@@ -348,11 +348,13 @@ export default function Checkout() {
             style={{
               display: 'flex', alignItems: 'center', gap: 6, background: 'transparent',
               border: 'none', cursor: 'pointer', fontSize: 13, color: '#6b7280', padding: 0,
+              flexShrink: 0,
             }}>
-            <ArrowLeft size={16} /> Retour au panier
+            <ArrowLeft size={16} />
+            <span className="checkout-steps-breadcrumb">Retour au panier</span>
           </button>
-          <div style={{ flex: 1, borderTop: '1px solid #e5e7eb' }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+          <div className="checkout-steps-divider" style={{ flex: 1, borderTop: '1px solid #e5e7eb' }} />
+          <div className="checkout-steps-breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
             {['Panier', 'Livraison', 'Confirmation'].map((s, i) => (
               <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
@@ -367,9 +369,7 @@ export default function Checkout() {
       </div>
 
       {/* Contenu */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px',
-                     display: 'grid', gridTemplateColumns: '1fr 360px', gap: 24,
-                     alignItems: 'start' }}>
+      <div className="checkout-layout-grid" style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
 
         {/* ── Colonne gauche : formulaire ─────────────────────── */}
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -540,7 +540,7 @@ export default function Checkout() {
         </form>
 
         {/* ── Colonne droite : récapitulatif ─────────────────── */}
-        <div style={{ position: 'sticky', top: 90 }}>
+        <div className="checkout-sidebar-sticky">
           <div style={{
             background: '#fff', borderRadius: 16, border: '1px solid #e5e7eb', overflow: 'hidden',
           }}>

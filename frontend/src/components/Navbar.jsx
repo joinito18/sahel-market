@@ -281,11 +281,12 @@ export default function Navbar() {
           {/* ── Actions droite ───────────────────────────────────────── */}
           <div className="flex items-center gap-1 ml-auto">
 
-            {/* Favoris */}
+            {/* Favoris — masqué sur xs, visible à partir de sm */}
             {isAuthenticated && (
               <Link
                 to="/wishlist"
-                style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 6,
+                className="hidden sm:flex"
+                style={{ alignItems: 'center', gap: 6,
                           padding: '7px 10px', borderRadius: 10,
                           background: 'transparent', transition: 'background .15s',
                           textDecoration: 'none' }}
@@ -334,6 +335,7 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.97 }}
                       transition={{ duration: 0.15 }}
+                      className="notif-dropdown"
                       style={{
                         position: 'absolute', right: 0, top: 'calc(100% + 8px)',
                         width: 340, background: '#fff', borderRadius: 16,
@@ -431,12 +433,13 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Messages */}
+            {/* Messages — masqué sur xs, visible à partir de sm */}
             {isAuthenticated && (
               <Link
                 to="/messages"
+                className="hidden sm:flex"
                 style={{
-                  position: 'relative', display: 'flex', alignItems: 'center',
+                  alignItems: 'center',
                   padding: '7px 10px', borderRadius: 10,
                   background: 'transparent', textDecoration: 'none', transition: 'background .15s',
                 }}
@@ -808,8 +811,10 @@ export default function Navbar() {
                 {[
                   { to: '/products', icon: ShoppingBag, label: 'Tout le catalogue' },
                   ...(isAuthenticated ? [
-                    { to: '/orders',      icon: Package,         label: 'Mes commandes' },
-                    { to: '/profile',     icon: User,            label: 'Mon profil' },
+                    { to: '/orders',    icon: Package,         label: 'Mes commandes'  },
+                    { to: '/messages',  icon: MessageCircle,   label: 'Messages'        },
+                    { to: '/wishlist',  icon: Heart,           label: 'Mes favoris'     },
+                    { to: '/profile',   icon: User,            label: 'Mon profil'      },
                     ...(dashboardPath
                       ? [{ to: dashboardPath, icon: LayoutDashboard, label: 'Tableau de bord' }]
                       : []),
