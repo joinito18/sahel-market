@@ -15,6 +15,39 @@ body {
   min-height: 100vh;
 }
 
+/* ── Design tokens — système d'espacement unifié ─────────────── */
+:root {
+  /* Gaps entre sections de page */
+  --section-gap: 20px;
+  /* Padding interne des cartes blanches */
+  --card-pad: 16px;
+  /* Gap entre les cards produit dans les grilles */
+  --grid-gap: 12px;
+}
+@media (min-width: 640px) {
+  :root {
+    --section-gap: 32px;
+    --card-pad: 24px;
+    --grid-gap: 16px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --section-gap: 40px;
+  }
+}
+
+/* Carte section (fond blanc, bordure, padding responsive) */
+.s-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: var(--card-pad);
+}
+
+/* Espace vertical entre les grandes sections */
+.s-gap { margin-top: var(--section-gap); }
+
 /* ── Classes utilitaires ─────────────────────────────────────── */
 .line-clamp-2 {
   display: -webkit-box;

@@ -160,13 +160,13 @@ function Carousel({ products, loading, count = 6 }) {
           <ChevronRight size={15} className="text-gray-600" />
         </button>
       )}
-      <div ref={ref} className="flex gap-3 overflow-x-auto px-1 pb-2 scrollbar-hide">
+      <div ref={ref} className="flex gap-3 sm:gap-4 overflow-x-auto px-1 pb-3 scrollbar-hide">
         {loading
           ? Array.from({ length: count }).map((_, i) => (
-              <div key={i} className="flex-shrink-0 w-44"><CardSkeleton /></div>
+              <div key={i} className="flex-shrink-0 w-44 sm:w-48"><CardSkeleton /></div>
             ))
           : products.map(p => (
-              <div key={p.id} className="flex-shrink-0 w-44"><ProductCard product={p} /></div>
+              <div key={p.id} className="flex-shrink-0 w-44 sm:w-48"><ProductCard product={p} /></div>
             ))
         }
       </div>
@@ -177,11 +177,11 @@ function Carousel({ products, loading, count = 6 }) {
 /* ─── Section titre ─────────────────────────────────────────────── */
 function SectionHeader({ title, sub, to }) {
   return (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center justify-between mb-4 sm:mb-6">
       <div className="flex items-center gap-3">
-        <div className="w-1 h-6 bg-orange-500 rounded-full" />
+        <div className="w-1 h-6 sm:h-7 bg-orange-500 rounded-full" />
         <div>
-          <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 15 }}
+          <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 'clamp(14px,2vw,16px)' }}
               className="text-gray-900 m-0">{title}</h2>
           {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
         </div>
@@ -210,8 +210,8 @@ function CatSection({ category }) {
   const src = imgUrl(category.image)
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="s-card">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg overflow-hidden bg-orange-50 border
                           border-orange-100 flex items-center justify-center flex-shrink-0">
@@ -485,9 +485,9 @@ export default function Home() {
               { Icon: Award,  l: 'Artisans certifiés', c: '#ea580c' },
               { Icon: Users,  l: 'Support Cameroun',   c: '#7c3aed' },
             ].map(({ Icon, l, c }) => (
-              <div key={l} className="flex-shrink-0 flex items-center gap-2 px-5 py-3">
-                <Icon size={14} style={{ color: c }} />
-                <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">{l}</span>
+              <div key={l} className="flex-shrink-0 flex items-center gap-2 px-5 sm:px-8 py-3 sm:py-4">
+                <Icon size={15} style={{ color: c }} />
+                <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">{l}</span>
               </div>
             ))}
           </div>
@@ -497,8 +497,8 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           GRILLE CATÉGORIES — style Amazon "Shop by category"
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 mt-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
+        <div className="s-card">
           <SectionHeader title="Acheter par catégorie" to="/products" />
           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
             {/* "Tout voir" */}
@@ -541,8 +541,8 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           TENDANCES — carousel avec flèches
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 mt-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
+        <div className="s-card">
           <SectionHeader
             title="Tendances du moment"
             sub="Les produits les plus consultés"
@@ -564,7 +564,7 @@ export default function Home() {
       `}</style>
       {/* Note: .promo-panel dimensions et responsive définis dans globals.css */}
 
-      <div className="w-full px-4 sm:px-6 lg:px-10 mt-4">
+      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
         <div style={{ borderRadius: 10, overflow: 'hidden' }}>
           <div className="promo-ticker" style={{ display: 'flex', width: 'max-content' }}>
 
@@ -665,7 +665,7 @@ export default function Home() {
           IMPACT — section chiffres-clés pour pitch investisseurs
       ══════════════════════════════════════════════════════════ */}
       {stats.artisans !== undefined && (
-        <div className="w-full px-4 sm:px-6 lg:px-10 mt-4">
+        <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
           <div className="rounded-2xl overflow-hidden relative"
                style={{ background: 'linear-gradient(135deg, #0f2027 0%, #1a3a2a 50%, #0f2027 100%)' }}>
 
@@ -673,10 +673,10 @@ export default function Home() {
             <div className="absolute inset-0 opacity-[0.04]"
                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='%23fff'/%3E%3C/svg%3E")` }} />
 
-            <div className="relative px-6 py-8 md:py-10">
+            <div className="relative px-5 sm:px-8 lg:px-12 py-8 sm:py-10 md:py-14">
 
               {/* Titre */}
-              <div className="text-center mb-8">
+              <div className="text-center mb-8 sm:mb-10">
                 <span className="inline-block px-4 py-1 rounded-full text-xs font-bold
                                  uppercase tracking-widest mb-3"
                       style={{ background: 'rgba(249,115,22,0.15)',
@@ -691,7 +691,7 @@ export default function Home() {
               </div>
 
               {/* Grille de stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-3xl mx-auto">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-4xl mx-auto">
                 {[
                   { v: stats.artisans,   l: 'Artisans soutenus',   sub: 'actifs sur la plateforme', Icon: Users,   accent: '#f97316', bg: 'rgba(249,115,22,0.12)',   border: 'rgba(249,115,22,0.25)'  },
                   { v: stats.produits,   l: 'Créations listées',   sub: 'faites à la main',         Icon: Package, accent: '#3b82f6', bg: 'rgba(59,130,246,0.12)',   border: 'rgba(59,130,246,0.25)'  },
@@ -705,7 +705,7 @@ export default function Home() {
                     transition={{ duration: 0.4 }}
                     style={{
                       background: bg, border: `1px solid ${border}`,
-                      borderRadius: 16, padding: '16px 20px',
+                      borderRadius: 16, padding: 'clamp(14px,2vw,22px) clamp(14px,2vw,24px)',
                     }}
                   >
                     <div style={{
@@ -746,9 +746,9 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           PARTENAIRES INSTITUTIONNELS
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 mt-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="text-center mb-6">
+      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
+        <div className="s-card">
+          <div className="text-center mb-6 sm:mb-8">
             <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold
                              uppercase tracking-widest bg-gray-100 text-gray-500 mb-2">
               Ils nous font confiance
@@ -761,7 +761,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
             {[
               {
                 name: 'Orange Cameroun',
@@ -802,9 +802,9 @@ export default function Home() {
             ].map(({ name, role, color, bg, border, initial, desc }) => (
               <div key={name} style={{
                 background: bg, border: `1px solid ${border}`,
-                borderRadius: 14, padding: '18px 16px',
+                borderRadius: 14, padding: 'clamp(14px,2vw,24px) clamp(12px,2vw,20px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                textAlign: 'center', gap: 10,
+                textAlign: 'center', gap: 12,
               }}>
                 <div style={{
                   width: 52, height: 52, borderRadius: 14,
@@ -835,13 +835,13 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           NOUVEAUX PRODUITS — grid 5 colonnes style Alibaba
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 mt-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
+        <div className="s-card">
           <SectionHeader
             title="Nouveaux produits"
             sub="Tout juste ajoutés par nos artisans"
             to="/products?ordering=-created_at" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
             {loadNew
               ? Array.from({ length: 10 }).map((_, i) => <CardSkeleton key={i} />)
               : newProducts.map(p => <ProductCard key={p.id} product={p} />)
@@ -853,15 +853,15 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           SECTIONS PAR CATÉGORIE
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 mt-4 space-y-4">
+      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap space-y-5 sm:space-y-8">
         {categories.map(cat => <CatSection key={cat.id} category={cat} />)}
       </div>
 
       {/* ══════════════════════════════════════════════════════════
           CTA ARTISAN — style Amazon footer banner
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 mt-4 mb-6">
-        <div className="rounded-xl overflow-hidden px-8 py-10 text-center relative"
+      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap mb-6 sm:mb-10">
+        <div className="rounded-xl overflow-hidden px-6 sm:px-12 py-10 sm:py-14 text-center relative"
              style={{ background: 'linear-gradient(135deg, #1a3a2a 0%, #2D6A4F 100%)' }}>
           <div className="absolute inset-0 opacity-5"
                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1' fill='%23fff'/%3E%3C/svg%3E")` }} />

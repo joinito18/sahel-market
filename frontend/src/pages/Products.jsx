@@ -442,10 +442,10 @@ export default function Products() {
       {/* ══════════════════════════════════════════════════════════
           GRILLE PRODUITS
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 pb-16">
+      <div className="w-full px-4 sm:px-6 lg:px-10 py-5 sm:py-8">
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
             {Array.from({ length: 10 }).map((_, i) => <Skeleton key={i} />)}
           </div>
 
@@ -485,7 +485,7 @@ export default function Products() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4"
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5"
             >
               {products.map((p, i) => (
                 <ProductCard key={p.id} product={p} index={i} />
@@ -496,18 +496,22 @@ export default function Products() {
 
         {/* ── Pagination ──────────────────────────────────────── */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-12">
+          <div className="flex justify-center items-center gap-2 mt-10 sm:mt-14">
             <button
               onClick={() => dispatch(setPage(currentPage - 1))}
               disabled={currentPage === 1}
-              className="px-5 py-2.5 text-sm font-semibold bg-white border border-gray-200
+              className="px-4 sm:px-6 py-2.5 text-sm font-semibold bg-white border border-gray-200
                          rounded-xl disabled:opacity-40 hover:border-orange-300
                          hover:text-orange-500 transition-all disabled:cursor-not-allowed"
             >
-              ← Précédent
+              ← <span className="hidden sm:inline">Précédent</span>
             </button>
 
-            <div className="flex items-center gap-1.5">
+            {/* Numéros masqués sur mobile — affiche juste X/Y */}
+            <span className="sm:hidden text-sm text-gray-500 px-2 font-medium">
+              {currentPage} / {totalPages}
+            </span>
+            <div className="hidden sm:flex items-center gap-1.5">
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter(p =>
                   p === 1 || p === totalPages ||
@@ -524,7 +528,7 @@ export default function Products() {
                     : <button
                         key={p}
                         onClick={() => dispatch(setPage(p))}
-                        className={`w-9 h-9 rounded-xl text-sm font-bold transition-all
+                        className={`w-10 h-10 rounded-xl text-sm font-bold transition-all
                                     ${currentPage === p
                                       ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
                                       : 'bg-white border border-gray-200 text-gray-600 hover:border-orange-300'
@@ -539,11 +543,11 @@ export default function Products() {
             <button
               onClick={() => dispatch(setPage(currentPage + 1))}
               disabled={currentPage === totalPages}
-              className="px-5 py-2.5 text-sm font-semibold bg-white border border-gray-200
+              className="px-4 sm:px-6 py-2.5 text-sm font-semibold bg-white border border-gray-200
                          rounded-xl disabled:opacity-40 hover:border-orange-300
                          hover:text-orange-500 transition-all disabled:cursor-not-allowed"
             >
-              Suivant →
+              <span className="hidden sm:inline">Suivant</span> →
             </button>
           </div>
         )}
