@@ -30,8 +30,8 @@ export default function TrackOrder() {
   return (
     <div style={{ minHeight: '100vh', background: BG }}>
 
-      <div style={{ background: '#1a1a1a', padding: '36px 0' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
+      <div style={{ background: '#1a1a1a', padding: '20px 0' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 20px' }}>
           <Link to="/orders" style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             color: 'rgba(255,255,255,0.5)', fontSize: 13, textDecoration: 'none', marginBottom: 12,
@@ -41,7 +41,7 @@ export default function TrackOrder() {
           <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
             Suivi de livraison
           </p>
-          <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em' }}>
+          <h1 style={{ color: '#fff', fontSize: 'clamp(18px, 5vw, 26px)', fontWeight: 900, letterSpacing: '-0.02em' }}>
             Commande #{id}
           </h1>
         </div>

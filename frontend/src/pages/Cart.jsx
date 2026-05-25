@@ -41,12 +41,12 @@ export default function Cart() {
     <div style={{ minHeight: '100vh', background: BG }}>
 
       {/* Header */}
-      <div style={{ background: '#1a1a1a', padding: '36px 0' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+      <div style={{ background: '#1a1a1a', padding: '24px 0' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 20px' }}>
+          <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
             Mon compte
           </p>
-          <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em' }}>
+          <h1 style={{ color: '#fff', fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900, letterSpacing: '-0.02em' }}>
             Mon panier <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400 }}>({itemCount} article{itemCount > 1 ? 's' : ''})</span>
           </h1>
         </div>

@@ -205,7 +205,7 @@ export default function Roadmap() {
       {/* ── Hero ───────────────────────────────────────────────── */}
       <div style={{ background: 'linear-gradient(135deg, #0d1117 0%, #111a2e 60%, #0d1117 100%)',
                     borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 40 }}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-16 pb-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-8 sm:pt-16 pb-8">
 
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}

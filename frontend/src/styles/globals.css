@@ -91,3 +91,25 @@ body {
     overflow-y: auto;
   }
 }
+
+/* ── Safe-area BottomNav (iPhone notch support) ──────────── */
+.safe-bottom {
+  padding-bottom: max(4rem, calc(60px + env(safe-area-inset-bottom, 0px)));
+}
+@media (min-width: 768px) {
+  .safe-bottom { padding-bottom: 0; }
+}
+
+/* ── Promo ticker panels ─────────────────────────────────── */
+.promo-panel {
+  flex-shrink: 0;
+  width: 380px;
+  padding: 20px 28px;
+}
+@media (max-width: 639px) {
+  .promo-panel { width: 260px; padding: 14px 16px; }
+  .promo-ticker { animation-duration: 14s; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .promo-ticker { animation: none !important; }
+}

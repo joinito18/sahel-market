@@ -102,8 +102,8 @@ export default function App() {
       <SuggestionWidget />
 
       <PwaInstallBanner />
-      {/* Padding bottom sur mobile pour ne pas masquer le contenu derrière la BottomNav */}
-      <div className="flex-1 pb-16 md:pb-0">
+      {/* Padding bottom safe-area aware pour la BottomNav fixe */}
+      <div className="flex-1 safe-bottom">
         <Suspense fallback={<PageLoader />}>
           <Routes>
 

@@ -220,12 +220,12 @@ export default function OrderHistory() {
   return (
     <div style={{ minHeight: '100vh', background: BG }}>
 
-      <div style={{ background: '#1a1a1a', padding: '40px 0' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+      <div style={{ background: '#1a1a1a', padding: '24px 0' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 20px' }}>
+          <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
             Mon compte
           </p>
-          <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em' }}>
+          <h1 style={{ color: '#fff', fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900, letterSpacing: '-0.02em' }}>
             Mes commandes
           </h1>
         </div>

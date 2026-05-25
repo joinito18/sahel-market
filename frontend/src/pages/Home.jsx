@@ -562,6 +562,7 @@ export default function Home() {
         .promo-ticker { animation: promoTicker 18s linear infinite; }
         .promo-ticker:hover { animation-play-state: paused; }
       `}</style>
+      {/* Note: .promo-panel dimensions et responsive définis dans globals.css */}
 
       <div className="w-full px-4 sm:px-6 lg:px-10 mt-4">
         <div style={{ borderRadius: 10, overflow: 'hidden' }}>
@@ -571,8 +572,8 @@ export default function Home() {
               <div key={copy} style={{ display: 'flex' }}>
 
                 {/* Panneau 1 — Livraison gratuite */}
-                <Link to="/register" style={{
-                  width: 420, flexShrink: 0, background: '#1e3a5f', padding: '20px 28px',
+                <Link to="/register" className="promo-panel" style={{
+                  background: '#1e3a5f',
                   textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8,
                   borderRight: '2px solid rgba(255,255,255,0.05)',
                 }}>
@@ -599,8 +600,8 @@ export default function Home() {
                 </Link>
 
                 {/* Panneau 2 — Paiements locaux */}
-                <Link to="/products" style={{
-                  width: 420, flexShrink: 0, background: '#1a2a1a', padding: '20px 28px',
+                <Link to="/products" className="promo-panel" style={{
+                  background: '#1a2a1a',
                   textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8,
                   borderRight: '2px solid rgba(255,255,255,0.05)',
                 }}>
@@ -627,8 +628,8 @@ export default function Home() {
                 </Link>
 
                 {/* Panneau 3 — Artisans */}
-                <Link to="/register" style={{
-                  width: 420, flexShrink: 0, background: '#2a1500', padding: '20px 28px',
+                <Link to="/register" className="promo-panel" style={{
+                  background: '#2a1500',
                   textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8,
                   borderRight: '2px solid rgba(255,255,255,0.05)',
                 }}>

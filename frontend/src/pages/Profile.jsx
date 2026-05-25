@@ -89,12 +89,12 @@ export default function Profile() {
     <div style={{ minHeight: '100vh', background: BG }}>
 
       {/* Header */}
-      <div style={{ background: '#1a1a1a', padding: '40px 0' }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+      <div style={{ background: '#1a1a1a', padding: '24px 0' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 20px' }}>
+          <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
             Mon compte
           </p>
-          <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 900, letterSpacing: '-0.02em' }}>
+          <h1 style={{ color: '#fff', fontSize: 'clamp(20px, 5vw, 28px)', fontWeight: 900, letterSpacing: '-0.02em' }}>
             Mon profil
           </h1>
         </div>
@@ -270,7 +270,7 @@ export default function Profile() {
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label style={lbl}>Nom d'utilisateur</label>
                 <input style={inputStyle} value={form.username} onChange={e => set('username', e.target.value)} />
@@ -280,7 +280,7 @@ export default function Profile() {
                 <input style={inputStyle} type="email" value={form.email} onChange={e => set('email', e.target.value)} />
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label style={lbl}>Téléphone</label>
                 <input style={inputStyle} type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+237 6XX XXX XXX" />
