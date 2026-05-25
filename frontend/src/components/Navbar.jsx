@@ -679,6 +679,19 @@ export default function Navbar() {
               </div>
             )}
 
+            {/* Loupe recherche — mobile uniquement, ouvre le menu hamburger sur la section search */}
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="md:hidden"
+              style={{
+                padding: '8px', borderRadius: 10, background: 'transparent',
+                border: 'none', cursor: 'pointer',
+              }}
+              aria-label="Rechercher"
+            >
+              <Search size={20} color="#374151" />
+            </button>
+
             {/* Burger mobile */}
             <button
               onClick={() => setMenuOpen(v => !v)}

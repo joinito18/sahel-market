@@ -191,20 +191,20 @@ export default function ProductDetail() {
                 <>
                   <button
                     onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-9 sm:h-9
                                bg-white/90 backdrop-blur-sm rounded-xl shadow-md
                                flex items-center justify-center
-                               opacity-0 group-hover:opacity-100 transition-opacity
+                               sm:opacity-0 sm:group-hover:opacity-100 transition-opacity
                                hover:bg-white"
                   >
                     <ChevronLeft size={18} className="text-gray-700" />
                   </button>
                   <button
                     onClick={() => setActiveImg(i => (i + 1) % images.length)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-9 sm:h-9
                                bg-white/90 backdrop-blur-sm rounded-xl shadow-md
                                flex items-center justify-center
-                               opacity-0 group-hover:opacity-100 transition-opacity
+                               sm:opacity-0 sm:group-hover:opacity-100 transition-opacity
                                hover:bg-white"
                   >
                     <ChevronRight size={18} className="text-gray-700" />
@@ -216,7 +216,7 @@ export default function ProductDetail() {
               <div className="absolute top-3 right-3 flex flex-col gap-2">
                 <button
                   onClick={handleLike}
-                  className={`w-9 h-9 rounded-xl shadow-md flex items-center
+                  className={`w-11 h-11 sm:w-9 sm:h-9 rounded-xl shadow-md flex items-center
                               justify-center transition-all duration-200
                               ${liked
                                 ? 'bg-red-500 text-white'
@@ -227,7 +227,7 @@ export default function ProductDetail() {
                 </button>
                 <button
                   onClick={handleShare}
-                  className="w-9 h-9 rounded-xl bg-white/90 backdrop-blur-sm shadow-md
+                  className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl bg-white/90 backdrop-blur-sm shadow-md
                              flex items-center justify-center text-gray-500
                              hover:bg-white transition-colors"
                 >

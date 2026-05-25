@@ -110,12 +110,12 @@ export default function Cart() {
                         <button
                           onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))}
                           style={{
-                            width: 34, height: 34, border: 'none', background: 'transparent',
+                            width: 40, height: 40, border: 'none', background: 'transparent',
                             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: '#6b7280',
                           }}
                         >
-                          <Minus size={13} />
+                          <Minus size={14} />
                         </button>
                         <span style={{ fontSize: 14, fontWeight: 700, color: '#111827', padding: '0 12px', minWidth: 32, textAlign: 'center' }}>
                           {item.quantity}
@@ -123,12 +123,12 @@ export default function Cart() {
                         <button
                           onClick={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}
                           style={{
-                            width: 34, height: 34, border: 'none', background: 'transparent',
+                            width: 40, height: 40, border: 'none', background: 'transparent',
                             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: '#6b7280',
                           }}
                         >
-                          <Plus size={13} />
+                          <Plus size={14} />
                         </button>
                       </div>
 
@@ -139,13 +139,13 @@ export default function Cart() {
                         <button
                           onClick={() => dispatch(removeItem(item.id))}
                           style={{
-                            width: 32, height: 32, borderRadius: 8, border: '1px solid #fee2e2',
+                            width: 40, height: 40, borderRadius: 10, border: '1px solid #fee2e2',
                             background: '#fff', cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}
                           title="Supprimer"
                         >
-                          <Trash2 size={14} color="#dc2626" />
+                          <Trash2 size={15} color="#dc2626" />
                         </button>
                       </div>
                     </div>

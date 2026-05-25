@@ -477,7 +477,7 @@ export default function Home() {
           BARRE GARANTIES — fond blanc compact
       ══════════════════════════════════════════════════════════ */}
       <div className="bg-white border-b border-gray-200">
-        <div className="w-full px-4 sm:px-6 lg:px-10">
+        <div className="w-full px-4 sm:px-6 lg:px-10 relative">
           <div className="flex items-center overflow-x-auto scrollbar-hide divide-x divide-gray-100">
             {[
               { Icon: Shield, l: 'Paiement sécurisé',  c: '#16a34a' },
@@ -491,6 +491,10 @@ export default function Home() {
               </div>
             ))}
           </div>
+          {/* Fade droite — indique qu'on peut scroller sur mobile */}
+          <div className="sm:hidden absolute right-0 top-0 bottom-0 w-10
+                          pointer-events-none"
+               style={{ background: 'linear-gradient(to left, #fff 20%, transparent)' }} />
         </div>
       </div>
 
@@ -769,46 +773,6 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          PARTENAIRES — bande de confiance en bas de page
-      ══════════════════════════════════════════════════════════ */}
-      <div className="w-full s-gap" style={{ background: '#f9fafb', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10">
-          <p className="text-center text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-6 sm:mb-8">
-            Ils nous font confiance
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            {[
-              { name: 'Orange Cameroun', role: 'Partenaire paiement mobile', color: '#ff6600', initial: 'O' },
-              { name: 'MTN Cameroun',    role: 'Mobile Money (MoMo)',        color: '#c8960a', initial: 'M' },
-              { name: 'GIZ',             role: 'Coopération au développement', color: '#4a7c3f', initial: 'G' },
-              { name: 'MINCOMMERCE',     role: 'Ministère du Commerce · Cameroun', color: '#1e3a8a', initial: 'MC' },
-            ].map(({ name, role, color, initial }) => (
-              <div key={name}
-                className="flex items-center gap-3 rounded-2xl bg-white"
-                style={{ padding: 'clamp(12px,2vw,18px)', border: '1px solid #e5e7eb' }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                  background: color, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', color: '#fff', fontWeight: 900,
-                  fontSize: initial.length > 1 ? 11 : 16,
-                  boxShadow: `0 4px 10px ${color}30`,
-                }}>
-                  {initial}
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <p style={{ fontWeight: 700, fontSize: 12, color: '#111827',
-                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {name}
-                  </p>
-                  <p style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.4 }}>{role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════
           CTA ARTISAN — style Amazon footer banner
       ══════════════════════════════════════════════════════════ */}
       <div className="w-full px-4 sm:px-6 lg:px-10 s-gap mb-6 sm:mb-10">
@@ -851,6 +815,46 @@ export default function Home() {
                 Comment ça marche ?
               </Link>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          PARTENAIRES — bande de confiance, toujours en bas
+      ══════════════════════════════════════════════════════════ */}
+      <div className="w-full mt-8 sm:mt-12" style={{ background: '#f9fafb', borderTop: '1px solid #e5e7eb' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10">
+          <p className="text-center text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-6 sm:mb-8">
+            Ils nous font confiance
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            {[
+              { name: 'Orange Cameroun', role: 'Partenaire paiement mobile',      color: '#ff6600', initial: 'O'  },
+              { name: 'MTN Cameroun',    role: 'Mobile Money (MoMo)',              color: '#c8960a', initial: 'M'  },
+              { name: 'GIZ',             role: 'Coopération au développement',     color: '#4a7c3f', initial: 'G'  },
+              { name: 'MINCOMMERCE',     role: 'Ministère du Commerce · Cameroun', color: '#1e3a8a', initial: 'MC' },
+            ].map(({ name, role, color, initial }) => (
+              <div key={name}
+                className="flex items-center gap-3 rounded-2xl bg-white"
+                style={{ padding: 'clamp(12px,2vw,18px)', border: '1px solid #e5e7eb' }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  background: color, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', color: '#fff', fontWeight: 900,
+                  fontSize: initial.length > 1 ? 11 : 16,
+                  boxShadow: `0 4px 10px ${color}30`,
+                }}>
+                  {initial}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontWeight: 700, fontSize: 12, color: '#111827',
+                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {name}
+                  </p>
+                  <p style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.4 }}>{role}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
