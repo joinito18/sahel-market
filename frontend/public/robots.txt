@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Pages privées — ne pas indexer
+Disallow: /cart
+Disallow: /checkout
+Disallow: /orders
+Disallow: /profile
+Disallow: /wishlist
+Disallow: /messages
+Disallow: /dashboard/
+
+Sitemap: https://sahel-market-gamma.vercel.app/sitemap.xml

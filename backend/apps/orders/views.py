@@ -3,8 +3,68 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 import uuid
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Cart, CartItem, Order, OrderItem, Notification, PromoCode
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer, NotificationSerializer
+
+
+def send_order_confirmation(order, payment_ref, instructions):
+    """Envoie un email de confirmation à l'acheteur après la commande."""
+    if not order.user.email:
+        return
+    pm_labels = {'orange_money': 'Orange Money', 'mtn_momo': 'MTN Mobile Money', 'cash': 'Espèces à la livraison'}
+    pm_label = pm_labels.get(order.payment_method, order.payment_method)
+
+    if instructions:
+        payment_block = (
+            f"\n📲 INSTRUCTIONS DE PAIEMENT\n"
+            f"   Moyen       : {pm_label}\n"
+            f"   Numéro      : {instructions['numero']}\n"
+            f"   Nom         : {instructions['nom']}\n"
+            f"   Référence   : {payment_ref}\n"
+            f"\n   → Envoyez le montant exact, puis mentionnez la référence comme motif."
+        )
+    else:
+        payment_block = f"\n💵 Paiement : {pm_label} (à la livraison)"
+
+    items_lines = '\n'.join(
+        f"   • {i.product.name} × {i.quantity}  —  {i.price * i.quantity:,.0f} FCFA"
+        for i in order.items.select_related('product').all()
+    )
+
+    body = f"""Bonjour {order.user.first_name or order.user.username},
+
+Votre commande #{order.id} a bien été enregistrée sur Sahel Market. 🎉
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 VOTRE COMMANDE
+{items_lines}
+
+   Livraison   : {order.delivery_address}
+   Total       : {order.total_amount:,.0f} FCFA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{payment_block}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Suivez votre commande sur :
+https://sahel-market-gamma.vercel.app/orders/{order.id}/track
+
+Pour toute question : sahelmarket@gmail.com · +237 680 757 871
+
+Merci de soutenir l'artisanat camerounais ! 🇨🇲
+L'équipe Sahel Market
+"""
+    try:
+        send_mail(
+            subject=f'Sahel Market — Confirmation commande #{order.id}',
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[order.user.email],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
 
 STATUS_MESSAGES = {
     'paid':       ('Paiement confirmé',    'Votre paiement pour la commande #{id} a été confirmé. Merci !'),
@@ -207,25 +267,29 @@ class CheckoutView(APIView):
             order=order,
         )
 
+        instructions = {
+            'orange_money': {
+                'numero': '+237 680 757 871',
+                'nom':    'Sahel Market',
+                'ref':    payment_ref,
+            },
+            'mtn_momo': {
+                'numero': '+237 680 757 871',
+                'nom':    'Sahel Market',
+                'ref':    payment_ref,
+            },
+            'cash': None,
+        }.get(order.payment_method)
+
+        send_order_confirmation(order, payment_ref, instructions)
+
         return Response({
             'order':            OrderSerializer(order).data,
             'payment_ref':      payment_ref,
             'payment_method':   order.payment_method,
             'loyalty_discount': loyalty_discount,
             'promo_discount':   promo_discount,
-            'instructions': {
-                'orange_money': {
-                    'numero': '+237 680 757 871',
-                    'nom':    'Sahel Market',
-                    'ref':    payment_ref,
-                },
-                'mtn_momo': {
-                    'numero': '+237 680 757 871',
-                    'nom':    'Sahel Market',
-                    'ref':    payment_ref,
-                },
-                'cash': None,
-            }.get(order.payment_method),
+            'instructions':     instructions,
         })
 
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):

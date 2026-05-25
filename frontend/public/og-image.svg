@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a1a"/>
+      <stop offset="60%" style="stop-color:#1a3a2a"/>
+      <stop offset="100%" style="stop-color:#0f2027"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f97316"/>
+      <stop offset="100%" style="stop-color:#ea580c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fond -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Cercles décoratifs -->
+  <circle cx="950" cy="120" r="260" fill="#f97316" opacity="0.05"/>
+  <circle cx="1050" cy="500" r="180" fill="#f97316" opacity="0.04"/>
+  <circle cx="100" cy="550" r="200" fill="#2D6A4F" opacity="0.15"/>
+
+  <!-- Bande orange gauche -->
+  <rect x="0" y="0" width="8" height="630" fill="url(#accent)"/>
+
+  <!-- Logo carré -->
+  <rect x="100" y="180" width="88" height="88" rx="20" fill="url(#accent)"/>
+  <text x="144" y="241" font-family="Arial Black, Arial" font-weight="900" font-size="52" fill="white" text-anchor="middle">S</text>
+
+  <!-- Nom -->
+  <text x="212" y="221" font-family="Arial Black, Arial" font-weight="900" font-size="54" fill="white" letter-spacing="-2">Sahel</text>
+  <text x="375" y="221" font-family="Arial Black, Arial" font-weight="900" font-size="54" fill="#f97316" letter-spacing="-2">Market</text>
+  <text x="212" y="252" font-family="Arial, sans-serif" font-weight="400" font-size="16" fill="rgba(255,255,255,0.4)" letter-spacing="3">🇨🇲  MADE IN CAMEROUN</text>
+
+  <!-- Slogan -->
+  <text x="100" y="340" font-family="Arial Black, Arial" font-weight="900" font-size="48" fill="white" letter-spacing="-1">L'artisanat camerounais</text>
+  <text x="100" y="400" font-family="Arial Black, Arial" font-weight="900" font-size="48" fill="#f97316" letter-spacing="-1">livré chez vous.</text>
+
+  <!-- Sous-titre -->
+  <text x="100" y="455" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.55)">Sacs · Bijoux · Chaussures · Pagnes · Vannerie</text>
+
+  <!-- Badges payment -->
+  <rect x="100" y="500" width="180" height="44" rx="10" fill="rgba(249,115,22,0.15)" stroke="#f97316" stroke-width="1.5"/>
+  <text x="190" y="527" font-family="Arial, sans-serif" font-weight="700" font-size="16" fill="#f97316" text-anchor="middle">Orange Money</text>
+
+  <rect x="296" y="500" width="200" height="44" rx="10" fill="rgba(200,150,10,0.15)" stroke="#c8960a" stroke-width="1.5"/>
+  <text x="396" y="527" font-family="Arial, sans-serif" font-weight="700" font-size="16" fill="#eab308" text-anchor="middle">MTN Mobile Money</text>
+
+  <!-- URL -->
+  <text x="1100" y="600" font-family="Arial, sans-serif" font-size="18" fill="rgba(255,255,255,0.3)" text-anchor="end">sahel-market-gamma.vercel.app</text>
+</svg>
