@@ -366,25 +366,6 @@ export default function Checkout() {
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm()
 
-  if (items.length === 0 && !confirmed) {
-    return (
-      <div style={{
-        minHeight: '60vh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24,
-      }}>
-        <ShoppingBag size={48} color="#d1d5db" strokeWidth={1} />
-        <p style={{ fontSize: 16, fontWeight: 700, color: '#374151' }}>Votre panier est vide</p>
-        <Link to="/products"
-          style={{
-            padding: '10px 24px', background: '#f97316', color: '#fff',
-            borderRadius: 10, textDecoration: 'none', fontSize: 14, fontWeight: 700,
-          }}>
-          Voir le catalogue
-        </Link>
-      </div>
-    )
-  }
-
   if (confirmed) {
     const isMobilePay = ['orange_money', 'mtn_momo'].includes(paymentMethod)
     const useCampay   = confirmed.campayInitiated && isMobilePay
@@ -411,6 +392,25 @@ export default function Checkout() {
     )
   }
 
+  if (items.length === 0) {
+    return (
+      <div style={{
+        minHeight: '60vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24,
+      }}>
+        <ShoppingBag size={48} color="#d1d5db" strokeWidth={1} />
+        <p style={{ fontSize: 16, fontWeight: 700, color: '#374151' }}>Votre panier est vide</p>
+        <Link to="/products"
+          style={{
+            padding: '10px 24px', background: '#f97316', color: '#fff',
+            borderRadius: 10, textDecoration: 'none', fontSize: 14, fontWeight: 700,
+          }}>
+          Voir le catalogue
+        </Link>
+      </div>
+    )
+  }
+
   const onSubmit = async (data) => {
     try {
       const res = await orderService.checkout({
@@ -421,7 +421,6 @@ export default function Checkout() {
         apply_loyalty:    applyLoyalty && loyaltyValue > 0,
         promo_code:       promoResult?.code || '',
       })
-      dispatch(clearCart())
       setConfirmed({
         order:           res.data.order,
         instructions:    res.data.instructions,
@@ -430,6 +429,7 @@ export default function Checkout() {
         campayInitiated: res.data.campay_initiated  || false,
         campayDone:      false,
       })
+      dispatch(clearCart())
     } catch (err) {
       const msg = err.response?.data?.error || 'Erreur lors de la commande'
       toast.error(msg)
