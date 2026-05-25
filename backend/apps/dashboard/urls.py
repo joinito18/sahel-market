@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import GlobalDashboardView, ProducerDashboardView, ProducerExportView
+from .views import GlobalDashboardView, ProducerDashboardView, ProducerExportView, ProducerOrdersView
 
 urlpatterns = [
     path('global/', GlobalDashboardView.as_view(), name='global-dashboard'),
     path('producer/', ProducerDashboardView.as_view(), name='producer-dashboard'),
     path('producer/export/', ProducerExportView.as_view(), name='producer-export'),
+    path('producer/orders/', ProducerOrdersView.as_view(), name='producer-orders'),
 ]

@@ -57,11 +57,29 @@ class ProductListSerializer(serializers.ModelSerializer):
         return None
 
 class ProductDetailSerializer(ProductListSerializer):
-    images  = ProductImageSerializer(many=True, read_only=True)
-    ratings = RatingSerializer(many=True, read_only=True)
+    images       = ProductImageSerializer(many=True, read_only=True)
+    ratings      = RatingSerializer(many=True, read_only=True)
+    user_rating  = serializers.SerializerMethodField()
+    user_comment = serializers.SerializerMethodField()
 
     class Meta(ProductListSerializer.Meta):
-        fields = ProductListSerializer.Meta.fields + ['description', 'images', 'ratings']
+        fields = ProductListSerializer.Meta.fields + [
+            'description', 'images', 'ratings', 'user_rating', 'user_comment',
+        ]
+
+    def get_user_rating(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            r = obj.ratings.filter(user=request.user).first()
+            return r.score if r else None
+        return None
+
+    def get_user_comment(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            r = obj.ratings.filter(user=request.user).first()
+            return r.comment if r else ''
+        return ''
 
 class ProductCreateSerializer(serializers.ModelSerializer):
     images = serializers.ListField(

@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { User, Package, MapPin, Star, Calendar } from 'lucide-react'
+import { useSelector } from 'react-redux'
+import { User, Package, Star, Calendar, MessageCircle } from 'lucide-react'
 import api from '../services/api.js'
 import ProductCard from '../components/ProductCard.jsx'
 
@@ -21,6 +22,7 @@ const fetchProducerDetail = (userId) =>
 
 export default function ProducerPublicProfile() {
   const { username } = useParams()
+  const { isAuthenticated } = useSelector(s => s.auth)
 
   const { data: user, isLoading: loadingUser, error } = useQuery({
     queryKey: ['producer-public', username],
@@ -172,23 +174,53 @@ export default function ProducerPublicProfile() {
         </div>
 
         {/* Contact */}
-        {user.phone && (
-          <div style={{
-            background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 16,
-            padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
-          }}>
-            <div>
-              <p style={{ fontWeight: 700, color: '#92400e', fontSize: 14 }}>Contacter {displayName}</p>
-              <p style={{ color: '#b45309', fontSize: 13, marginTop: 4 }}>Pour des commandes personnalisées ou des questions</p>
-            </div>
-            <a href={`tel:${user.phone}`} style={{
-              padding: '10px 20px', background: OR, color: '#fff', borderRadius: 10,
-              textDecoration: 'none', fontWeight: 700, fontSize: 13,
-            }}>
-              {user.phone}
-            </a>
+        <div style={{
+          background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 16,
+          padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
+        }}>
+          <div>
+            <p style={{ fontWeight: 700, color: '#92400e', fontSize: 14 }}>Contacter {displayName}</p>
+            <p style={{ color: '#b45309', fontSize: 13, marginTop: 4 }}>Pour des commandes personnalisées ou des questions</p>
           </div>
-        )}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {isAuthenticated && (
+              <Link
+                to={`/messages/${user.id}`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '10px 18px', background: OR, color: '#fff', borderRadius: 10,
+                  textDecoration: 'none', fontWeight: 700, fontSize: 13,
+                }}
+              >
+                <MessageCircle size={15} />
+                Envoyer un message
+              </Link>
+            )}
+            {user.whatsapp && (
+              <a
+                href={`https://wa.me/${user.whatsapp.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '10px 18px', background: '#16a34a', color: '#fff', borderRadius: 10,
+                  textDecoration: 'none', fontWeight: 700, fontSize: 13,
+                }}
+              >
+                WhatsApp
+              </a>
+            )}
+            {user.phone && (
+              <a href={`tel:${user.phone}`} style={{
+                padding: '10px 18px', background: '#f3f4f6', color: '#374151', borderRadius: 10,
+                textDecoration: 'none', fontWeight: 700, fontSize: 13,
+                border: '1px solid #e5e7eb',
+              }}>
+                📞 {user.phone}
+              </a>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

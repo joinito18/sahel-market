@@ -126,3 +126,54 @@ class ProducerExportView(APIView):
                 item.order.delivery_address[:50] if item.order.delivery_address else '',
             ])
         return response
+
+
+STATUS_LABELS = {
+    'pending':    'En attente',
+    'paid':       'Payée',
+    'processing': 'En préparation',
+    'shipped':    'Expédiée',
+    'delivered':  'Livrée',
+    'cancelled':  'Annulée',
+}
+
+class ProducerOrdersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role not in ['producer', 'admin']:
+            return Response({'error': 'Accès refusé.'}, status=403)
+
+        orders = (
+            Order.objects
+            .filter(items__product__producer=request.user)
+            .distinct()
+            .select_related('user')
+            .prefetch_related('items__product')
+            .order_by('-created_at')[:60]
+        )
+
+        result = []
+        for order in orders:
+            my_items = [
+                {
+                    'product_name': item.product_name,
+                    'quantity':     item.quantity,
+                    'unit_price':   int(item.unit_price),
+                    'subtotal':     int(item.subtotal),
+                }
+                for item in order.items.filter(product__producer=request.user)
+            ]
+            result.append({
+                'id':               order.id,
+                'status':           order.status,
+                'status_label':     STATUS_LABELS.get(order.status, order.status),
+                'created_at':       order.created_at,
+                'client':           order.user.first_name or order.user.username,
+                'delivery_address': order.delivery_address,
+                'payment_method':   order.payment_method,
+                'items':            my_items,
+                'my_total':         sum(i['subtotal'] for i in my_items),
+            })
+
+        return Response(result)

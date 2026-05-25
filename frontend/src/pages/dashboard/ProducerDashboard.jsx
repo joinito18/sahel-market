@@ -721,6 +721,152 @@ function ProducerProfileTab() {
   )
 }
 
+/* ─── Onglet Commandes ─── */
+const STATUS_COLORS = {
+  pending:    { bg: '#fefce8', color: '#ca8a04', border: '#fde68a' },
+  paid:       { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
+  processing: { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa' },
+  shipped:    { bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
+  delivered:  { bg: '#f0fdf4', color: '#16a34a', border: '#86efac' },
+  cancelled:  { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
+}
+const STATUS_LABELS = {
+  pending: 'En attente', paid: 'Payée', processing: 'En préparation',
+  shipped: 'Expédiée', delivered: 'Livrée', cancelled: 'Annulée',
+}
+const FCFA_FMT = v => Number(v || 0).toLocaleString('fr-FR')
+
+function OrdersTab() {
+  const { data: orders, isLoading } = useQuery({
+    queryKey: ['dashboard', 'producer', 'orders'],
+    queryFn:  () => api.get('/dashboard/producer/orders/').then(r => r.data),
+    staleTime: 60_000,
+  })
+  const [filter, setFilter] = useState('all')
+
+  const list = Array.isArray(orders) ? orders : []
+  const filtered = filter === 'all' ? list : list.filter(o => o.status === filter)
+
+  const filterBtns = [
+    { id: 'all',        label: 'Toutes' },
+    { id: 'pending',    label: 'En attente' },
+    { id: 'paid',       label: 'Payées' },
+    { id: 'processing', label: 'En préparation' },
+    { id: 'shipped',    label: 'Expédiées' },
+    { id: 'delivered',  label: 'Livrées' },
+  ]
+
+  if (isLoading) return (
+    <div style={{ textAlign: 'center', padding: '48px 0', color: '#9ca3af' }}>Chargement…</div>
+  )
+
+  if (list.length === 0) return (
+    <div style={{
+      background: '#fff', borderRadius: 16, border: '1px solid #e5e7eb',
+      padding: '48px 24px', textAlign: 'center',
+    }}>
+      <ShoppingBag size={40} color="#d1d5db" style={{ margin: '0 auto 12px' }} strokeWidth={1} />
+      <p style={{ color: '#9ca3af', fontSize: 14 }}>Aucune commande pour le moment.</p>
+      <p style={{ color: '#d1d5db', fontSize: 12, marginTop: 6 }}>
+        Vos commandes apparaîtront ici dès qu'un client achètera vos produits.
+      </p>
+    </div>
+  )
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Filtres */}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {filterBtns.map(f => {
+          const count = f.id === 'all' ? list.length : list.filter(o => o.status === f.id).length
+          return (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id)}
+              style={{
+                padding: '6px 14px', borderRadius: 20, border: '1px solid',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                borderColor: filter === f.id ? OR : '#e5e7eb',
+                background:  filter === f.id ? '#fff7ed' : '#fff',
+                color:       filter === f.id ? OR : '#6b7280',
+                transition: 'all .12s',
+              }}
+            >
+              {f.label} {count > 0 && <span style={{ opacity: 0.7 }}>({count})</span>}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Liste */}
+      {filtered.length === 0 ? (
+        <div style={{ background: '#f9fafb', borderRadius: 12, padding: '32px 24px', textAlign: 'center' }}>
+          <p style={{ color: '#9ca3af', fontSize: 13 }}>Aucune commande dans cette catégorie.</p>
+        </div>
+      ) : filtered.map(order => {
+        const sc = STATUS_COLORS[order.status] || STATUS_COLORS.pending
+        return (
+          <div key={order.id} style={{
+            background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', overflow: 'hidden',
+          }}>
+            {/* En-tête commande */}
+            <div style={{
+              padding: '14px 20px', display: 'flex', alignItems: 'center',
+              justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
+              borderBottom: '1px solid #f3f4f6', background: '#fafafa',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontWeight: 800, fontSize: 14, color: '#111827' }}>
+                  #{order.id}
+                </span>
+                <span style={{ fontSize: 12, color: '#9ca3af' }}>
+                  {new Date(order.created_at).toLocaleDateString('fr-FR', {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                  })}
+                </span>
+                <span style={{ fontSize: 12, color: '#6b7280' }}>
+                  · {order.client}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20,
+                  background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`,
+                }}>
+                  {STATUS_LABELS[order.status] || order.status}
+                </span>
+                <span style={{ fontWeight: 800, fontSize: 14, color: '#111827' }}>
+                  {FCFA_FMT(order.my_total)} FCFA
+                </span>
+              </div>
+            </div>
+            {/* Articles */}
+            <div style={{ padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {order.items.map((item, i) => (
+                <div key={i} style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  fontSize: 13, color: '#374151',
+                }}>
+                  <span>
+                    <span style={{ fontWeight: 600 }}>{item.product_name}</span>
+                    <span style={{ color: '#9ca3af', marginLeft: 6 }}>×{item.quantity}</span>
+                  </span>
+                  <span style={{ fontWeight: 600 }}>{FCFA_FMT(item.subtotal)} FCFA</span>
+                </div>
+              ))}
+              {order.delivery_address && (
+                <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
+                  📍 {order.delivery_address}
+                </p>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 /* ─── Écran en attente de validation ─── */
 function PendingValidation({ user }) {
   return (
@@ -822,6 +968,7 @@ export default function ProducerDashboard() {
   const tabs = [
     { id: 'overview', label: 'Aperçu' },
     { id: 'products', label: `Mes produits${stats?.products_count ? ` (${stats.products_count})` : ''}` },
+    { id: 'orders',   label: 'Commandes' },
     { id: 'profile',  label: 'Mon profil artisan' },
   ]
 
@@ -929,6 +1076,8 @@ export default function ProducerDashboard() {
           <Overview stats={stats} />
         ) : tab === 'products' ? (
           <ProductList products={stats?.products} categories={categories?.results || categories} />
+        ) : tab === 'orders' ? (
+          <OrdersTab />
         ) : (
           <ProducerProfileTab />
         )}

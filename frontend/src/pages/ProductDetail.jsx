@@ -121,8 +121,10 @@ export default function ProductDetail() {
     }
   }
 
-  const avgRating = product.average_rating || 0
-  const ratingCount = product.ratings?.length || 0
+  const avgRating    = product.average_rating || 0
+  const ratingCount  = product.ratings?.length || 0
+  const userRating   = product.user_rating  || 0
+  const userComment  = product.user_comment || ''
 
   /* Compteur "personnes regardent" — déterministe par id pour rester cohérent */
   const watching = ((product.id * 7 + 13) % 18) + 5
@@ -488,7 +490,7 @@ export default function ProductDetail() {
               <p className="text-sm font-semibold text-gray-700 mb-3">
                 Notez ce produit
               </p>
-              <Rating productId={product.id} currentRating={avgRating} />
+              <Rating productId={product.id} userRating={userRating} userComment={userComment} />
             </div>
           </div>
         </div>
