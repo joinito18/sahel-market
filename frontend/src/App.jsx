@@ -5,6 +5,7 @@ import { setWishlist, clearWishlist } from './store/wishlistSlice.js'
 import { productService } from './services/product.service.js'
 
 import Navbar            from './components/Navbar.jsx'
+import BottomNav         from './components/BottomNav.jsx'
 import CartDrawer        from './components/CartDrawer.jsx'
 import ChatWidget        from './components/ChatWidget.jsx'
 import Footer            from './components/Footer.jsx'
@@ -101,7 +102,8 @@ export default function App() {
       <SuggestionWidget />
 
       <PwaInstallBanner />
-      <div className="flex-1">
+      {/* Padding bottom sur mobile pour ne pas masquer le contenu derrière la BottomNav */}
+      <div className="flex-1 pb-16 md:pb-0">
         <Suspense fallback={<PageLoader />}>
           <Routes>
 
@@ -171,6 +173,7 @@ export default function App() {
       </div>
 
       <Footer />
+      <BottomNav />
     </div>
   )
 }

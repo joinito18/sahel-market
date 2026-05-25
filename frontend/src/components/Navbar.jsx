@@ -450,12 +450,14 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Panier */}
+            {/* Panier — masqué sur mobile (BottomNav le gère) */}
             <button
               onClick={() => dispatch(toggleCart())}
-              style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8,
+              className="hidden md:flex"
+              style={{ alignItems: 'center', gap: 8,
                         padding: '7px 12px', borderRadius: 10, cursor: 'pointer',
-                        background: 'transparent', border: 'none', transition: 'background .15s' }}
+                        background: 'transparent', border: 'none', transition: 'background .15s',
+                        position: 'relative' }}
               onMouseEnter={e => e.currentTarget.style.background = '#fff7ed'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
