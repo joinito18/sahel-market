@@ -5,7 +5,7 @@ export default function Footer() {
   const year = new Date().getFullYear()
 
   return (
-    <footer style={{ background: '#1a1a1a', fontFamily: 'Inter, sans-serif' }}>
+    <footer className="md:block" style={{ background: '#1a1a1a', fontFamily: 'Inter, sans-serif' }}>
 
       {/* ── Newsletter ─────────────────────────────────────────── */}
       <div style={{ background: '#232f3e', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -215,7 +215,8 @@ export default function Footer() {
 
       {/* ── Bas de page ─────────────────────────────────────────── */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        {/* pb-20 sur mobile = 80px pour dépasser la BottomNav fixe (60px) */}
+        <div className="max-w-7xl mx-auto px-6 pt-4 pb-20 md:pb-5">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
             <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>
               © {year} Sahel Market · Tous droits réservés

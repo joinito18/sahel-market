@@ -369,7 +369,7 @@ export default function Checkout() {
       </div>
 
       {/* Contenu */}
-      <div className="checkout-layout-grid" style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
+      <div className="checkout-layout-grid" style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 64px' }}>
 
         {/* ── Colonne gauche : formulaire ─────────────────────── */}
         <form onSubmit={handleSubmit(onSubmit)}>
