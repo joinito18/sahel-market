@@ -1,32 +1,33 @@
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Heart, Star, ShoppingCart, MapPin, Zap } from 'lucide-react'
+import { Heart, ShoppingBag } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { addItem, openCart } from '../store/cartSlice.js'
 import { toggleLike } from '../store/wishlistSlice.js'
 import { productService } from '../services/product.service.js'
 import toast from 'react-hot-toast'
-
-import { imgUrl, fcfa as FCFA } from '../utils/media.js'
+import { imgUrl, fcfa } from '../utils/media.js'
 
 export default function ProductCard({ product, index = 0 }) {
-  const dispatch   = useDispatch()
-  const likedIds   = useSelector(s => s.wishlist.ids)
-  const liked      = likedIds.includes(product.id)
-  const [imgError, setImgError] = useState(false)
-  const [adding,   setAdding]   = useState(false)
+  const dispatch  = useDispatch()
+  const likedIds  = useSelector(s => s.wishlist.ids)
+  const liked     = likedIds.includes(product.id)
+  const [imgErr,  setImgErr]  = useState(false)
+  const [adding,  setAdding]  = useState(false)
 
   const src = imgUrl(product.main_image)
+  const isOutOfStock = product.stock === 0
 
-  const handleAddToCart = async (e) => {
+  const handleAddToCart = (e) => {
     e.preventDefault()
     e.stopPropagation()
+    if (isOutOfStock) return
     setAdding(true)
     dispatch(addItem(product))
     dispatch(openCart())
-    toast.success('Ajouté au panier !')
-    setTimeout(() => setAdding(false), 600)
+    toast.success('Ajouté au panier')
+    setTimeout(() => setAdding(false), 800)
   }
 
   const handleLike = async (e) => {
@@ -41,59 +42,63 @@ export default function ProductCard({ product, index = 0 }) {
     }
   }
 
-  const isOutOfStock  = product.stock === 0
-  const isLowStock    = product.stock > 0 && product.stock <= 5
-  const isPopular     = product.views_count > 100
-  const hasRating     = product.average_rating > 0
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.3 }}
-      whileHover={{ y: -5, transition: { duration: 0.15 } }}
-      className="group"
+      transition={{ delay: index * 0.035, duration: 0.35 }}
     >
       <Link
         to={`/products/${product.id}`}
-        className="block bg-white rounded-2xl overflow-hidden border border-gray-100
-                   hover:border-orange-200 hover:shadow-xl hover:shadow-orange-100/40
-                   transition-all duration-200"
+        style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
       >
-        {/* ── Image ─────────────────────────────────────────────── */}
-        <div className="relative aspect-square overflow-hidden bg-gradient-to-br
-                        from-amber-50 to-orange-50">
-
-          {src && !imgError ? (
+        {/* ── Image ──────────────────────────────────────────────── */}
+        <div
+          style={{
+            position: 'relative',
+            aspectRatio: '3/4',
+            overflow: 'hidden',
+            background: '#F0EFE9',
+            borderRadius: 12,
+            marginBottom: 10,
+          }}
+        >
+          {src && !imgErr ? (
             <img
               src={src}
               alt={product.name}
-              onError={() => setImgError(true)}
-              className="w-full h-full object-cover group-hover:scale-105
-                         transition-transform duration-500"
+              onError={() => setImgErr(true)}
+              style={{
+                width: '100%', height: '100%',
+                objectFit: 'cover',
+                transition: 'transform 0.5s ease',
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gray-50">
-              <ShoppingCart size={32} className="text-gray-200" />
+            <div style={{
+              width: '100%', height: '100%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: '#EDECEA',
+            }}>
+              <ShoppingBag size={28} color="#D4D3CE" strokeWidth={1} />
             </div>
           )}
 
           {/* Overlay rupture */}
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="bg-white text-gray-700 text-xs font-bold
-                               px-3 py-1.5 rounded-full shadow">
-                Rupture de stock
-              </span>
-            </div>
-          )}
-
-          {/* Badge populaire */}
-          {isPopular && !isOutOfStock && (
-            <div className="absolute top-2 left-2">
-              <span className="flex items-center gap-1 bg-orange-500 text-white
-                               text-[10px] font-bold px-2 py-1 rounded-full shadow-md">
-                <Zap size={9} fill="white" /> Populaire
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'rgba(17,17,17,0.45)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{
+                background: '#fff', color: '#111', fontSize: 11,
+                fontWeight: 700, padding: '5px 12px',
+                borderRadius: 4, letterSpacing: '0.06em',
+              }}>
+                ÉPUISÉ
               </span>
             </div>
           )}
@@ -101,130 +106,109 @@ export default function ProductCard({ product, index = 0 }) {
           {/* Bouton like */}
           <button
             onClick={handleLike}
-            className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center
-                        justify-center shadow-md transition-all duration-200
-                        ${liked
-                          ? 'bg-red-500 scale-100 opacity-100'
-                          : 'bg-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100'
-                        }`}
+            style={{
+              position: 'absolute', top: 10, right: 10,
+              width: 34, height: 34, borderRadius: '50%',
+              background: liked ? '#111' : 'rgba(255,255,255,0.9)',
+              backdropFilter: 'blur(8px)',
+              border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all .2s',
+              boxShadow: '0 1px 6px rgba(0,0,0,0.1)',
+            }}
           >
             <Heart
               size={14}
-              className={liked ? 'fill-white text-white' : 'text-gray-500'}
+              color={liked ? '#fff' : '#111'}
+              fill={liked ? '#fff' : 'none'}
+              strokeWidth={liked ? 2 : 1.8}
             />
           </button>
 
-          {/* Bouton ajout rapide — slide depuis le bas */}
+          {/* Bouton ajout rapide — hover desktop */}
           {!isOutOfStock && (
-            <div className="absolute bottom-0 left-0 right-0
-                            translate-y-full group-hover:translate-y-0
-                            transition-transform duration-200 ease-out">
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              transform: 'translateY(100%)',
+              transition: 'transform 0.2s ease',
+            }}
+              className="group-hover-reveal"
+            >
               <button
                 onClick={handleAddToCart}
-                className="w-full py-2.5 bg-orange-500/95 backdrop-blur-sm
-                           hover:bg-orange-600 text-white text-xs font-bold
-                           flex items-center justify-center gap-1.5
-                           transition-colors"
+                style={{
+                  width: '100%', padding: '11px',
+                  background: '#111', color: '#fff',
+                  fontSize: 11, fontWeight: 700,
+                  letterSpacing: '0.08em', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}
               >
-                <ShoppingCart size={13} />
-                Ajouter au panier
+                <ShoppingBag size={13} />
+                AJOUTER AU PANIER
               </button>
             </div>
           )}
         </div>
 
-        {/* ── Infos ─────────────────────────────────────────────── */}
-        <div className="p-3.5">
-
-          {/* Localisation */}
-          {product.location && (
-            <div className="flex items-center gap-1 text-gray-400 text-[11px] mb-1.5">
-              <MapPin size={9} className="flex-shrink-0" />
-              <span className="truncate">{product.location}</span>
-            </div>
+        {/* ── Infos ──────────────────────────────────────────────── */}
+        <div style={{ padding: '0 2px' }}>
+          {/* Artisan */}
+          {product.producer_name && (
+            <p style={{
+              fontSize: 10, fontWeight: 600, color: '#ADADAD',
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+              marginBottom: 3,
+            }}>
+              {product.producer_name}
+            </p>
           )}
 
           {/* Nom */}
-          <h3 className="text-sm font-semibold text-gray-800 line-clamp-2
-                         leading-snug mb-2 group-hover:text-orange-600
-                         transition-colors min-h-[2.5rem]">
+          <p style={{
+            fontSize: 13, fontWeight: 500, color: '#111111',
+            lineHeight: 1.4, marginBottom: 6,
+            display: '-webkit-box', WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
             {product.name}
-          </h3>
+          </p>
 
-          {/* Rating + vendeur */}
-          <div className="flex items-center gap-1.5 mb-3">
-            {hasRating ? (
-              <>
-                <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <Star key={s} size={10}
-                      className={s <= Math.round(product.average_rating)
-                        ? 'text-amber-400 fill-amber-400'
-                        : 'text-gray-200 fill-gray-200'
-                      }
-                    />
-                  ))}
-                </div>
-                <span className="text-[11px] text-gray-400">
-                  ({product.average_rating})
-                </span>
-              </>
-            ) : (
-              <span className="text-[11px] text-gray-300 italic">Pas encore noté</span>
+          {/* Prix + panier */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#111111' }}>
+              {fcfa(product.price)}{' '}
+              <span style={{ fontSize: 10, fontWeight: 400, color: '#ADADAD' }}>FCFA</span>
+            </p>
+
+            {!isOutOfStock && (
+              <motion.button
+                onClick={handleAddToCart}
+                animate={adding ? { scale: [1, 1.2, 1] } : {}}
+                transition={{ duration: 0.3 }}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: adding ? '#f97316' : '#111',
+                  border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background .2s',
+                  flexShrink: 0,
+                }}
+              >
+                <AnimatePresence mode="wait">
+                  {adding
+                    ? <motion.span
+                        key="check"
+                        initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                        style={{ color: '#fff', fontSize: 12, fontWeight: 900 }}
+                      >✓</motion.span>
+                    : <motion.span key="cart">
+                        <ShoppingBag size={13} color="#fff" strokeWidth={2} />
+                      </motion.span>
+                  }
+                </AnimatePresence>
+              </motion.button>
             )}
-            {product.producer_name && (
-              <>
-                <span className="text-gray-200 text-[11px]">·</span>
-                <span className="text-[11px] text-gray-400 truncate">
-                  {product.producer_name}
-                </span>
-              </>
-            )}
-          </div>
-
-          {/* Prix + bouton */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <div className="flex items-baseline gap-1">
-                <span className="text-base font-black text-orange-600 tabular-nums">
-                  {Number(product.price).toLocaleString('fr-FR')}
-                </span>
-                <span className="text-[11px] text-gray-400 font-normal">FCFA</span>
-              </div>
-              {isLowStock && (
-                <p className="text-[10px] text-red-500 font-semibold mt-0.5">
-                  Plus que {product.stock} en stock !
-                </p>
-              )}
-            </div>
-
-            <motion.button
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              animate={adding ? { scale: [1, 1.3, 1] } : {}}
-              transition={{ duration: 0.3 }}
-              className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center
-                          justify-center transition-all duration-150 shadow-sm
-                          ${isOutOfStock
-                            ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                            : 'bg-orange-500 hover:bg-orange-600 text-white hover:shadow-md hover:shadow-orange-200'
-                          }`}
-            >
-              <AnimatePresence mode="wait">
-                {adding
-                  ? <motion.span
-                      key="check"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      className="text-xs font-bold"
-                    >✓</motion.span>
-                  : <motion.span key="cart" initial={{ scale: 1 }} animate={{ scale: 1 }}>
-                      <ShoppingCart size={15} />
-                    </motion.span>
-                }
-              </AnimatePresence>
-            </motion.button>
           </div>
         </div>
       </Link>

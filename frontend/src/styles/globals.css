@@ -1,153 +1,219 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 
-/* ── Reset propre ─────────────────────────────────────────────── */
+/* ── Reset ────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
 
+/* ── Design tokens ───────────────────────────────────────────────── */
+:root {
+  /* Palette */
+  --bg:          #F5F4EF;   /* fond parcheminé chaud */
+  --surface:     #FFFFFF;
+  --surface-2:   #F0EFE9;
+  --ink:         #111111;
+  --ink-2:       #6B6B6B;
+  --ink-3:       #ADADAD;
+  --accent:      #f97316;   /* orange marque — usage très parcimonieux */
+  --accent-muted:#FFF3E8;
+  --border:      #E8E7E2;
+  --border-2:    #D4D3CE;
+  --dark:        #111111;
+
+  /* Typographie */
+  --font-sans:   'Inter', system-ui, sans-serif;
+  --font-serif:  'Cormorant Garamond', Georgia, serif;
+
+  /* Espacement sections */
+  --section-gap: 20px;
+  --card-pad:    16px;
+  --grid-gap:    10px;
+}
+@media (min-width: 640px) {
+  :root { --section-gap: 36px; --card-pad: 24px; --grid-gap: 16px; }
+}
+@media (min-width: 1024px) {
+  :root { --section-gap: 52px; }
+}
+
+/* ── Base body ───────────────────────────────────────────────────── */
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #f0f2f5;
-  color: #111827;
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
 }
 
-/* ── Design tokens — système d'espacement unifié ─────────────── */
-:root {
-  /* Gaps entre sections de page */
-  --section-gap: 20px;
-  /* Padding interne des cartes blanches */
-  --card-pad: 16px;
-  /* Gap entre les cards produit dans les grilles */
-  --grid-gap: 12px;
+/* ── Typographie utilitaire ──────────────────────────────────────── */
+.font-serif { font-family: var(--font-serif); }
+
+.display-1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 8vw, 5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
-@media (min-width: 640px) {
-  :root {
-    --section-gap: 32px;
-    --card-pad: 24px;
-    --grid-gap: 16px;
-  }
+.display-2 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
-@media (min-width: 1024px) {
-  :root {
-    --section-gap: 40px;
-  }
+.label-caps {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
-/* Carte section (fond blanc, bordure, padding responsive) */
+/* ── Cartes ──────────────────────────────────────────────────────── */
 .s-card {
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
   padding: var(--card-pad);
 }
-
-/* Espace vertical entre les grandes sections */
 .s-gap { margin-top: var(--section-gap); }
 
-/* ── Classes utilitaires ─────────────────────────────────────── */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+/* ── Clamp texte ────────────────────────────────────────────────── */
+.line-clamp-1 { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+.line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.line-clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 
-/* Scrollbar fine */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: #f0f2f5; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:2px; }
+.scrollbar-hide::-webkit-scrollbar { display:none; }
+.scrollbar-hide { scrollbar-width:none; -ms-overflow-style:none; }
 
-/* ── Animations ──────────────────────────────────────────────── */
+/* ── Skeleton shimmer ───────────────────────────────────────────── */
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position:  200% 0; }
+  0%   { background-position:-200% 0; }
+  100% { background-position: 200% 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg,#EDECEA 25%,#F5F4EF 50%,#EDECEA 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
+  animation: shimmer 1.5s infinite;
 }
 
-/* ── Responsive layouts ──────────────────────────────────────── */
-
-/* Panier — grille 2 colonnes desktop, 1 colonne mobile */
-.cart-layout-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  align-items: start;
+/* ── Layouts responsive ─────────────────────────────────────────── */
+.cart-layout-grid { display:grid; grid-template-columns:1fr; gap:20px; align-items:start; }
+@media(min-width:1024px) {
+  .cart-layout-grid       { grid-template-columns:1fr 320px; }
+  .cart-summary-sticky    { position:sticky; top:24px; }
 }
-@media (min-width: 1024px) {
-  .cart-layout-grid       { grid-template-columns: 1fr 320px; }
-  .cart-summary-sticky    { position: sticky; top: 24px; }
+.checkout-layout-grid { display:grid; grid-template-columns:1fr; gap:20px; align-items:start; }
+@media(min-width:1024px) {
+  .checkout-layout-grid    { grid-template-columns:1fr 360px; }
+  .checkout-sidebar-sticky { position:sticky; top:90px; }
 }
-
-/* Checkout — grille 2 colonnes desktop, 1 colonne mobile */
-.checkout-layout-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  align-items: start;
-}
-@media (min-width: 1024px) {
-  .checkout-layout-grid    { grid-template-columns: 1fr 360px; }
-  .checkout-sidebar-sticky { position: sticky; top: 90px; }
+@media(max-width:639px) {
+  .checkout-steps-divider   { display:none !important; }
+  .checkout-steps-breadcrumb{ display:none !important; }
 }
 
-/* Checkout header — masquer séparateur et étapes sur petit écran */
-@media (max-width: 639px) {
-  .checkout-steps-divider  { display: none !important; }
-  .checkout-steps-breadcrumb { display: none !important; }
-}
-
-/* Notifications dropdown — plein largeur sur mobile */
-@media (max-width: 639px) {
+/* ── Notification dropdown ──────────────────────────────────────── */
+@media(max-width:639px) {
   .notif-dropdown {
-    position: fixed !important;
-    top: 64px !important;
-    right: 8px !important;
-    left: 8px !important;
-    width: auto !important;
-    max-height: 75vh;
-    overflow-y: auto;
+    position:fixed !important; top:56px !important;
+    right:8px !important; left:8px !important;
+    width:auto !important; max-height:75vh; overflow-y:auto;
   }
 }
 
-/* ── Safe-area BottomNav + espace pré-footer ─────────────── */
+/* ── Safe-area BottomNav ─────────────────────────────────────────── */
 .safe-bottom {
-  /* Mobile : espace pour la BottomNav fixe (60px) + safe-area iPhone */
-  padding-bottom: max(4rem, calc(60px + env(safe-area-inset-bottom, 0px)));
+  padding-bottom: max(4.5rem, calc(64px + env(safe-area-inset-bottom, 0px)));
 }
-@media (min-width: 768px) {
-  /* Desktop : espace de respiration avant le Footer */
-  .safe-bottom { padding-bottom: 4rem; }
-}
-@media (min-width: 1024px) {
-  .safe-bottom { padding-bottom: 5rem; }
+@media(min-width:768px) { .safe-bottom { padding-bottom:4rem; } }
+@media(min-width:1024px){ .safe-bottom { padding-bottom:5rem; } }
+
+/* ── BottomNav glassmorphism ────────────────────────────────────── */
+.bottom-nav-glass {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0,0,0,0.07);
 }
 
-/* ── Promo ticker panels ─────────────────────────────────── */
-.promo-panel {
-  flex-shrink: 0;
-  width: 380px;
-  padding: 20px 28px;
+/* ── Promo ticker ───────────────────────────────────────────────── */
+.promo-panel { flex-shrink:0; width:380px; padding:20px 28px; }
+@media(max-width:639px) {
+  .promo-panel { width:260px; padding:14px 16px; }
+  .promo-ticker { animation-duration:14s; }
 }
-@media (max-width: 639px) {
-  .promo-panel { width: 260px; padding: 14px 16px; }
-  .promo-ticker { animation-duration: 14s; }
+@media(prefers-reduced-motion:reduce){ .promo-ticker{ animation:none !important; } }
+
+/* ── Bouton accent ──────────────────────────────────────────────── */
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 14px 28px;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  transition: background .15s, transform .12s;
+  text-decoration: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  .promo-ticker { animation: none !important; }
+.btn-accent:hover { background: #333; transform: translateY(-1px); }
+.btn-accent-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 13px 28px;
+  border-radius: 100px;
+  border: 1.5px solid var(--ink);
+  cursor: pointer;
+  transition: all .15s;
+  text-decoration: none;
 }
+.btn-accent-outline:hover { background: var(--ink); color:#fff; }
+
+/* ── Card produit éditoriale ──────────────────────────────────── */
+.product-card-img { aspect-ratio: 3/4; overflow:hidden; background:var(--surface-2); }
+@media(max-width:639px) { .product-card-img { aspect-ratio:1/1; } }
+
+/* ── Grilles responsive Home ─────────────────────────────────── */
+.hero-grid { display:grid; grid-template-columns:1fr; gap:clamp(28px,5vw,48px); align-items:center; }
+@media(min-width:1024px) { .hero-grid { grid-template-columns:1fr 1fr; } }
+
+.product-grid-home { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--grid-gap); }
+@media(min-width:640px)  { .product-grid-home { grid-template-columns:repeat(3,1fr); } }
+@media(min-width:768px)  { .product-grid-home { grid-template-columns:repeat(4,1fr); } }
+@media(min-width:1024px) { .product-grid-home { grid-template-columns:repeat(5,1fr); } }
+
+.stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+@media(min-width:768px) { .stats-grid { grid-template-columns:repeat(4,1fr); } }
+
+.partners-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+@media(min-width:640px) { .partners-grid { grid-template-columns:repeat(4,1fr); } }
+
+.cta-actions { display:flex; flex-direction:column; gap:12px; align-items:center; }
+@media(min-width:640px) { .cta-actions { flex-direction:row; justify-content:center; } }
+
+.cats-desktop-grid { display:none; }
+@media(min-width:1024px) { .cats-desktop-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; } }
+
+.hero-mobile-cats { display:flex; }
+@media(min-width:1024px) { .hero-mobile-cats { display:none; } }

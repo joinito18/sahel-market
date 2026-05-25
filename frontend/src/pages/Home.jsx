@@ -1,133 +1,49 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
-import { ShoppingCart, Heart, Star, ChevronRight, ChevronLeft,
-         Shield, Truck, Award, Users, Zap, MapPin, ArrowRight, Package } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronRight, ChevronLeft, Shield, Truck, Award, Users, MapPin, Package, ArrowRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { productService } from '../services/product.service.js'
-import { addItem, openCart } from '../store/cartSlice.js'
-import toast from 'react-hot-toast'
-import { imgUrl, fcfa } from '../utils/media.js'
+import { imgUrl } from '../utils/media.js'
+import ProductCard from '../components/ProductCard.jsx'
 
-
-/* ─── Carte produit ─────────────────────────────────────────────── */
-function ProductCard({ product }) {
-  const dispatch = useDispatch()
-  const [liked,  setLiked]  = useState(false)
-  const [imgErr, setImgErr] = useState(false)
-  const src = imgUrl(product.main_image)
-
-  function addToCart(e) {
-    e.preventDefault()
-    dispatch(addItem(product))
-    dispatch(openCart())
-    toast.success('Ajouté au panier !')
-  }
-
+/* ── Section header éditorial ─────────────────────────────────── */
+function SectionHeader({ title, sub, to }) {
   return (
-    <Link to={`/products/${product.id}`}
-      className="group bg-white rounded-lg overflow-hidden flex flex-col
-                 border border-gray-200 hover:border-orange-400
-                 hover:shadow-md transition-all duration-200">
-
-      {/* Photo */}
-      <div className="relative overflow-hidden bg-gray-50 flex-shrink-0"
-           style={{ aspectRatio: '1' }}>
-        {src && !imgErr
-          ? <img src={src} alt={product.name} onError={() => setImgErr(true)}
-                 className="w-full h-full object-cover group-hover:scale-105
-                            transition-transform duration-300" />
-          : <div className="w-full h-full flex items-center justify-center bg-gray-50">
-              <Package size={24} className="text-gray-200" />
-            </div>
-        }
-
-        {product.stock === 0 && (
-          <span className="absolute top-2 left-2 bg-gray-700 text-white
-                           text-[10px] font-bold px-2 py-0.5 rounded-sm">
-            Rupture
-          </span>
-        )}
-        {product.views_count > 150 && product.stock > 0 && (
-          <span className="absolute top-2 left-2 bg-red-500 text-white
-                           text-[10px] font-bold px-2 py-0.5 rounded-sm flex items-center gap-0.5">
-            <Zap size={8} fill="currentColor" /> Populaire
-          </span>
-        )}
-
-        <button onClick={e => { e.preventDefault(); setLiked(l => !l) }}
-          className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full shadow
-                     flex items-center justify-center opacity-0 group-hover:opacity-100
-                     transition-opacity border border-gray-100">
-          <Heart size={13} className={liked ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
-        </button>
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div>
+        {sub && <p className="label-caps" style={{ marginBottom: 6 }}>{sub}</p>}
+        <h2 style={{
+          fontFamily: 'var(--font-serif)', fontSize: 'clamp(20px,4vw,28px)',
+          fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1,
+        }}>
+          {title}
+        </h2>
       </div>
-
-      {/* Infos */}
-      <div className="p-3 flex flex-col flex-1">
-        {product.location && (
-          <p className="flex items-center gap-1 text-gray-400 text-[10px] mb-1 truncate">
-            <MapPin size={9} />{product.location}
-          </p>
-        )}
-        <p className="text-xs text-gray-800 line-clamp-2 leading-snug mb-2 flex-1
-                      group-hover:text-orange-600 transition-colors font-medium">
-          {product.name}
-        </p>
-
-        {product.average_rating > 0 && (
-          <div className="flex items-center gap-1 mb-2">
-            {[1,2,3,4,5].map(s => (
-              <Star key={s} size={10} className={
-                s <= Math.round(product.average_rating)
-                  ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'
-              } />
-            ))}
-            <span className="text-[10px] text-gray-400">
-              ({product.ratings_count ?? 0})
-            </span>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between mt-auto pt-2
-                        border-t border-gray-100">
-          <p className="text-sm font-extrabold text-orange-600">
-            {fcfa(product.price)}
-          </p>
-          <button onClick={addToCart} disabled={product.stock === 0}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold
-                       rounded text-white transition-colors
-                       bg-orange-500 hover:bg-orange-600
-                       disabled:bg-gray-200 disabled:cursor-not-allowed">
-            <ShoppingCart size={11} /> Ajouter
-          </button>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-function CardSkeleton() {
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden animate-pulse">
-      <div className="aspect-square bg-gray-100" />
-      <div className="p-3 space-y-2">
-        <div className="h-2 bg-gray-100 rounded w-1/2" />
-        <div className="h-2.5 bg-gray-100 rounded w-4/5" />
-        <div className="h-2.5 bg-gray-100 rounded w-3/5" />
-        <div className="flex justify-between pt-2">
-          <div className="h-4 bg-gray-100 rounded w-2/5" />
-          <div className="h-6 bg-gray-100 rounded w-1/4" />
-        </div>
-      </div>
+      {to && (
+        <Link to={to} className="label-caps" style={{ color: 'var(--ink)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          Voir tout →
+        </Link>
+      )}
     </div>
   )
 }
 
-/* ─── Carousel horizontal ──────────────────────────────────────── */
+/* ── Skeleton card ────────────────────────────────────────────── */
+function SkeletonCard() {
+  return (
+    <div>
+      <div className="skeleton" style={{ aspectRatio: '3/4', borderRadius: 12, marginBottom: 10 }} />
+      <div className="skeleton" style={{ height: 8, width: '55%', borderRadius: 4, marginBottom: 5 }} />
+      <div className="skeleton" style={{ height: 11, width: '80%', borderRadius: 4, marginBottom: 5 }} />
+      <div className="skeleton" style={{ height: 11, width: '40%', borderRadius: 4 }} />
+    </div>
+  )
+}
+
+/* ── Carousel horizontal ──────────────────────────────────────── */
 function Carousel({ products, loading, count = 6 }) {
-  const ref = useRef(null)
+  const ref  = useRef(null)
   const [canL, setCanL] = useState(false)
   const [canR, setCanR] = useState(true)
   const check = useCallback(() => {
@@ -140,33 +56,45 @@ function Carousel({ products, loading, count = 6 }) {
     el.addEventListener('scroll', check); check()
     return () => el.removeEventListener('scroll', check)
   }, [products, check])
-  const scroll = dir => ref.current?.scrollBy({ left: dir * 260, behavior: 'smooth' })
+  const scroll = dir => ref.current?.scrollBy({ left: dir * 300, behavior: 'smooth' })
 
   return (
-    <div className="relative -mx-1">
+    <div style={{ position: 'relative' }}>
       {canL && (
         <button onClick={() => scroll(-1)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white
-                     border border-gray-300 rounded-full shadow flex items-center
-                     justify-center hover:border-orange-400 transition-colors">
-          <ChevronLeft size={15} className="text-gray-600" />
+          style={{
+            position: 'absolute', left: -12, top: '35%', zIndex: 2,
+            width: 32, height: 32, borderRadius: '50%', background: '#fff',
+            border: '1px solid var(--border)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+          <ChevronLeft size={15} color="var(--ink)" />
         </button>
       )}
       {canR && (
         <button onClick={() => scroll(1)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white
-                     border border-gray-300 rounded-full shadow flex items-center
-                     justify-center hover:border-orange-400 transition-colors">
-          <ChevronRight size={15} className="text-gray-600" />
+          style={{
+            position: 'absolute', right: -12, top: '35%', zIndex: 2,
+            width: 32, height: 32, borderRadius: '50%', background: '#fff',
+            border: '1px solid var(--border)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+          <ChevronRight size={15} color="var(--ink)" />
         </button>
       )}
-      <div ref={ref} className="flex gap-3 sm:gap-4 overflow-x-auto px-1 pb-3 scrollbar-hide">
+      <div
+        ref={ref}
+        className="scrollbar-hide"
+        style={{ display: 'flex', gap: 'var(--grid-gap)', overflowX: 'auto', paddingBottom: 4 }}
+      >
         {loading
           ? Array.from({ length: count }).map((_, i) => (
-              <div key={i} className="flex-shrink-0 w-44 sm:w-48"><CardSkeleton /></div>
+              <div key={i} style={{ flexShrink: 0, width: 148 }}><SkeletonCard /></div>
             ))
-          : products.map(p => (
-              <div key={p.id} className="flex-shrink-0 w-44 sm:w-48"><ProductCard product={p} /></div>
+          : products.map((p, i) => (
+              <div key={p.id} style={{ flexShrink: 0, width: 148 }}>
+                <ProductCard product={p} index={i} />
+              </div>
             ))
         }
       </div>
@@ -174,36 +102,11 @@ function Carousel({ products, loading, count = 6 }) {
   )
 }
 
-/* ─── Section titre ─────────────────────────────────────────────── */
-function SectionHeader({ title, sub, to }) {
-  return (
-    <div className="flex items-center justify-between mb-4 sm:mb-6">
-      <div className="flex items-center gap-3">
-        <div className="w-1 h-6 sm:h-7 bg-orange-500 rounded-full" />
-        <div>
-          <h2 style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: 'clamp(14px,2vw,16px)' }}
-              className="text-gray-900 m-0">{title}</h2>
-          {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
-        </div>
-      </div>
-      {to && (
-        <Link to={to}
-          className="flex items-center gap-1 text-xs font-semibold text-orange-500
-                     hover:text-orange-700 transition-colors whitespace-nowrap">
-          Voir tout <ChevronRight size={13} />
-        </Link>
-      )}
-    </div>
-  )
-}
-
-/* ─── Section catégorie ─────────────────────────────────────────── */
+/* ── Section par catégorie ────────────────────────────────────── */
 function CatSection({ category }) {
   const { data, isLoading } = useQuery({
     queryKey: ['products', 'cat', category.id],
-    queryFn:  () => productService.getAll({
-      category: category.id, ordering: '-views_count', page_size: 10,
-    }),
+    queryFn:  () => productService.getAll({ category: category.id, ordering: '-views_count', page_size: 10 }),
   })
   const products = data?.data?.results ?? []
   if (!isLoading && products.length === 0) return null
@@ -211,29 +114,23 @@ function CatSection({ category }) {
 
   return (
     <div className="s-card">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg overflow-hidden bg-orange-50 border
-                          border-orange-100 flex items-center justify-center flex-shrink-0">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8, overflow: 'hidden',
+            background: 'var(--surface-2)', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
             {src
-              ? <img src={src} alt={category.name} className="w-full h-full object-cover" />
-              : <Package size={16} className="text-gray-300" />
-            }
+              ? <img src={src} alt={category.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <Package size={15} color="var(--border-2)" />}
           </div>
-          <span style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 14 }}
-                className="text-gray-900">
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 700, color: 'var(--ink)' }}>
             {category.name}
           </span>
-          {!isLoading && (
-            <span className="text-[11px] text-gray-400">
-              ({data?.data?.count ?? products.length})
-            </span>
-          )}
         </div>
-        <Link to={`/products?category=${category.id}`}
-          className="text-xs font-semibold text-orange-500 hover:text-orange-700
-                     flex items-center gap-0.5">
-          Tout voir <ChevronRight size={13} />
+        <Link to={`/products?category=${category.id}`} className="label-caps" style={{ color: 'var(--ink)', textDecoration: 'none' }}>
+          Tout voir →
         </Link>
       </div>
       <Carousel products={products} loading={isLoading} />
@@ -241,424 +138,172 @@ function CatSection({ category }) {
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════
    PAGE PRINCIPALE
-═══════════════════════════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════════════ */
 export default function Home() {
-  const navigate  = useNavigate()
-  const [slide, setSlide] = useState(0)
+  const navigate = useNavigate()
 
   const { data: catsData }    = useQuery({ queryKey: ['categories'], queryFn: () => productService.getCategories() })
-  const { data: statsData }   = useQuery({ queryKey: ['stats'], queryFn: () => productService.getStats(), staleTime: 300000 })
-  const { data: featData, isLoading: loadFeat } = useQuery({ queryKey: ['feat'], queryFn: () => productService.getAll({ ordering: '-views_count', page_size: 12 }) })
-  const { data: newData,  isLoading: loadNew  } = useQuery({ queryKey: ['new'],  queryFn: () => productService.getAll({ ordering: '-created_at',  page_size: 10 }) })
+  const { data: statsData }   = useQuery({ queryKey: ['stats'],      queryFn: () => productService.getStats(), staleTime: 300000 })
+  const { data: featData,  isLoading: loadFeat } = useQuery({ queryKey: ['feat'], queryFn: () => productService.getAll({ ordering: '-views_count', page_size: 10 }) })
+  const { data: newData,   isLoading: loadNew  } = useQuery({ queryKey: ['new'],  queryFn: () => productService.getAll({ ordering: '-created_at',  page_size: 10 }) })
 
   const categories  = Array.isArray(catsData?.data) ? catsData.data : (catsData?.data?.results ?? [])
   const stats       = statsData?.data ?? {}
   const featured    = featData?.data?.results ?? []
   const newProducts = newData?.data?.results  ?? []
 
-  /* Slides hero */
-  const SLIDES = [
-    {
-      bg: '#1a3a2a',
-      accent: '#f97316',
-      tag: '🇨🇲 100% Made in Cameroun',
-      title: ["L'artisanat", 'camerounais', 'livre chez vous'],
-      titleColor: [false, true, false],
-      sub: 'Sacs, chaussures, bijoux et bien plus — fabriqués à la main par nos artisans.',
-      btn: 'Découvrir le catalogue',
-      btn2: 'Devenir vendeur',
-      to: '/products',
-      to2: '/register',
-    },
-    {
-      bg: '#1a1200',
-      accent: '#f59e0b',
-      tag: '👜 Maroquinerie du Nord',
-      title: ['Sacs & portefeuilles', 'en cuir naturel', 'de Maroua'],
-      titleColor: [false, true, false],
-      sub: 'Tannés et cousus à la main selon les savoir-faire ancestraux du Sahel.',
-      btn: 'Voir les sacs',
-      btn2: 'Explorer tout',
-      to: '/products',
-      to2: '/products',
-    },
-    {
-      bg: '#0f0f2e',
-      accent: '#a78bfa',
-      tag: '👗 Mode africaine',
-      title: ['Robes, boubous', 'et pagnes wax', 'sur mesure'],
-      titleColor: [false, true, false],
-      sub: 'Couturières professionnelles, tissus authentiques, tailles S à 3XL.',
-      btn: 'Voir la mode',
-      btn2: 'Explorer tout',
-      to: '/products',
-      to2: '/products',
-    },
-  ]
-  useEffect(() => {
-    const t = setInterval(() => setSlide(s => (s + 1) % SLIDES.length), 5500)
-    return () => clearInterval(t)
-  }, [])
-
-  const sl = SLIDES[slide]
-
   return (
-    <div className="min-h-screen" style={{ background: '#f0f2f5' }}>
+    <div style={{ minHeight: '100vh' }}>
 
       {/* ══════════════════════════════════════════════════════════
-          HERO BANNER — pleine largeur, couleurs solides
+          HERO ÉDITORIAL
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ background: sl.bg }} className="relative overflow-hidden">
+      <div style={{ background: '#111111', overflow: 'hidden' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(40px,6vw,80px) 20px clamp(32px,5vw,64px)' }}>
+          <div className="hero-grid">
 
-        {/* Cercle décoratif */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none"
-          style={{ background: `radial-gradient(ellipse at 80% 50%, ${sl.accent}22 0%, transparent 70%)` }} />
+            {/* Texte hero */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <p className="label-caps" style={{ color: '#ADADAD', marginBottom: 20 }}>
+                Artisanat camerounais · Fait à la main
+              </p>
+              <h1 style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 'clamp(2.4rem, 8vw, 5rem)',
+                fontWeight: 700,
+                lineHeight: 1.0,
+                color: '#FFFFFF',
+                letterSpacing: '-0.02em',
+                marginBottom: 24,
+              }}>
+                L'artisanat<br />
+                <em style={{ color: 'var(--accent)' }}>du Sahel</em>,<br />
+                livré chez vous
+              </h1>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, lineHeight: 1.7, maxWidth: 400, marginBottom: 32 }}>
+                Sacs en cuir, bijoux, vêtements tissés — directement des mains de nos artisans au Cameroun.
+              </p>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <Link to="/products" className="btn-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                  Découvrir <ArrowRight size={14} />
+                </Link>
+                <Link to="/register" style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 8, padding: '13px 24px', borderRadius: 100,
+                  fontSize: 13, fontWeight: 700, letterSpacing: '0.04em',
+                  color: 'rgba(255,255,255,0.8)', border: '1.5px solid rgba(255,255,255,0.2)',
+                  textDecoration: 'none', transition: 'border-color .15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'}
+                >
+                  Devenir vendeur
+                </Link>
+              </div>
+            </motion.div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-
-            {/* Texte */}
-            <AnimatePresence mode="wait">
-              <motion.div key={slide}
-                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}     transition={{ duration: 0.35 }}>
-
-                {/* Tag */}
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-3 sm:mb-6"
-                  style={{ background: `${sl.accent}22`, border: `1px solid ${sl.accent}44` }}>
-                  <span className="text-xs font-bold"
-                        style={{ color: sl.accent }}>{sl.tag}</span>
-                </div>
-
-                {/* Titre */}
-                <div className="mb-3 sm:mb-5">
-                  {sl.title.map((line, i) => (
-                    <div key={i}
-                      style={{
-                        fontFamily: 'Inter, sans-serif',
-                        fontWeight: 900,
-                        fontSize: 'clamp(28px, 8vw, 52px)',
-                        lineHeight: 1.08,
-                        color: sl.titleColor[i] ? sl.accent : '#ffffff',
-                        letterSpacing: '-0.02em',
-                      }}>
-                      {line}
-                    </div>
-                  ))}
-                </div>
-
-                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 15, lineHeight: 1.6 }}
-                   className="mb-4 sm:mb-8 max-w-md">
-                  {sl.sub}
-                </p>
-
-                {/* Boutons */}
-                <div className="flex flex-wrap gap-3 mb-4 sm:mb-8">
-                  <Link to={sl.to}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg
-                               font-bold text-sm text-white transition-all
-                               hover:opacity-90 hover:-translate-y-0.5"
-                    style={{ background: sl.accent }}>
-                    {sl.btn} <ArrowRight size={15} />
-                  </Link>
-                  <Link to={sl.to2}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg
-                               font-semibold text-sm text-white transition-colors"
-                    style={{ background: 'rgba(255,255,255,0.1)',
-                             border: '1px solid rgba(255,255,255,0.2)' }}>
-                    {sl.btn2}
-                  </Link>
-                </div>
-
-                {/* Indicateurs */}
-                <div className="flex items-center gap-2">
-                  {SLIDES.map((_, i) => (
-                    <button key={i} onClick={() => setSlide(i)}
-                      className="h-1.5 rounded-full transition-all duration-300"
-                      style={{
-                        width: i === slide ? 28 : 8,
-                        background: i === slide ? sl.accent : 'rgba(255,255,255,0.25)',
-                      }} />
-                  ))}
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Grille photos catégories — masquée sur mobile */}
-            <div className="hidden lg:grid grid-cols-2 gap-2">
+            {/* Grille catégories desktop */}
+            <div className="cats-desktop-grid">
               {categories.slice(0, 4).map((cat, i) => {
                 const src = imgUrl(cat.image)
                 return (
-                  <div key={cat.id}
+                  <motion.div
+                    key={cat.id}
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.07, duration: 0.4 }}
                     onClick={() => navigate(`/products?category=${cat.id}`)}
-                    className="relative rounded-xl overflow-hidden cursor-pointer"
-                    style={{ aspectRatio: '1', transition: 'transform .2s' }}
+                    style={{
+                      position: 'relative', borderRadius: 12, overflow: 'hidden',
+                      aspectRatio: '1', cursor: 'pointer', transition: 'transform .25s',
+                    }}
                     onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                  >
                     {src
-                      ? <img src={src} alt={cat.name}
-                             className="w-full h-full object-cover" />
-                      : <div className="w-full h-full flex items-center justify-center"
-                             style={{ background: 'rgba(255,255,255,0.08)' }}>
-                          <Package size={32} color="rgba(255,255,255,0.3)" />
+                      ? <img src={src} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Package size={32} color="rgba(255,255,255,0.2)" />
                         </div>
                     }
-                    <div className="absolute inset-0"
-                         style={{ background: 'linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 50%)' }} />
-                    <p className="absolute bottom-2.5 left-3 text-white text-xs font-bold">
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)' }} />
+                    <p style={{ position: 'absolute', bottom: 12, left: 14, color: '#fff', fontSize: 12, fontWeight: 700 }}>
                       {cat.name}
                     </p>
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
-
           </div>
 
-          {/* ── Catégories en scroll horizontal (mobile only) ── */}
+          {/* Catégories mobile — scroll horizontal */}
           {categories.length > 0 && (
-            <div className="lg:hidden mt-5 pt-4 -mx-4 px-4 pb-1 flex gap-3 overflow-x-auto scrollbar-hide"
-                 style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              {categories.slice(0, 8).map(cat => {
+            <div
+              className="hero-mobile-cats scrollbar-hide"
+              style={{
+                gap: 8, overflowX: 'auto', paddingBottom: 2,
+                marginTop: 32, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              {categories.map(cat => {
                 const src = imgUrl(cat.image)
                 return (
-                  <Link
-                    key={cat.id}
-                    to={`/products?category=${cat.id}`}
-                    className="flex-shrink-0 flex flex-col items-center gap-1.5"
-                    style={{ width: 60, textDecoration: 'none' }}>
+                  <Link key={cat.id} to={`/products?category=${cat.id}`}
+                    style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: 56, textDecoration: 'none' }}>
                     <div style={{
-                      width: 52, height: 52, borderRadius: 14,
-                      overflow: 'hidden',
-                      border: `1.5px solid ${sl.accent}55`,
-                      background: `${sl.accent}18`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0,
+                      width: 48, height: 48, borderRadius: 12, overflow: 'hidden',
+                      background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                     }}>
                       {src
-                        ? <img src={src} alt={cat.name}
-                               style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <Package size={20} color={sl.accent} />
-                      }
+                        ? <img src={src} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <Package size={18} color="rgba(255,255,255,0.3)" />}
                     </div>
-                    <span className="line-clamp-2 text-center"
-                          style={{ fontSize: 9, fontWeight: 600,
-                                   color: 'rgba(255,255,255,0.7)', lineHeight: 1.3 }}>
+                    <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {cat.name}
                     </span>
                   </Link>
                 )
               })}
-              <Link to="/products"
-                className="flex-shrink-0 flex flex-col items-center gap-1.5"
-                style={{ width: 60, textDecoration: 'none' }}>
+              <Link to="/products" style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: 56, textDecoration: 'none' }}>
                 <div style={{
-                  width: 52, height: 52, borderRadius: 14,
-                  border: '1.5px dashed rgba(255,255,255,0.25)',
-                  background: 'rgba(255,255,255,0.06)',
+                  width: 48, height: 48, borderRadius: 12,
+                  border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.04)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <ChevronRight size={20} color="rgba(255,255,255,0.5)" />
+                  <ChevronRight size={18} color="rgba(255,255,255,0.4)" />
                 </div>
-                <span style={{ fontSize: 9, fontWeight: 600,
-                               color: 'rgba(255,255,255,0.5)', lineHeight: 1.3 }}>
-                  Tout voir
-                </span>
+                <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>Tout voir</span>
               </Link>
             </div>
           )}
-
         </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          BARRE GARANTIES — fond blanc compact
+          BARRE GARANTIES
       ══════════════════════════════════════════════════════════ */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="w-full px-4 sm:px-6 lg:px-10 relative">
-          <div className="flex items-center overflow-x-auto scrollbar-hide divide-x divide-gray-100">
+      <div style={{ background: '#FFFFFF', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative' }}>
+          <div className="scrollbar-hide" style={{ display: 'flex', overflowX: 'auto', borderRight: 'none' }}>
             {[
-              { Icon: Shield, l: 'Paiement sécurisé',  c: '#16a34a' },
-              { Icon: Truck,  l: 'Livraison suivie',   c: '#2563eb' },
-              { Icon: Award,  l: 'Artisans certifiés', c: '#ea580c' },
-              { Icon: Users,  l: 'Support Cameroun',   c: '#7c3aed' },
-            ].map(({ Icon, l, c }) => (
-              <div key={l} className="flex-shrink-0 flex items-center gap-2 px-5 sm:px-8 py-3 sm:py-4">
-                <Icon size={15} style={{ color: c }} />
-                <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">{l}</span>
-              </div>
-            ))}
-          </div>
-          {/* Fade droite — indique qu'on peut scroller sur mobile */}
-          <div className="sm:hidden absolute right-0 top-0 bottom-0 w-10
-                          pointer-events-none"
-               style={{ background: 'linear-gradient(to left, #fff 20%, transparent)' }} />
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════
-          GRILLE CATÉGORIES — style Amazon "Shop by category"
-      ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
-        <div className="s-card">
-          <SectionHeader title="Acheter par catégorie" to="/products" />
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
-            {/* "Tout voir" */}
-            <Link to="/products"
-              className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg
-                         bg-orange-50 border border-orange-200 hover:bg-orange-100
-                         hover:border-orange-400 transition-all text-center group">
-              <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center">
-                <Package size={18} className="text-orange-500" />
-              </div>
-              <span className="text-[10px] font-bold text-orange-600 leading-tight">
-                Tout voir
-              </span>
-            </Link>
-            {categories.slice(0, 17).map(cat => {
-              const src = imgUrl(cat.image)
-              return (
-                <Link key={cat.id} to={`/products?category=${cat.id}`}
-                  className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg
-                             bg-gray-50 border border-gray-100 hover:bg-orange-50
-                             hover:border-orange-300 transition-all text-center group">
-                  <div className="w-9 h-9 rounded-lg overflow-hidden bg-white
-                                  border border-gray-100 flex items-center justify-center">
-                    {src
-                      ? <img src={src} alt={cat.name} className="w-full h-full object-cover" />
-                      : <Package size={16} className="text-gray-300" />
-                    }
-                  </div>
-                  <span className="text-[10px] font-semibold text-gray-600 leading-tight
-                                   group-hover:text-orange-600 line-clamp-2">
-                    {cat.name}
-                  </span>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════
-          TENDANCES — carousel avec flèches
-      ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
-        <div className="s-card">
-          <SectionHeader
-            title="Tendances du moment"
-            sub="Les produits les plus consultés"
-            to="/products?ordering=-views_count" />
-          <Carousel products={featured} loading={loadFeat} />
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════
-          BANDEAU PROMO — ticker horizontal infini
-      ══════════════════════════════════════════════════════════ */}
-      <style>{`
-        @keyframes promoTicker {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .promo-ticker { animation: promoTicker 18s linear infinite; }
-        .promo-ticker:hover { animation-play-state: paused; }
-      `}</style>
-      {/* Note: .promo-panel dimensions et responsive définis dans globals.css */}
-
-      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
-        <div style={{ borderRadius: 10, overflow: 'hidden' }}>
-          <div className="promo-ticker" style={{ display: 'flex', width: 'max-content' }}>
-
-            {[0, 1].map(copy => (
-              <div key={copy} style={{ display: 'flex' }}>
-
-                {/* Panneau 1 — Livraison gratuite */}
-                <Link to="/register" className="promo-panel" style={{
-                  background: '#1e3a5f',
-                  textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8,
-                  borderRight: '2px solid rgba(255,255,255,0.05)',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                                   background: '#3b82f6', display: 'flex',
-                                   alignItems: 'center', justifyContent: 'center' }}>
-                      <Truck size={18} color="#fff" />
-                    </div>
-                    <p style={{ color: '#93c5fd', fontSize: 10, fontWeight: 700,
-                                 textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
-                      Offre découverte
-                    </p>
-                  </div>
-                  <p style={{ color: '#ffffff', fontWeight: 800, fontSize: 15, lineHeight: 1.3, margin: 0 }}>
-                    Livraison gratuite sur votre 1ère commande
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, margin: 0 }}>
-                    Code : <span style={{ color: '#f97316', fontWeight: 700 }}>SAHEL1</span> · nouveaux clients
-                  </p>
-                  <p style={{ color: '#93c5fd', fontSize: 12, fontWeight: 600, margin: 0 }}>
-                    Créer un compte →
-                  </p>
-                </Link>
-
-                {/* Panneau 2 — Paiements locaux */}
-                <Link to="/products" className="promo-panel" style={{
-                  background: '#1a2a1a',
-                  textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8,
-                  borderRight: '2px solid rgba(255,255,255,0.05)',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                                   background: '#16a34a', display: 'flex',
-                                   alignItems: 'center', justifyContent: 'center' }}>
-                      <Shield size={18} color="#fff" />
-                    </div>
-                    <p style={{ color: '#86efac', fontSize: 10, fontWeight: 700,
-                                 textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
-                      Paiement sécurisé
-                    </p>
-                  </div>
-                  <p style={{ color: '#ffffff', fontWeight: 800, fontSize: 15, lineHeight: 1.3, margin: 0 }}>
-                    Orange Money · MTN Mobile Money
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, margin: 0 }}>
-                    100% local et sécurisé. Aucune carte bancaire requise.
-                  </p>
-                  <p style={{ color: '#86efac', fontSize: 12, fontWeight: 600, margin: 0 }}>
-                    Voir le catalogue →
-                  </p>
-                </Link>
-
-                {/* Panneau 3 — Artisans */}
-                <Link to="/register" className="promo-panel" style={{
-                  background: '#2a1500',
-                  textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 8,
-                  borderRight: '2px solid rgba(255,255,255,0.05)',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                                   background: '#f97316', display: 'flex',
-                                   alignItems: 'center', justifyContent: 'center' }}>
-                      <Award size={18} color="#fff" />
-                    </div>
-                    <p style={{ color: '#fdba74', fontSize: 10, fontWeight: 700,
-                                 textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
-                      Vous êtes artisan ?
-                    </p>
-                  </div>
-                  <p style={{ color: '#ffffff', fontWeight: 800, fontSize: 15, lineHeight: 1.3, margin: 0 }}>
-                    Vendez vos créations partout au Cameroun
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, margin: 0 }}>
-                    Inscription gratuite. Un agent vous accompagne.
-                  </p>
-                  <p style={{ color: '#fdba74', fontSize: 12, fontWeight: 600, margin: 0 }}>
-                    Rejoindre la plateforme →
-                  </p>
-                </Link>
-
+              { Icon: Shield, label: 'Paiement sécurisé' },
+              { Icon: Truck,  label: 'Livraison suivie'  },
+              { Icon: Award,  label: 'Artisans certifiés'},
+              { Icon: Users,  label: 'Support local'     },
+            ].map(({ Icon, label }) => (
+              <div key={label} style={{
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+                padding: '14px 28px', borderRight: '1px solid var(--border)',
+              }}>
+                <Icon size={14} color="var(--ink)" />
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-2)', whiteSpace: 'nowrap' }}>{label}</span>
               </div>
             ))}
           </div>
@@ -666,192 +311,144 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          IMPACT — section chiffres-clés pour pitch investisseurs
+          TENDANCES
       ══════════════════════════════════════════════════════════ */}
-      {stats.artisans !== undefined && (
-        <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
-          <div className="rounded-2xl overflow-hidden relative"
-               style={{ background: 'linear-gradient(135deg, #0f2027 0%, #1a3a2a 50%, #0f2027 100%)' }}>
-
-            {/* Motif de fond subtil */}
-            <div className="absolute inset-0 opacity-[0.04]"
-                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='%23fff'/%3E%3C/svg%3E")` }} />
-
-            <div className="relative px-5 sm:px-8 lg:px-12 py-8 sm:py-10 md:py-14">
-
-              {/* Titre */}
-              <div className="text-center mb-8 sm:mb-10">
-                <span className="inline-block px-4 py-1 rounded-full text-xs font-bold
-                                 uppercase tracking-widest mb-3"
-                      style={{ background: 'rgba(249,115,22,0.15)',
-                               color: '#fb923c', border: '1px solid rgba(249,115,22,0.3)' }}>
-                  Notre impact
-                </span>
-                <h2 style={{ fontFamily: 'Inter', fontWeight: 900, fontSize: 'clamp(20px,3vw,28px)',
-                             color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                  L'artisanat camerounais<br />
-                  <span style={{ color: '#f97316' }}>en chiffres réels</span>
-                </h2>
-              </div>
-
-              {/* Grille de stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-4xl mx-auto">
-                {[
-                  { v: stats.artisans,   l: 'Artisans soutenus',   sub: 'actifs sur la plateforme', Icon: Users,   accent: '#f97316', bg: 'rgba(249,115,22,0.12)',   border: 'rgba(249,115,22,0.25)'  },
-                  { v: stats.produits,   l: 'Créations listées',   sub: 'faites à la main',         Icon: Package, accent: '#3b82f6', bg: 'rgba(59,130,246,0.12)',   border: 'rgba(59,130,246,0.25)'  },
-                  { v: stats.commandes || 0, l: 'Commandes livrées', sub: 'à travers le Cameroun',  Icon: Truck,   accent: '#22c55e', bg: 'rgba(34,197,94,0.12)',    border: 'rgba(34,197,94,0.25)'   },
-                  { v: stats.regions,    l: 'Régions couvertes',   sub: 'sur 10 au Cameroun',       Icon: MapPin,  accent: '#a78bfa', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.25)' },
-                ].map(({ v, l, sub, Icon, accent, bg, border }) => (
-                  <motion.div
-                    key={l}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    style={{
-                      background: bg, border: `1px solid ${border}`,
-                      borderRadius: 16, padding: 'clamp(14px,2vw,22px) clamp(14px,2vw,24px)',
-                    }}
-                  >
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 10, marginBottom: 10,
-                      background: `${accent}22`, display: 'flex',
-                      alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <Icon size={18} style={{ color: accent }} />
-                    </div>
-                    <p style={{
-                      fontFamily: 'Inter', fontWeight: 900, color: '#ffffff',
-                      fontSize: 'clamp(24px,3.5vw,36px)', lineHeight: 1,
-                      letterSpacing: '-0.03em', marginBottom: 4,
-                    }}>
-                      {Number(v).toLocaleString('fr-FR')}
-                      <span style={{ color: accent, fontSize: '0.6em' }}>+</span>
-                    </p>
-                    <p style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 13, marginBottom: 2 }}>
-                      {l}
-                    </p>
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
-                      {sub}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Note de bas */}
-              <p className="text-center text-xs mt-6"
-                 style={{ color: 'rgba(255,255,255,0.3)' }}>
-                Données en temps réel · mise à jour automatique
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════
-          NOUVEAUX PRODUITS — grid 5 colonnes style Alibaba
-      ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
-        <div className="s-card">
-          <SectionHeader
-            title="Nouveaux produits"
-            sub="Tout juste ajoutés par nos artisans"
-            to="/products?ordering=-created_at" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
-            {loadNew
-              ? Array.from({ length: 10 }).map((_, i) => <CardSkeleton key={i} />)
-              : newProducts.map(p => <ProductCard key={p.id} product={p} />)
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+        <div className="s-gap s-card">
+          <SectionHeader title="Tendances du moment" sub="Les plus consultés" to="/products?ordering=-views_count" />
+          <div className="product-grid-home">
+            {loadFeat
+              ? Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)
+              : featured.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)
             }
           </div>
         </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          SECTIONS PAR CATÉGORIE
+          CHIFFRES IMPACT
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap space-y-5 sm:space-y-8">
-        {categories.map(cat => <CatSection key={cat.id} category={cat} />)}
+      {stats.artisans !== undefined && (
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+          <div className="s-gap" style={{
+            background: '#111111', borderRadius: 20,
+            padding: 'clamp(24px,4vw,48px) clamp(20px,4vw,48px)',
+          }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 32 }}>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(20px,3vw,28px)', fontWeight: 700, color: '#fff' }}>
+                Notre impact en chiffres
+              </h2>
+              <p className="label-caps" style={{ color: '#ADADAD' }}>Données en temps réel</p>
+            </div>
+            <div className="stats-grid">
+              {[
+                { v: stats.artisans,       label: 'Artisans',  sub: 'actifs'         },
+                { v: stats.produits,       label: 'Créations', sub: 'faites à la main'},
+                { v: stats.commandes || 0, label: 'Commandes', sub: 'livrées'        },
+                { v: stats.regions,        label: 'Régions',   sub: 'couvertes'      },
+              ].map(({ v, label, sub }) => (
+                <div key={label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 'clamp(16px,2vw,24px)' }}>
+                  <p style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 'clamp(2rem,5vw,3.5rem)',
+                    fontWeight: 700, color: '#fff', lineHeight: 1, marginBottom: 4,
+                  }}>
+                    {Number(v).toLocaleString('fr-FR')}
+                    <span style={{ color: 'var(--accent)', fontSize: '0.55em' }}>+</span>
+                  </p>
+                  <p style={{ fontWeight: 700, color: '#fff', fontSize: 13, marginBottom: 2 }}>{label}</p>
+                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>{sub}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+          NOUVELLES CRÉATIONS
+      ══════════════════════════════════════════════════════════ */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+        <div className="s-gap s-card">
+          <SectionHeader title="Nouvelles créations" sub="Tout juste ajoutées" to="/products?ordering=-created_at" />
+          <Carousel products={newProducts} loading={loadNew} />
+        </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          CTA ARTISAN — style Amazon footer banner
+          SECTIONS PAR CATÉGORIE
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap mb-6 sm:mb-10">
-        <div className="rounded-xl overflow-hidden px-6 sm:px-12 py-10 sm:py-14 text-center relative"
-             style={{ background: 'linear-gradient(135deg, #1a3a2a 0%, #2D6A4F 100%)' }}>
-          <div className="absolute inset-0 opacity-5"
-               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1' fill='%23fff'/%3E%3C/svg%3E")` }} />
-          <div className="relative">
-            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold
-                             uppercase tracking-widest mb-4"
-                  style={{ background: 'rgba(255,255,255,0.1)',
-                           color: '#86efac', border: '1px solid rgba(134,239,172,0.3)' }}>
-              Pour les artisans
-            </span>
-            <h2 style={{ fontFamily: 'Inter', fontWeight: 900,
-                         fontSize: 'clamp(20px, 5vw, 28px)',
-                         color: '#ffffff', letterSpacing: '-0.02em' }}
-                className="mb-3">
-              Vendez vos créations au Cameroun et au-delà
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, maxWidth: 480 }}
-               className="mx-auto mb-6 sm:mb-8 px-2 sm:px-0">
-              Inscription gratuite. Un agent vous accompagne sur le terrain.
-              Vos produits en ligne en moins de 48h.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link to="/register"
-                className="inline-flex items-center gap-2 w-full sm:w-auto justify-center
-                           px-8 py-3.5 rounded-lg font-bold text-sm text-white
-                           transition-all hover:opacity-90 hover:-translate-y-0.5"
-                style={{ background: '#f97316' }}>
-                Créer mon compte gratuit <ArrowRight size={15} />
-              </Link>
-              <Link to="/how-it-works"
-                className="inline-flex items-center justify-center w-full sm:w-auto
-                           px-8 py-3.5 rounded-lg font-semibold text-sm transition-colors"
-                style={{ background: 'rgba(255,255,255,0.08)',
-                         border: '1px solid rgba(255,255,255,0.2)',
-                         color: '#ffffff' }}>
-                Comment ça marche ?
-              </Link>
-            </div>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 'var(--section-gap)' }}>
+        {categories.map(cat => (
+          <CatSection key={cat.id} category={cat} />
+        ))}
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          CTA ARTISAN
+      ══════════════════════════════════════════════════════════ */}
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+        <div className="s-gap" style={{
+          background: '#111111', borderRadius: 20,
+          padding: 'clamp(36px,6vw,72px) 24px', textAlign: 'center',
+          marginBottom: 'clamp(32px,5vw,64px)',
+        }}>
+          <p className="label-caps" style={{ color: '#ADADAD', marginBottom: 16 }}>Pour les artisans</p>
+          <h2 style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 'clamp(1.6rem,4vw,3rem)',
+            fontWeight: 700, color: '#fff', marginBottom: 16, lineHeight: 1.1,
+          }}>
+            Vendez vos créations<br />
+            <em style={{ color: 'var(--accent)' }}>partout au Cameroun</em>
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, maxWidth: 420, margin: '0 auto 32px', lineHeight: 1.7 }}>
+            Inscription gratuite. Un agent vous accompagne sur le terrain. Vos produits en ligne en moins de 48h.
+          </p>
+          <div className="cta-actions">
+            <Link to="/register" className="btn-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              Créer mon compte gratuit <ArrowRight size={14} />
+            </Link>
+            <Link to="/how-it-works" style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              padding: '13px 24px', borderRadius: 100, fontSize: 13, fontWeight: 700,
+              color: 'rgba(255,255,255,0.7)', border: '1.5px solid rgba(255,255,255,0.18)',
+              textDecoration: 'none',
+            }}>
+              Comment ça marche ?
+            </Link>
           </div>
         </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          PARTENAIRES — bande de confiance, toujours en bas
+          PARTENAIRES
       ══════════════════════════════════════════════════════════ */}
-      <div className="w-full mt-8 sm:mt-12" style={{ background: '#f9fafb', borderTop: '1px solid #e5e7eb' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10">
-          <p className="text-center text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-6 sm:mb-8">
-            Ils nous font confiance
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div style={{ borderTop: '1px solid var(--border)', background: '#fff' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(28px,4vw,48px) 20px' }}>
+          <p className="label-caps" style={{ textAlign: 'center', marginBottom: 24 }}>Ils nous font confiance</p>
+          <div className="partners-grid">
             {[
-              { name: 'Orange Cameroun', role: 'Partenaire paiement mobile',      color: '#ff6600', initial: 'O'  },
-              { name: 'MTN Cameroun',    role: 'Mobile Money (MoMo)',              color: '#c8960a', initial: 'M'  },
-              { name: 'GIZ',             role: 'Coopération au développement',     color: '#4a7c3f', initial: 'G'  },
-              { name: 'MINCOMMERCE',     role: 'Ministère du Commerce · Cameroun', color: '#1e3a8a', initial: 'MC' },
+              { name: 'Orange Cameroun', role: 'Paiement mobile',          color: '#ff6600', initial: 'O'  },
+              { name: 'MTN Cameroun',    role: 'Mobile Money (MoMo)',       color: '#c8960a', initial: 'M'  },
+              { name: 'GIZ',             role: 'Coopération développement', color: '#4a7c3f', initial: 'G'  },
+              { name: 'MINCOMMERCE',     role: 'Ministère du Commerce',     color: '#1e3a8a', initial: 'MC' },
             ].map(({ name, role, color, initial }) => (
-              <div key={name}
-                className="flex items-center gap-3 rounded-2xl bg-white"
-                style={{ padding: 'clamp(12px,2vw,18px)', border: '1px solid #e5e7eb' }}>
+              <div key={name} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: 'clamp(12px,1.5vw,16px)', borderRadius: 12,
+                border: '1px solid var(--border)', background: '#fff',
+              }}>
                 <div style={{
-                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                  background: color, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', color: '#fff', fontWeight: 900,
-                  fontSize: initial.length > 1 ? 11 : 16,
-                  boxShadow: `0 4px 10px ${color}30`,
+                  width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                  background: color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontWeight: 900, fontSize: initial.length > 1 ? 10 : 15,
                 }}>
                   {initial}
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <p style={{ fontWeight: 700, fontSize: 12, color: '#111827',
-                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {name}
-                  </p>
-                  <p style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.4 }}>{role}</p>
+                  <p style={{ fontWeight: 700, fontSize: 12, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</p>
+                  <p style={{ fontSize: 10, color: 'var(--ink-3)', lineHeight: 1.4 }}>{role}</p>
                 </div>
               </div>
             ))}
