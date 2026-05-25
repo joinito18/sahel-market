@@ -52,6 +52,20 @@ class Message(models.Model):
         return f"{self.sender.username} → {self.recipient.username}"
 
 
+class PushSubscription(models.Model):
+    user     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='push_subscriptions')
+    endpoint = models.TextField(unique=True)
+    p256dh   = models.TextField()
+    auth     = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'endpoint']
+
+    def __str__(self):
+        return f"PushSub — {self.user.username}"
+
+
 class ProducerProfile(models.Model):
     user        = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='producer_profile'

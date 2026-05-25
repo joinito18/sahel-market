@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import User, ProducerProfile, Message
+from .models import User, ProducerProfile, Message, PushSubscription
 from .serializers import RegisterSerializer, UserSerializer, UpdateProfileSerializer, ProducerProfileSerializer, MessageSerializer
 from django.db import models as djmodels
 from django.core.mail import send_mail
@@ -286,3 +286,36 @@ class ThreadView(APIView):
 
         msg = Message.objects.create(sender=me, recipient=other, content=content)
         return Response(MessageSerializer(msg).data, status=201)
+
+
+class PushSubscribeView(APIView):
+    """Enregistre ou supprime un abonnement push PWA."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        endpoint = request.data.get('endpoint', '').strip()
+        keys = request.data.get('keys', {})
+        p256dh = keys.get('p256dh', '')
+        auth   = keys.get('auth', '')
+        if not endpoint:
+            return Response({'error': 'endpoint requis'}, status=400)
+        PushSubscription.objects.update_or_create(
+            endpoint=endpoint,
+            defaults={'user': request.user, 'p256dh': p256dh, 'auth': auth},
+        )
+        return Response({'ok': True})
+
+    def delete(self, request):
+        endpoint = request.data.get('endpoint', '')
+        if endpoint:
+            PushSubscription.objects.filter(user=request.user, endpoint=endpoint).delete()
+        return Response({'ok': True})
+
+
+class VapidPublicKeyView(APIView):
+    """Renvoie la clé VAPID publique pour le frontend."""
+    permission_classes = []
+
+    def get(self, request):
+        from django.conf import settings
+        return Response({'public_key': getattr(settings, 'VAPID_PUBLIC_KEY', '')})

@@ -60,3 +60,36 @@ self.addEventListener('fetch', e => {
     )
   }
 })
+
+/* ── Push notifications ──────────────────────────────────────── */
+self.addEventListener('push', e => {
+  let data = { title: 'Sahel Market', body: '', url: '/' }
+  try { data = { ...data, ...e.data.json() } } catch {}
+
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    '/icon.svg',
+      badge:   '/icon.svg',
+      tag:     data.url,
+      data:    { url: data.url },
+      vibrate: [200, 100, 200],
+    })
+  )
+})
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close()
+  const target = e.notification.data?.url || '/'
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(ws => {
+      for (const w of ws) {
+        if (w.url.includes(self.location.origin) && 'focus' in w) {
+          w.navigate(target)
+          return w.focus()
+        }
+      }
+      return clients.openWindow(target)
+    })
+  )
+})

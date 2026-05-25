@@ -12,6 +12,7 @@ from django.utils.decorators import method_decorator
 from .models import Cart, CartItem, Order, OrderItem, Notification, PromoCode
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer, NotificationSerializer
 from .campay_service import CampayService, CampayError
+from apps.users.push_utils import send_push
 
 
 def send_order_confirmation(order, payment_ref, instructions):
@@ -84,13 +85,15 @@ def create_order_notification(order, new_status):
     if not info:
         return
     title, msg_tpl = info
+    body = msg_tpl.replace('{id}', str(order.id))
     Notification.objects.create(
         user=order.user,
         type=f'order_{new_status}',
         title=title,
-        message=msg_tpl.replace('{id}', str(order.id)),
+        message=body,
         order=order,
     )
+    send_push(order.user, title, body, url=f'/orders/{order.id}/track')
 
 class PromoValidateView(APIView):
     permission_classes = [IsAuthenticated]

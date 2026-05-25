@@ -112,12 +112,18 @@ export default function ProductDetail() {
     catch { setLiked(l => !l) }
   }
 
-  const handleShare = async () => {
+  const handleShare = () => {
+    const price = Number(product.price).toLocaleString('fr-FR')
+    const text = `🛒 *${product.name}*\n💰 ${price} FCFA\n\n✨ Produit artisanal camerounais sur Sahel Market :\n${window.location.href}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleCopyLink = async () => {
     try {
-      await navigator.share({ title: product.name, url: window.location.href })
-    } catch {
       await navigator.clipboard.writeText(window.location.href)
       toast.success('Lien copié !')
+    } catch {
+      toast.error('Impossible de copier')
     }
   }
 
@@ -229,6 +235,17 @@ export default function ProductDetail() {
                 </button>
                 <button
                   onClick={handleShare}
+                  title="Partager sur WhatsApp"
+                  className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl shadow-md
+                             flex items-center justify-center transition-colors
+                             bg-green-500 hover:bg-green-600 text-white"
+                  style={{ fontSize: 11, fontWeight: 900 }}
+                >
+                  WA
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  title="Copier le lien"
                   className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl bg-white/90 backdrop-blur-sm shadow-md
                              flex items-center justify-center text-gray-500
                              hover:bg-white transition-colors"

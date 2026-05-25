@@ -3,6 +3,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django.db.models import Avg
 from .models import Product, Category, Rating, Like
 from .serializers import (ProductListSerializer, ProductDetailSerializer,
                            ProductCreateSerializer, CategorySerializer, RatingSerializer)
@@ -41,6 +42,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             qs = qs.filter(price__gte=price_min)
         if price_max:
             qs = qs.filter(price__lte=price_max)
+        min_rating = self.request.query_params.get('min_rating')
+        if min_rating:
+            qs = qs.annotate(avg_r=Avg('ratings__score')).filter(avg_r__gte=float(min_rating))
         return qs
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])

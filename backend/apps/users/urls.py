@@ -16,6 +16,8 @@ from .views import (
     ProducerValidationView,
     ConversationsView,
     ThreadView,
+    PushSubscribeView,
+    VapidPublicKeyView,
 )
 
 urlpatterns = [
@@ -48,4 +50,8 @@ urlpatterns = [
     # Messagerie
     path('messages/', ConversationsView.as_view(), name='conversations'),
     path('messages/<int:user_id>/', ThreadView.as_view(), name='thread'),
+
+    # Push notifications PWA
+    path('push-subscribe/', PushSubscribeView.as_view(), name='push-subscribe'),
+    path('push-vapid-key/', VapidPublicKeyView.as_view(), name='vapid-key'),
 ]

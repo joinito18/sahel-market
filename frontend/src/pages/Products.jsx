@@ -49,6 +49,7 @@ export default function Products() {
   const [location,   setLocation]  = useState('')
   const [priceMin,   setPriceMin]  = useState('')
   const [priceMax,   setPriceMax]  = useState('')
+  const [minRating,  setMinRating] = useState(0)
   const sortRef   = useRef(null)
   const filterRef = useRef(null)
 
@@ -88,13 +89,14 @@ export default function Products() {
       : []
 
   const qParams = {
-    search:    filters.search    || undefined,
-    category:  filters.category  || undefined,
-    location:  location          || undefined,
-    price_min: priceMin          || undefined,
-    price_max: priceMax          || undefined,
-    ordering:  filters.ordering  || '-created_at',
-    page:      currentPage,
+    search:     filters.search    || undefined,
+    category:   filters.category  || undefined,
+    location:   location          || undefined,
+    price_min:  priceMin          || undefined,
+    price_max:  priceMax          || undefined,
+    min_rating: minRating > 0     ? minRating : undefined,
+    ordering:   filters.ordering  || '-created_at',
+    page:       currentPage,
   }
   const { data, isLoading } = useQuery({
     queryKey: ['products', qParams],
@@ -126,11 +128,11 @@ export default function Products() {
 
   const clearAll = () => {
     dispatch(setFilters({ category: '', search: '' }))
-    setSearch(''); setLocation(''); setPriceMin(''); setPriceMax('')
+    setSearch(''); setLocation(''); setPriceMin(''); setPriceMax(''); setMinRating(0)
     dispatch(setPage(1))
   }
 
-  const hasFilters = filters.category || filters.search || location || priceMin || priceMax
+  const hasFilters = filters.category || filters.search || location || priceMin || priceMax || minRating > 0
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -234,17 +236,17 @@ export default function Products() {
                 onClick={() => setFilterOpen(v => !v)}
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium
                             rounded-xl border transition-all duration-150
-                            ${filterOpen || location || priceMin || priceMax
+                            ${filterOpen || location || priceMin || priceMax || minRating > 0
                               ? 'bg-orange-50 border-orange-300 text-orange-600'
                               : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-orange-300'
                             }`}
               >
                 <SlidersHorizontal size={14} />
                 <span className="hidden sm:inline">Filtres</span>
-                {(location || priceMin || priceMax) && (
+                {(location || priceMin || priceMax || minRating > 0) && (
                   <span className="w-5 h-5 bg-orange-500 text-white rounded-full
                                    text-[10px] font-bold flex items-center justify-center">
-                    {[location, priceMin, priceMax].filter(Boolean).length}
+                    {[location, priceMin, priceMax, minRating > 0 ? '★' : ''].filter(Boolean).length}
                   </span>
                 )}
               </button>
@@ -311,9 +313,35 @@ export default function Products() {
                       </div>
                     </div>
 
-                    {(location || priceMin || priceMax) && (
+                    {/* Note minimale */}
+                    <div className="mt-4">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <span>★</span> Note minimale
+                      </p>
+                      <div className="flex gap-1">
+                        {[0, 1, 2, 3, 4].map(v => {
+                          const stars = v + 1
+                          const isAll = v === 0 && minRating === 0
+                          const isActive = v > 0 && minRating === stars
+                          return (
+                            <button
+                              key={v}
+                              onClick={() => { setMinRating(v === 0 ? 0 : stars); dispatch(setPage(1)) }}
+                              className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors
+                                ${(isAll || isActive)
+                                  ? 'bg-orange-500 text-white'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-orange-50'}`}
+                            >
+                              {v === 0 ? 'Tous' : `${stars}★+`}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {(location || priceMin || priceMax || minRating > 0) && (
                       <button
-                        onClick={() => { setLocation(''); setPriceMin(''); setPriceMax(''); dispatch(setPage(1)) }}
+                        onClick={() => { setLocation(''); setPriceMin(''); setPriceMax(''); setMinRating(0); dispatch(setPage(1)) }}
                         className="mt-3 w-full py-2 text-xs font-bold text-red-500
                                    bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
                       >

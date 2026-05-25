@@ -92,10 +92,68 @@ function WishlistSync() {
   return null
 }
 
+function urlB64ToUint8Array(b64) {
+  const pad = '='.repeat((4 - b64.length % 4) % 4)
+  const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'))
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)))
+}
+
+function PushSetup() {
+  const { isAuthenticated } = useSelector(s => s.auth)
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+
+    // Délai pour ne pas interrompre le chargement initial
+    const timer = setTimeout(async () => {
+      try {
+        const reg = await navigator.serviceWorker.ready
+
+        // Récupérer la clé publique VAPID depuis le backend
+        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token')
+        const keyRes = await fetch(`${apiBase}/auth/push-vapid-key/`)
+        const { public_key: vapidKey } = await keyRes.json()
+        if (!vapidKey) return
+
+        const existing = await reg.pushManager.getSubscription()
+        if (existing) {
+          // Synchroniser l'abonnement existant avec le backend
+          await fetch(`${apiBase}/auth/push-subscribe/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify(existing.toJSON()),
+          })
+          return
+        }
+
+        const permission = await Notification.requestPermission()
+        if (permission !== 'granted') return
+
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlB64ToUint8Array(vapidKey),
+        })
+        await fetch(`${apiBase}/auth/push-subscribe/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(sub.toJSON()),
+        })
+      } catch {}
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [isAuthenticated])
+
+  return null
+}
+
 export default function App() {
   return (
     <div className="flex flex-col min-h-screen">
       <WishlistSync />
+      <PushSetup />
       <Navbar />
       <CartDrawer />
       <ChatWidget />

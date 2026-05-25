@@ -189,6 +189,11 @@ CAMPAY_USERNAME    = env('CAMPAY_USERNAME',    default='')
 CAMPAY_PASSWORD    = env('CAMPAY_PASSWORD',    default='')
 CAMPAY_WEBHOOK_URL = env('CAMPAY_WEBHOOK_URL', default='https://sahel-market-api.onrender.com/api/orders/payment/webhook/')
 
+# ── Push notifications PWA (VAPID) ──────────────────────────────────
+VAPID_PUBLIC_KEY  = env('VAPID_PUBLIC_KEY',  default='BLiARJVGKmM3RjRRwuh-y5UElPwpfzc3jKWqVfsQJaZzKSpxTcFrEIdaLW3JgblaUfW603FzD1SB7mg1gm4dAGQ')
+VAPID_PRIVATE_KEY = env('VAPID_PRIVATE_KEY', default='').replace('\\n', '\n')
+VAPID_EMAIL       = env('VAPID_EMAIL',       default='sahelmarket@gmail.com')
+
 # ── Sécurité production (ignoré en DEBUG) ────────────────────────────
 if not DEBUG:
     SECURE_SSL_REDIRECT          = True
