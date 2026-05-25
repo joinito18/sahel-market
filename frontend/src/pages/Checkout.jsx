@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate, Link } from 'react-router-dom'
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   MapPin, Smartphone, ChevronRight, ArrowLeft,
   ShoppingBag, Check, Copy, Phone, Clock, Package, Gift, Star, Tag, X,
+  Loader2, AlertTriangle,
 } from 'lucide-react'
 import { orderService } from '../services/order.service.js'
 import { clearCart } from '../store/cartSlice.js'
@@ -48,6 +49,97 @@ const DELIVERY_FEES = [
   { label: 'Yaoundé / Douala',         fee: 2500 },
   { label: 'Autres régions',           fee: 3500 },
 ]
+
+/* ── Attente de paiement Campay (USSD push) ──────────────────── */
+function PaymentWaiting({ order, paymentMethod, onPaid, onTimeout }) {
+  const pm = PAYMENT_METHODS.find(p => p.id === paymentMethod)
+  const [elapsed, setElapsed] = useState(0)
+  const [paid, setPaid] = useState(false)
+  const TIMEOUT = 300 // 5 minutes
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      setElapsed(e => e + 4)
+      try {
+        const res = await orderService.getOrder(order.id)
+        if (res.data?.status === 'paid') {
+          clearInterval(interval)
+          setPaid(true)
+          setTimeout(onPaid, 1500)
+        }
+      } catch {}
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [order.id, onPaid])
+
+  useEffect(() => {
+    if (elapsed >= TIMEOUT) onTimeout()
+  }, [elapsed, onTimeout])
+
+  const remaining = Math.max(0, TIMEOUT - elapsed)
+  const mins = String(Math.floor(remaining / 60)).padStart(2, '0')
+  const secs = String(remaining % 60).padStart(2, '0')
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      style={{ maxWidth: 480, margin: '0 auto', padding: '48px 24px', textAlign: 'center' }}
+    >
+      {paid ? (
+        <>
+          <motion.div
+            initial={{ scale: 0 }} animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300 }}
+            style={{
+              width: 80, height: 80, borderRadius: '50%', background: '#f0fdf4',
+              border: '3px solid #16a34a', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', margin: '0 auto 20px',
+            }}>
+            <Check size={36} color="#16a34a" strokeWidth={3} />
+          </motion.div>
+          <p style={{ fontSize: 20, fontWeight: 900, color: '#111827' }}>Paiement confirmé !</p>
+        </>
+      ) : (
+        <>
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%',
+            background: pm?.bg || '#fff7ed',
+            border: `3px solid ${pm?.border || '#fed7aa'}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px',
+          }}>
+            <Loader2 size={36} color={pm?.color || '#f97316'}
+                     style={{ animation: 'spin 1s linear infinite' }} />
+          </div>
+          <p style={{ fontSize: 20, fontWeight: 900, color: '#111827', marginBottom: 8 }}>
+            Vérifiez votre téléphone
+          </p>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>
+            Une demande de paiement <strong>{pm?.label}</strong> a été envoyée sur le numéro{' '}
+            <strong style={{ color: '#111827' }}>{order.payment_phone || 'enregistré'}</strong>.
+            Confirmez sur votre téléphone pour valider la commande.
+          </p>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: '#f9fafb', border: '1px solid #e5e7eb',
+            borderRadius: 12, padding: '10px 20px', marginBottom: 24,
+          }}>
+            <Clock size={15} color="#9ca3af" />
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#374151', fontFamily: 'monospace' }}>
+              {mins}:{secs}
+            </span>
+            <span style={{ fontSize: 12, color: '#9ca3af' }}>restantes</span>
+          </div>
+          <p style={{ fontSize: 12, color: '#9ca3af' }}>
+            Vérification automatique toutes les 4 secondes…
+          </p>
+        </>
+      )}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </motion.div>
+  )
+}
 
 /* ── État de confirmation post-commande ──────────────────────── */
 function Confirmation({ order, paymentMethod, instructions, loyaltyDiscount, promoDiscount }) {
@@ -294,15 +386,27 @@ export default function Checkout() {
   }
 
   if (confirmed) {
+    const isMobilePay = ['orange_money', 'mtn_momo'].includes(paymentMethod)
+    const useCampay   = confirmed.campayInitiated && isMobilePay
+
     return (
       <div style={{ minHeight: '100vh', background: '#f0f2f5' }}>
-        <Confirmation
-          order={confirmed.order}
-          paymentMethod={paymentMethod}
-          instructions={confirmed.instructions}
-          loyaltyDiscount={confirmed.loyaltyDiscount}
-          promoDiscount={confirmed.promoDiscount || 0}
-        />
+        {useCampay && !confirmed.campayDone ? (
+          <PaymentWaiting
+            order={confirmed.order}
+            paymentMethod={paymentMethod}
+            onPaid={() => setConfirmed(c => ({ ...c, campayDone: true }))}
+            onTimeout={() => setConfirmed(c => ({ ...c, campayInitiated: false }))}
+          />
+        ) : (
+          <Confirmation
+            order={confirmed.order}
+            paymentMethod={paymentMethod}
+            instructions={confirmed.instructions}
+            loyaltyDiscount={confirmed.loyaltyDiscount}
+            promoDiscount={confirmed.promoDiscount || 0}
+          />
+        )}
       </div>
     )
   }
@@ -323,6 +427,8 @@ export default function Checkout() {
         instructions:    res.data.instructions,
         loyaltyDiscount: res.data.loyalty_discount || 0,
         promoDiscount:   res.data.promo_discount   || 0,
+        campayInitiated: res.data.campay_initiated  || false,
+        campayDone:      false,
       })
     } catch (err) {
       const msg = err.response?.data?.error || 'Erreur lors de la commande'

@@ -2,11 +2,16 @@ from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-import uuid
+import uuid, json
 from django.core.mail import send_mail
 from django.conf import settings
+from django.http import HttpResponse
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import Cart, CartItem, Order, OrderItem, Notification, PromoCode
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer, NotificationSerializer
+from .campay_service import CampayService, CampayError
 
 
 def send_order_confirmation(order, payment_ref, instructions):
@@ -281,15 +286,34 @@ class CheckoutView(APIView):
             'cash': None,
         }.get(order.payment_method)
 
+        # ── Tentative Campay (USSD push automatique) ──────────────────
+        campay_initiated = False
+        if order.payment_method in ('orange_money', 'mtn_momo') and CampayService.is_configured():
+            phone = order.payment_phone or (
+                request.user.phone if hasattr(request.user, 'phone') else ''
+            )
+            if phone:
+                try:
+                    CampayService.collect(
+                        amount_xaf=order.total_amount,
+                        phone=phone,
+                        description=f'Commande Sahel Market #{order.id}',
+                        external_ref=payment_ref,
+                    )
+                    campay_initiated = True
+                except CampayError:
+                    pass  # Fallback vers les instructions manuelles
+
         send_order_confirmation(order, payment_ref, instructions)
 
         return Response({
-            'order':            OrderSerializer(order).data,
-            'payment_ref':      payment_ref,
-            'payment_method':   order.payment_method,
-            'loyalty_discount': loyalty_discount,
-            'promo_discount':   promo_discount,
-            'instructions':     instructions,
+            'order':             OrderSerializer(order).data,
+            'payment_ref':       payment_ref,
+            'payment_method':    order.payment_method,
+            'loyalty_discount':  loyalty_discount,
+            'promo_discount':    promo_discount,
+            'instructions':      instructions,
+            'campay_initiated':  campay_initiated,
         })
 
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
@@ -369,3 +393,30 @@ class NotificationsView(APIView):
     def patch(self, request):
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
         return Response({'ok': True})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CampayWebhookView(View):
+    """
+    Webhook appelé par Campay après confirmation du paiement mobile.
+    Campay POST : { status, external_reference, reference, amount, ... }
+    """
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            return HttpResponse(status=400)
+
+        ext_ref       = data.get('external_reference', '')
+        campay_status = data.get('status', '')
+
+        if ext_ref and campay_status == 'SUCCESSFUL':
+            try:
+                order = Order.objects.get(payment_reference=ext_ref, status='pending')
+                order.status = 'paid'
+                order.save(update_fields=['status'])
+                create_order_notification(order, 'paid')
+            except Order.DoesNotExist:
+                pass
+
+        return HttpResponse(status=200)

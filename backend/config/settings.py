@@ -184,6 +184,11 @@ EMAIL_HOST_USER     = env('EMAIL_HOST_USER',     default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL  = 'Sahel Market <sahelmarket@gmail.com>'
 
+# ── Campay (paiement Orange Money / MTN MoMo) ───────────────────────
+CAMPAY_USERNAME    = env('CAMPAY_USERNAME',    default='')
+CAMPAY_PASSWORD    = env('CAMPAY_PASSWORD',    default='')
+CAMPAY_WEBHOOK_URL = env('CAMPAY_WEBHOOK_URL', default='https://sahel-market-api.onrender.com/api/orders/payment/webhook/')
+
 # ── Sécurité production (ignoré en DEBUG) ────────────────────────────
 if not DEBUG:
     SECURE_SSL_REDIRECT          = True
