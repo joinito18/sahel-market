@@ -744,95 +744,6 @@ export default function Home() {
       )}
 
       {/* ══════════════════════════════════════════════════════════
-          PARTENAIRES INSTITUTIONNELS
-      ══════════════════════════════════════════════════════════ */}
-      <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
-        <div className="s-card">
-          <div className="text-center mb-6 sm:mb-8">
-            <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold
-                             uppercase tracking-widest bg-gray-100 text-gray-500 mb-2">
-              Ils nous font confiance
-            </span>
-            <h2 style={{ fontFamily: 'Inter', fontWeight: 800, fontSize: 16, color: '#111827', margin: 0 }}>
-              Partenaires institutionnels
-            </h2>
-            <p className="text-xs text-gray-400 mt-1">
-              Sahel Market est soutenu par des acteurs majeurs du développement et du numérique au Cameroun
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-            {[
-              {
-                name: 'Orange Cameroun',
-                role: 'Partenaire paiement mobile',
-                color: '#ff6600',
-                bg: '#fff7f0',
-                border: '#ffe0cc',
-                initial: 'O',
-                desc: 'Orange Money',
-              },
-              {
-                name: 'MTN Cameroun',
-                role: 'Partenaire paiement MoMo',
-                color: '#c8960a',
-                bg: '#fffbea',
-                border: '#fef08a',
-                initial: 'M',
-                desc: 'MTN MoMo',
-              },
-              {
-                name: 'GIZ',
-                role: 'Coopération au développement',
-                color: '#4a7c3f',
-                bg: '#f0f7ee',
-                border: '#bbf0aa',
-                initial: 'G',
-                desc: 'Deutsche GIZ',
-              },
-              {
-                name: 'MINCOMMERCE',
-                role: 'Ministère du Commerce',
-                color: '#1e3a8a',
-                bg: '#eff6ff',
-                border: '#bfdbfe',
-                initial: 'MC',
-                desc: 'Rép. du Cameroun',
-              },
-            ].map(({ name, role, color, bg, border, initial, desc }) => (
-              <div key={name} style={{
-                background: bg, border: `1px solid ${border}`,
-                borderRadius: 14, padding: 'clamp(14px,2vw,24px) clamp(12px,2vw,20px)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                textAlign: 'center', gap: 12,
-              }}>
-                <div style={{
-                  width: 52, height: 52, borderRadius: 14,
-                  background: color, display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontWeight: 900, fontSize: 16, letterSpacing: '-0.01em',
-                  boxShadow: `0 4px 12px ${color}33`,
-                }}>
-                  {initial}
-                </div>
-                <div>
-                  <p style={{ fontWeight: 800, fontSize: 13, color: '#111827', marginBottom: 2 }}>
-                    {name}
-                  </p>
-                  <p style={{ fontSize: 10, color, fontWeight: 700, marginBottom: 3 }}>{desc}</p>
-                  <p style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.4 }}>{role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-center text-[10px] text-gray-300 mt-5">
-            Partenariats en cours de finalisation — données confidentielles
-          </p>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════
           NOUVEAUX PRODUITS — grid 5 colonnes style Alibaba
       ══════════════════════════════════════════════════════════ */}
       <div className="w-full px-4 sm:px-6 lg:px-10 s-gap">
@@ -858,6 +769,46 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
+          PARTENAIRES — bande de confiance en bas de page
+      ══════════════════════════════════════════════════════════ */}
+      <div className="w-full s-gap" style={{ background: '#f9fafb', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10">
+          <p className="text-center text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-6 sm:mb-8">
+            Ils nous font confiance
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            {[
+              { name: 'Orange Cameroun', role: 'Partenaire paiement mobile', color: '#ff6600', initial: 'O' },
+              { name: 'MTN Cameroun',    role: 'Mobile Money (MoMo)',        color: '#c8960a', initial: 'M' },
+              { name: 'GIZ',             role: 'Coopération au développement', color: '#4a7c3f', initial: 'G' },
+              { name: 'MINCOMMERCE',     role: 'Ministère du Commerce · Cameroun', color: '#1e3a8a', initial: 'MC' },
+            ].map(({ name, role, color, initial }) => (
+              <div key={name}
+                className="flex items-center gap-3 rounded-2xl bg-white"
+                style={{ padding: 'clamp(12px,2vw,18px)', border: '1px solid #e5e7eb' }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                  background: color, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', color: '#fff', fontWeight: 900,
+                  fontSize: initial.length > 1 ? 11 : 16,
+                  boxShadow: `0 4px 10px ${color}30`,
+                }}>
+                  {initial}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontWeight: 700, fontSize: 12, color: '#111827',
+                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {name}
+                  </p>
+                  <p style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.4 }}>{role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════
           CTA ARTISAN — style Amazon footer banner
       ══════════════════════════════════════════════════════════ */}
       <div className="w-full px-4 sm:px-6 lg:px-10 s-gap mb-6 sm:mb-10">
@@ -872,27 +823,28 @@ export default function Home() {
                            color: '#86efac', border: '1px solid rgba(134,239,172,0.3)' }}>
               Pour les artisans
             </span>
-            <h2 style={{ fontFamily: 'Inter', fontWeight: 900, fontSize: 28,
+            <h2 style={{ fontFamily: 'Inter', fontWeight: 900,
+                         fontSize: 'clamp(20px, 5vw, 28px)',
                          color: '#ffffff', letterSpacing: '-0.02em' }}
                 className="mb-3">
               Vendez vos créations au Cameroun et au-delà
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, maxWidth: 480 }}
-               className="mx-auto mb-8">
+               className="mx-auto mb-6 sm:mb-8 px-2 sm:px-0">
               Inscription gratuite. Un agent vous accompagne sur le terrain.
               Vos produits en ligne en moins de 48h.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link to="/register"
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-bold
-                           text-sm text-white transition-all hover:opacity-90
-                           hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 w-full sm:w-auto justify-center
+                           px-8 py-3.5 rounded-lg font-bold text-sm text-white
+                           transition-all hover:opacity-90 hover:-translate-y-0.5"
                 style={{ background: '#f97316' }}>
                 Créer mon compte gratuit <ArrowRight size={15} />
               </Link>
               <Link to="/how-it-works"
-                className="inline-flex items-center px-8 py-3.5 rounded-lg font-semibold
-                           text-sm transition-colors"
+                className="inline-flex items-center justify-center w-full sm:w-auto
+                           px-8 py-3.5 rounded-lg font-semibold text-sm transition-colors"
                 style={{ background: 'rgba(255,255,255,0.08)',
                          border: '1px solid rgba(255,255,255,0.2)',
                          color: '#ffffff' }}>
