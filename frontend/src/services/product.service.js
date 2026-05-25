@@ -10,7 +10,8 @@ export const productService = {
   delete:        (id)       => api.delete(`/products/${id}/`),
   like:          (id)       => api.post(`/products/${id}/like/`),
   getWishlist:   ()         => api.get('/products/wishlist/'),
-  rate:          (id, data) => api.post(`/products/${id}/rate/`, data),
-  getCategories: ()         => api.get('/products/categories/'),
-  getStats:      ()         => api.get('/products/stats/'),
+  rate:               (id, data) => api.post(`/products/${id}/rate/`, data),
+  getCategories:      ()         => api.get('/products/categories/'),
+  getStats:           ()         => api.get('/products/stats/'),
+  getRecommendations: (id)       => api.get(`/products/${id}/recommendations/`),
 }

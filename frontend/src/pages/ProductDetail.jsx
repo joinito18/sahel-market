@@ -14,6 +14,7 @@ import { useSelector } from 'react-redux'
 import { productService } from '../services/product.service.js'
 import { addItem, openCart } from '../store/cartSlice.js'
 import Rating from '../components/Rating.jsx'
+import ProductCard from '../components/ProductCard.jsx'
 import toast from 'react-hot-toast'
 
 import { imgUrl, fcfa as FCFA } from '../utils/media.js'
@@ -53,11 +54,11 @@ export default function ProductDetail() {
   const product = data?.data
 
   const { data: relatedData } = useQuery({
-    queryKey: ['related', product?.category?.id, id],
-    queryFn:  () => productService.getAll({ category: product.category.id, page_size: 7 }),
-    enabled:  !!product?.category?.id,
+    queryKey: ['recommendations', id],
+    queryFn:  () => productService.getRecommendations(id),
+    enabled:  !!product,
   })
-  const related = (relatedData?.data?.results ?? []).filter(p => p.id !== Number(id)).slice(0, 6)
+  const related = relatedData?.data ?? []
 
   /* ── Loading ─────────────────────────────────────────────────── */
   if (isLoading) return (
@@ -579,54 +580,30 @@ export default function ProductDetail() {
         )}
 
         {/* ════════════════════════════════════════════════════════
-            VOUS AIMEREZ AUSSI — cross-sell même catégorie
+            RECOMMANDATIONS INTELLIGENTES
         ════════════════════════════════════════════════════════ */}
         {related.length > 0 && (
-          <div className="mt-10 bg-white rounded-3xl border border-gray-100 p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
+          <div style={{
+            marginTop: 32, background: 'var(--surface)',
+            borderRadius: 20, border: '1px solid var(--border)', padding: 'clamp(20px,3vw,32px)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Vous aimerez aussi</h2>
-                <p className="text-sm text-gray-400 mt-0.5">
-                  D'autres créations dans {product.category?.name}
+                <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--ink-3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
+                  Sélectionnés pour vous
                 </p>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(18px,3vw,24px)', fontWeight: 700, color: 'var(--ink)' }}>
+                  Vous aimerez aussi
+                </h2>
               </div>
+              <Link to="/products" style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)', textDecoration: 'none', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                Voir tout →
+              </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {related.map((p, i) => {
-                const src = imgUrl(p.main_image)
-                return (
-                  <motion.a
-                    key={p.id}
-                    href={`/products/${p.id}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    className="group flex flex-col bg-gray-50 rounded-2xl overflow-hidden
-                               border border-gray-100 hover:border-orange-300
-                               hover:shadow-md transition-all duration-200 no-underline"
-                  >
-                    <div className="aspect-square overflow-hidden bg-white">
-                      {src
-                        ? <img src={src} alt={p.name}
-                               className="w-full h-full object-cover group-hover:scale-105
-                                          transition-transform duration-300" />
-                        : <div className="w-full h-full flex items-center justify-center">
-                            <Package size={24} className="text-gray-200" />
-                          </div>
-                      }
-                    </div>
-                    <div className="p-3">
-                      <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug
-                                   group-hover:text-orange-600 transition-colors mb-1">
-                        {p.name}
-                      </p>
-                      <p className="text-sm font-black text-orange-600">
-                        {Number(p.price).toLocaleString('fr-FR')} F
-                      </p>
-                    </div>
-                  </motion.a>
-                )
-              })}
+            <div className="product-grid-home">
+              {related.map((p, i) => (
+                <ProductCard key={p.id} product={p} index={i} />
+              ))}
             </div>
           </div>
         )}

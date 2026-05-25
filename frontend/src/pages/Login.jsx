@@ -5,8 +5,6 @@ import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { setCredentials } from '../store/authSlice.js'
 import { authService } from '../services/auth.service.js'
 
-const OR = '#f97316'
-
 const REDIRECTS = {
   admin:    '/dashboard/admin',
   agent:    '/dashboard/agent',
@@ -16,9 +14,9 @@ const REDIRECTS = {
 export default function Login() {
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
-  const [form, setForm]     = useState({ email: '', password: '' })
+  const [form, setForm]       = useState({ email: '', password: '' })
   const [showPwd, setShowPwd] = useState(false)
-  const [err, setErr]       = useState(null)
+  const [err, setErr]         = useState(null)
   const [loading, setLoading] = useState(false)
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -38,97 +36,100 @@ export default function Login() {
     }
   }
 
-  const inputStyle = (hasErr) => ({
-    width: '100%', padding: '12px 14px', border: `1px solid ${hasErr ? '#fca5a5' : '#d1d5db'}`,
-    borderRadius: 12, fontSize: 14, outline: 'none', background: '#fff',
-    fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', color: '#111827',
-  })
+  const inputStyle = {
+    width: '100%', padding: '12px 14px',
+    border: '1px solid var(--border)', borderRadius: 10,
+    fontSize: 14, outline: 'none', background: 'var(--surface)',
+    fontFamily: 'var(--font-sans)', boxSizing: 'border-box', color: 'var(--ink)',
+    transition: 'border-color .15s',
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex' }}>
 
-      {/* Panneau gauche — marque */}
-      <div style={{
-        display: 'none',
-        width: '50%', background: '#1a1a1a', padding: '48px',
-        flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-        position: 'relative', overflow: 'hidden',
-      }}
+      {/* Panneau gauche — éditorial ──────────────────── */}
+      <div
         className="login-panel"
+        style={{
+          display: 'none', width: '48%',
+          background: '#111111', padding: '56px 48px',
+          flexDirection: 'column', justifyContent: 'center',
+          position: 'relative', overflow: 'hidden',
+        }}
       >
-        {/* Cercles décoratifs */}
+        {/* Cercle décoratif */}
         <div style={{
-          position: 'absolute', width: 400, height: 400, borderRadius: '50%',
-          background: OR, opacity: 0.06, top: -100, right: -100,
+          position: 'absolute', width: 360, height: 360, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.03)', top: -80, right: -80, border: '1px solid rgba(255,255,255,0.05)',
         }} />
         <div style={{
-          position: 'absolute', width: 250, height: 250, borderRadius: '50%',
-          background: OR, opacity: 0.08, bottom: -50, left: -50,
+          position: 'absolute', width: 200, height: 200, borderRadius: '50%',
+          background: 'rgba(249,115,22,0.07)', bottom: -40, left: -40,
         }} />
 
-        <div style={{ position: 'relative', textAlign: 'center' }}>
-          <div style={{
-            width: 72, height: 72, borderRadius: 20, background: OR,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 24px', fontSize: 32, fontWeight: 900, color: '#fff',
+        <div style={{ position: 'relative' }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: '#ADADAD', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 28 }}>
+            Artisanat Camerounais
+          </p>
+          <h1 style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 'clamp(2.2rem, 4vw, 3.5rem)',
+            fontWeight: 700, color: '#FFFFFF',
+            lineHeight: 1.05, letterSpacing: '-0.02em', marginBottom: 20,
           }}>
-            S
-          </div>
-          <h1 style={{ color: '#fff', fontSize: 40, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-            Sahel<br />
-            <span style={{ color: OR }}>Market</span>
+            Sahel<br /><em style={{ color: 'var(--accent)' }}>Market</em>
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, marginTop: 16, lineHeight: 1.6, maxWidth: 280 }}>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15, lineHeight: 1.7, maxWidth: 300, marginBottom: 48 }}>
             L'artisanat du Nord Cameroun, livré partout au pays.
           </p>
-        </div>
 
-        <div style={{ position: 'relative', marginTop: 64, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 300, width: '100%' }}>
-          {[
-            { emoji: '🧺', text: 'Paniers, bijoux, broderies artisanales' },
-            { emoji: '📦', text: 'Livraison dans toutes les grandes villes' },
-            { emoji: '💳', text: 'Paiement Orange Money & MTN MoMo' },
-          ].map(({ emoji, text }) => (
-            <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 20 }}>{emoji}</span>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{text}</p>
-            </div>
-          ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {[
+              { label: 'Sacs, bijoux et broderies artisanales' },
+              { label: 'Livraison dans toutes les grandes villes' },
+              { label: 'Paiement Orange Money & MTN MoMo' },
+            ].map(({ label }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Panneau droit — formulaire */}
+      {/* Panneau droit — formulaire ───────────────────── */}
       <div style={{
         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '40px 24px', background: '#fff',
+        padding: '40px 24px', background: 'var(--bg)',
       }}>
-        <div style={{ width: '100%', maxWidth: 400 }}>
+        <div style={{ width: '100%', maxWidth: 380 }}>
 
           {/* Logo mobile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 12, background: OR,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 900, color: '#fff', fontSize: 18,
-            }}>S</div>
-            <span style={{ fontWeight: 900, fontSize: 18, color: '#111827' }}>Sahel Market</span>
-          </div>
+          <Link to="/" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: 40 }}>
+            <span style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 24, fontWeight: 700, color: 'var(--ink)',
+            }}>
+              Sahel<em>Market</em>
+            </span>
+          </Link>
 
-          <h2 style={{ fontSize: 26, fontWeight: 800, color: '#111827', marginBottom: 6, letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 700, color: 'var(--ink)', marginBottom: 6 }}>
             Connexion
           </h2>
-          <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 28 }}>
+          <p style={{ fontSize: 13, color: 'var(--ink-3)', marginBottom: 28 }}>
             Pas encore de compte ?{' '}
-            <Link to="/register" style={{ color: OR, fontWeight: 700, textDecoration: 'none' }}>
+            <Link to="/register" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
               S'inscrire
             </Link>
           </p>
 
           {err && (
             <div style={{
-              background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12,
-              padding: '12px 16px', marginBottom: 20, display: 'flex', gap: 10,
-              fontSize: 13, color: '#dc2626', alignItems: 'flex-start',
+              background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10,
+              padding: '12px 16px', marginBottom: 20,
+              display: 'flex', gap: 10, fontSize: 13, color: '#DC2626', alignItems: 'flex-start',
             }}>
               <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
               {err}
@@ -136,9 +137,8 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-2)', display: 'block', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Adresse e-mail
               </label>
               <input
@@ -147,12 +147,14 @@ export default function Login() {
                 onChange={e => set('email', e.target.value)}
                 placeholder="vous@exemple.com"
                 autoComplete="email"
-                style={inputStyle(false)}
+                style={inputStyle}
+                onFocus={e => e.target.style.borderColor = 'var(--ink)'}
+                onBlur={e => e.target.style.borderColor = 'var(--border)'}
               />
             </div>
 
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-2)', display: 'block', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Mot de passe
               </label>
               <div style={{ position: 'relative' }}>
@@ -162,19 +164,16 @@ export default function Login() {
                   onChange={e => set('password', e.target.value)}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  style={{ ...inputStyle(false), paddingRight: 44 }}
+                  style={{ ...inputStyle, paddingRight: 44 }}
+                  onFocus={e => e.target.style.borderColor = 'var(--ink)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPwd(v => !v)}
-                  style={{
-                    position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-                    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                  }}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                 >
-                  {showPwd
-                    ? <EyeOff size={16} color="#9ca3af" />
-                    : <Eye size={16} color="#9ca3af" />}
+                  {showPwd ? <EyeOff size={16} color="var(--ink-3)" /> : <Eye size={16} color="var(--ink-3)" />}
                 </button>
               </div>
             </div>
@@ -182,21 +181,16 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              style={{
-                marginTop: 8, width: '100%', padding: '14px 0', borderRadius: 12,
-                border: 'none', background: loading ? '#fdba74' : OR,
-                color: '#fff', fontWeight: 700, fontSize: 15,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: 'Inter, sans-serif',
-              }}
+              className="btn-accent"
+              style={{ marginTop: 8, width: '100%', padding: '14px 0', opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
             >
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', marginTop: 32, fontSize: 13, color: '#9ca3af' }}>
+          <p style={{ textAlign: 'center', marginTop: 32, fontSize: 12, color: 'var(--ink-3)' }}>
             En vous connectant, vous acceptez nos{' '}
-            <Link to="/legal/terms" style={{ color: OR, textDecoration: 'none' }}>
+            <Link to="/legal/terms" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>
               Conditions d'utilisation
             </Link>
           </p>
@@ -204,9 +198,7 @@ export default function Login() {
       </div>
 
       <style>{`
-        @media (min-width: 1024px) {
-          .login-panel { display: flex !important; }
-        }
+        @media (min-width: 1024px) { .login-panel { display: flex !important; } }
       `}</style>
     </div>
   )

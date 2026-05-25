@@ -2,13 +2,13 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
-from django.db.models import Avg
+from rest_framework.filters import OrderingFilter
+from django.db.models import Avg, Count, Q
 from .models import Product, Category, Rating, Like
 from .serializers import (ProductListSerializer, ProductDetailSerializer,
                            ProductCreateSerializer, CategorySerializer, RatingSerializer)
 from apps.users.models import User
-from apps.orders.models import Order
+from apps.orders.models import Order, OrderItem
 
 class IsProducerOrAgent(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -26,26 +26,100 @@ class IsProducerOrAgent(permissions.BasePermission):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.select_related('producer', 'category').prefetch_related('images', 'ratings', 'likes')
     permission_classes = [IsProducerOrAgent]
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['category', 'is_available', 'producer']
-    search_fields = ['name', 'description', 'location']
-    ordering_fields = ['price', 'created_at', 'views_count']
+    ordering_fields  = ['price', 'created_at', 'views_count']
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        location = self.request.query_params.get('location')
-        price_min = self.request.query_params.get('price_min')
-        price_max = self.request.query_params.get('price_max')
-        if location:
-            qs = qs.filter(location__icontains=location)
-        if price_min:
-            qs = qs.filter(price__gte=price_min)
-        if price_max:
-            qs = qs.filter(price__lte=price_max)
+        qs         = super().get_queryset()
+        location   = self.request.query_params.get('location')
+        price_min  = self.request.query_params.get('price_min')
+        price_max  = self.request.query_params.get('price_max')
         min_rating = self.request.query_params.get('min_rating')
-        if min_rating:
-            qs = qs.annotate(avg_r=Avg('ratings__score')).filter(avg_r__gte=float(min_rating))
+        search     = self.request.query_params.get('search', '').strip()
+
+        if location:   qs = qs.filter(location__icontains=location)
+        if price_min:  qs = qs.filter(price__gte=price_min)
+        if price_max:  qs = qs.filter(price__lte=price_max)
+        if min_rating: qs = qs.annotate(avg_r=Avg('ratings__score')).filter(avg_r__gte=float(min_rating))
+
+        if search:
+            try:
+                from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+                query  = SearchQuery(search, config='french')
+                vector = (
+                    SearchVector('name',        weight='A', config='french') +
+                    SearchVector('description', weight='B', config='french') +
+                    SearchVector('location',    weight='C', config='french')
+                )
+                qs = (qs.annotate(rank=SearchRank(vector, query))
+                        .filter(rank__gte=0.01)
+                        .order_by('-rank'))
+            except Exception:
+                qs = qs.filter(Q(name__icontains=search) | Q(description__icontains=search))
+
         return qs
+
+    @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
+    def recommendations(self, request, pk=None):
+        """
+        Retourne jusqu'à 6 produits recommandés en combinant :
+        1. Co-achats collaboratifs (achetés ensemble par d'autres utilisateurs)
+        2. Même catégorie, triés par popularité
+        3. Même artisan, triés par popularité
+        """
+        product = self.get_object()
+        recommended = []
+
+        # ── Stratégie 1 : co-achat collaboratif ──────────────────────
+        buyer_ids = (OrderItem.objects
+                     .filter(product=product)
+                     .values_list('order__user_id', flat=True))
+
+        if buyer_ids.exists():
+            co_bought = (
+                Product.objects
+                .filter(orderitems__order__user_id__in=buyer_ids, is_available=True)
+                .exclude(id=product.id)
+                .annotate(score=Count('id'))
+                .order_by('-score')
+                .select_related('producer', 'category')
+                .prefetch_related('images', 'ratings', 'likes')[:4]
+            )
+            recommended = list(co_bought)
+
+        # ── Stratégie 2 : même catégorie + populaires ────────────────
+        needed = 6 - len(recommended)
+        if needed > 0 and product.category:
+            already = [product.id] + [p.id for p in recommended]
+            same_cat = (
+                Product.objects
+                .filter(category=product.category, is_available=True)
+                .exclude(id__in=already)
+                .order_by('-views_count')
+                .select_related('producer', 'category')
+                .prefetch_related('images', 'ratings', 'likes')[:needed]
+            )
+            recommended += list(same_cat)
+
+        # ── Stratégie 3 : même artisan ───────────────────────────────
+        needed = 6 - len(recommended)
+        if needed > 0:
+            already = [product.id] + [p.id for p in recommended]
+            same_producer = (
+                Product.objects
+                .filter(producer=product.producer, is_available=True)
+                .exclude(id__in=already)
+                .order_by('-views_count')
+                .select_related('producer', 'category')
+                .prefetch_related('images', 'ratings', 'likes')[:needed]
+            )
+            recommended += list(same_producer)
+
+        serializer = ProductListSerializer(
+            recommended[:6], many=True, context={'request': request}
+        )
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
     def locations(self, request):
