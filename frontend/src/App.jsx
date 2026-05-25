@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { setWishlist, clearWishlist } from './store/wishlistSlice.js'
 import { productService } from './services/product.service.js'
@@ -72,6 +72,12 @@ function NotFound() {
       </a>
     </div>
   )
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
 }
 
 function WishlistSync() {
@@ -152,6 +158,7 @@ function PushSetup() {
 export default function App() {
   return (
     <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
       <WishlistSync />
       <PushSetup />
       <Navbar />
