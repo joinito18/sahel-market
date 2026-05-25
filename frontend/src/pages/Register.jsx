@@ -282,10 +282,8 @@ function ClientForm({ onBack, onSuccess }) {
         </div>
 
         <button type="submit" disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 py-3.5
-                     bg-orange-500 hover:bg-orange-600 text-white font-bold
-                     rounded-2xl transition-all disabled:opacity-60 text-sm
-                     shadow-lg shadow-orange-200 hover:-translate-y-0.5">
+          className="btn-accent w-full"
+          style={{ opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
           {isSubmitting
             ? <span className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent
@@ -372,12 +370,8 @@ function ProducerSuccess({ username }) {
       {/* Bouton dashboard */}
       <button
         onClick={() => navigate('/dashboard/producer')}
-        style={{
-          width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
-          background: 'linear-gradient(135deg, #f97316, #ea580c)',
-          color: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(249,115,22,0.35)', marginBottom: 12,
-        }}
+        className="btn-accent w-full"
+        style={{ marginBottom: 12 }}
       >
         Accéder à mon espace artisan →
       </button>
@@ -595,10 +589,7 @@ function ProducerForm({ onBack }) {
               </Field>
 
               <button type="button" onClick={nextStep}
-                className="w-full flex items-center justify-center gap-2 py-3.5
-                           bg-green-600 hover:bg-green-700 text-white font-bold
-                           rounded-2xl transition-all text-sm shadow-lg shadow-green-200
-                           hover:-translate-y-0.5">
+                className="btn-accent w-full">
                 Étape suivante <ArrowRight size={16} />
               </button>
             </motion.div>
@@ -637,10 +628,7 @@ function ProducerForm({ onBack }) {
               </div>
 
               <button type="button" onClick={nextStep}
-                className="w-full flex items-center justify-center gap-2 py-3.5
-                           bg-green-600 hover:bg-green-700 text-white font-bold
-                           rounded-2xl transition-all text-sm shadow-lg shadow-green-200
-                           hover:-translate-y-0.5">
+                className="btn-accent w-full">
                 Étape suivante <ArrowRight size={16} />
               </button>
             </motion.div>
@@ -737,10 +725,8 @@ function ProducerForm({ onBack }) {
 
               {/* Bouton final */}
               <button type="submit" disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 py-3.5
-                           bg-green-600 hover:bg-green-700 text-white font-bold
-                           rounded-2xl transition-all disabled:opacity-60 text-sm
-                           shadow-lg shadow-green-200 hover:-translate-y-0.5">
+                className="btn-accent w-full"
+                style={{ opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}>
                 {isSubmitting
                   ? <span className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent
@@ -772,11 +758,11 @@ export default function Register() {
   const [role, setRole] = useState(null)
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen flex">
 
       {/* Panneau gauche — visuel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #111827 0%, #1a2e1f 50%, #2D6A4F 100%)' }}>
+        style={{ background: '#111111' }}>
 
         <div className="absolute inset-0 opacity-5"
           style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C8732A' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }}

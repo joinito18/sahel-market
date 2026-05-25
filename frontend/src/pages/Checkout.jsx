@@ -298,20 +298,15 @@ function Confirmation({ order, paymentMethod, instructions, loyaltyDiscount, pro
 
       {/* Actions */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <Link to={`/orders`}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            padding: '14px', background: '#f97316', color: '#fff', borderRadius: 12,
-            textDecoration: 'none', fontSize: 14, fontWeight: 700,
-          }}>
+        <Link to={`/orders`} className="btn-accent">
           <ShoppingBag size={16} /> Suivre mes commandes
         </Link>
         <button
           onClick={() => navigate('/products')}
           style={{
-            padding: '12px', background: 'transparent', border: '2px solid #e5e7eb',
-            borderRadius: 12, fontSize: 14, fontWeight: 600, color: '#374151',
-            cursor: 'pointer',
+            padding: '12px', background: 'transparent', border: '1.5px solid var(--border)',
+            borderRadius: 100, fontSize: 14, fontWeight: 600, color: 'var(--ink)',
+            cursor: 'pointer', width: '100%',
           }}
         >
           Continuer mes achats
@@ -371,7 +366,7 @@ export default function Checkout() {
     const useCampay   = confirmed.campayInitiated && isMobilePay
 
     return (
-      <div style={{ minHeight: '100vh', background: '#f0f2f5' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
         {useCampay && !confirmed.campayDone ? (
           <PaymentWaiting
             order={confirmed.order}
@@ -400,11 +395,7 @@ export default function Checkout() {
       }}>
         <ShoppingBag size={48} color="#d1d5db" strokeWidth={1} />
         <p style={{ fontSize: 16, fontWeight: 700, color: '#374151' }}>Votre panier est vide</p>
-        <Link to="/products"
-          style={{
-            padding: '10px 24px', background: '#f97316', color: '#fff',
-            borderRadius: 10, textDecoration: 'none', fontSize: 14, fontWeight: 700,
-          }}>
+        <Link to="/products" className="btn-accent">
           Voir le catalogue
         </Link>
       </div>
@@ -444,10 +435,10 @@ export default function Checkout() {
   const grandTotal = Math.max(0, total + effectiveDelivery - loyaltyDiscount - promoDiscount)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f2f5' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
       {/* Header */}
-      <div style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '14px 0' }}>
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '14px 0' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px',
                        display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => navigate(-1)}
@@ -545,8 +536,8 @@ export default function Checkout() {
                   fontFamily: 'inherit', lineHeight: 1.5,
                   transition: 'border-color .15s', boxSizing: 'border-box',
                 }}
-                onFocus={e => e.target.style.borderColor = '#f97316'}
-                onBlur={e => e.target.style.borderColor = errors.address ? '#ef4444' : '#e5e7eb'}
+                onFocus={e => e.target.style.borderColor = 'var(--ink)'}
+                onBlur={e => e.target.style.borderColor = errors.address ? '#ef4444' : 'var(--border)'}
               />
               {errors.address && (
                 <p style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>
@@ -877,14 +868,11 @@ export default function Checkout() {
               <button
                 onClick={handleSubmit(onSubmit)}
                 disabled={isSubmitting}
+                className="btn-accent w-full"
                 style={{
-                  width: '100%', padding: '15px', background: isSubmitting ? '#d1d5db' : '#f97316',
-                  color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700,
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer', transition: 'background .15s',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  opacity: isSubmitting ? 0.6 : 1,
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 }}
-                onMouseEnter={e => { if (!isSubmitting) e.currentTarget.style.background = '#ea580c' }}
-                onMouseLeave={e => { if (!isSubmitting) e.currentTarget.style.background = '#f97316' }}
               >
                 {isSubmitting
                   ? <>

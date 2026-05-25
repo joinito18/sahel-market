@@ -135,7 +135,7 @@ export default function Products() {
   const hasFilters = filters.category || filters.search || location || priceMin || priceMax || minRating > 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
 
       {/* ══════════════════════════════════════════════════════════
           BARRE STICKY — recherche + catégories
@@ -438,7 +438,7 @@ export default function Products() {
                 />
               )}
               <div>
-                <h1 className="text-lg font-bold text-gray-900 leading-tight">
+                <h1 className="text-lg font-bold leading-tight" style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: 20 }}>
                   {filters.search
                     ? `"${filters.search}"`
                     : activeCategory?.name || 'Tous les produits'}
@@ -495,12 +495,7 @@ export default function Products() {
                 ? `Pas encore de produits dans la catégorie "${activeCategory.name}".`
                 : 'Essaie avec d\'autres mots-clés ou une autre catégorie.'}
             </p>
-            <button
-              onClick={clearAll}
-              className="px-6 py-2.5 bg-orange-500 text-white text-sm font-bold
-                         rounded-xl hover:bg-orange-600 transition-colors shadow-md
-                         shadow-orange-200"
-            >
+            <button onClick={clearAll} className="btn-accent">
               Voir tous les produits
             </button>
           </motion.div>
@@ -556,11 +551,10 @@ export default function Products() {
                     : <button
                         key={p}
                         onClick={() => dispatch(setPage(p))}
-                        className={`w-10 h-10 rounded-xl text-sm font-bold transition-all
-                                    ${currentPage === p
-                                      ? 'bg-orange-500 text-white shadow-md shadow-orange-200'
-                                      : 'bg-white border border-gray-200 text-gray-600 hover:border-orange-300'
-                                    }`}
+                        className="w-10 h-10 rounded-xl text-sm font-bold transition-all"
+                      style={currentPage === p
+                        ? { background: 'var(--ink)', color: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }
+                        : { background: 'var(--surface)', color: 'var(--ink-2)', border: '1px solid var(--border)' }}
                       >
                         {p}
                       </button>

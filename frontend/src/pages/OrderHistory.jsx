@@ -193,12 +193,8 @@ function OrderCard({ order }) {
           {/* Bouton commander à nouveau */}
           <button
             onClick={handleReorder}
-            style={{
-              marginTop: 14, width: '100%', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', gap: 7, padding: '11px 0',
-              background: OR, color: '#fff', border: 'none', borderRadius: 12,
-              fontWeight: 700, fontSize: 13, cursor: 'pointer', letterSpacing: '0.01em',
-            }}
+            className="btn-accent w-full"
+            style={{ marginTop: 14 }}
           >
             <RotateCcw size={14} />
             Commander à nouveau
@@ -218,9 +214,9 @@ export default function OrderHistory() {
   const orders = data?.data?.results || data?.data || []
 
   return (
-    <div style={{ minHeight: '100vh', background: BG }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
-      <div style={{ background: '#1a1a1a', padding: '24px 0' }}>
+      <div style={{ background: 'var(--ink)', padding: '24px 0' }}>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 20px' }}>
           <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
             Mon compte
@@ -250,10 +246,7 @@ export default function OrderHistory() {
             <p style={{ color: '#9ca3af', fontSize: 15, marginBottom: 16 }}>
               Aucune commande pour l'instant
             </p>
-            <Link to="/products" style={{
-              display: 'inline-block', padding: '10px 24px', background: OR,
-              color: '#fff', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 14,
-            }}>
+            <Link to="/products" className="btn-accent">
               Découvrir le catalogue
             </Link>
           </div>

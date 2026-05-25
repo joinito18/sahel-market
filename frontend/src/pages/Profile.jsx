@@ -86,10 +86,10 @@ export default function Profile() {
   const dashLink = DASHBOARD_LINKS[user?.role]
 
   return (
-    <div style={{ minHeight: '100vh', background: BG }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
 
       {/* Header */}
-      <div style={{ background: '#1a1a1a', padding: '24px 0' }}>
+      <div style={{ background: 'var(--ink)', padding: '24px 0' }}>
         <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 20px' }}>
           <p style={{ color: OR, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
             Mon compte
@@ -298,11 +298,12 @@ export default function Profile() {
             </div>
           </div>
 
-          <button type="submit" disabled={saving} style={{
-            marginTop: 20, width: '100%', padding: '13px 0', borderRadius: 12, border: 'none',
-            background: saving ? '#fdba74' : OR, color: '#fff',
-            fontWeight: 700, fontSize: 14, cursor: 'pointer',
-          }}>
+          <button type="submit" disabled={saving}
+            className="btn-accent w-full"
+            style={{
+              marginTop: 20, opacity: saving ? 0.6 : 1,
+              cursor: saving ? 'not-allowed' : 'pointer',
+            }}>
             {saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
           </button>
         </form>
