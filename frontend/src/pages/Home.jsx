@@ -158,133 +158,141 @@ export default function Home() {
     <div style={{ minHeight: '100vh' }}>
 
       {/* ══════════════════════════════════════════════════════════
-          HERO ÉDITORIAL
+          HERO — IMAGE PLEIN FOND + GRAIN
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ background: '#111111', overflow: 'hidden' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(40px,6vw,80px) 20px clamp(32px,5vw,64px)' }}>
-          <div className="hero-grid">
+      {(() => {
+        const heroImg = imgUrl(featured[0]?.main_image) || imgUrl(categories[0]?.image) || null
+        return (
+          <div style={{ position: 'relative', minHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
-            {/* Texte hero */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <p className="label-caps" style={{ color: '#ADADAD', marginBottom: 20 }}>
-                Artisanat camerounais · Fait à la main
-              </p>
-              <h1 style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 'clamp(2.4rem, 8vw, 5rem)',
-                fontWeight: 700,
-                lineHeight: 1.0,
-                color: '#FFFFFF',
-                letterSpacing: '-0.02em',
-                marginBottom: 24,
-              }}>
-                L'artisanat<br />
-                <em style={{ color: 'var(--accent)' }}>du Sahel</em>,<br />
-                livré chez vous
-              </h1>
-              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15, lineHeight: 1.7, maxWidth: 400, marginBottom: 32 }}>
-                Sacs en cuir, bijoux, vêtements tissés — directement des mains de nos artisans au Cameroun.
-              </p>
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <Link to="/products" className="btn-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  Découvrir <ArrowRight size={14} />
-                </Link>
-                <Link to="/register" style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  gap: 8, padding: '13px 24px', borderRadius: 100,
-                  fontSize: 13, fontWeight: 700, letterSpacing: '0.04em',
-                  color: 'rgba(255,255,255,0.8)', border: '1.5px solid rgba(255,255,255,0.2)',
-                  textDecoration: 'none', transition: 'border-color .15s',
-                }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'}
-                >
-                  Devenir vendeur
-                </Link>
-              </div>
-            </motion.div>
+            {/* Image de fond */}
+            {heroImg && (
+              <img src={heroImg} alt=""
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.38) saturate(0.8)' }}
+              />
+            )}
+            {/* Fallback si pas d'image */}
+            {!heroImg && (
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #0d0d0d 0%, #1a1008 50%, #0d0d0d 100%)' }} />
+            )}
 
-            {/* Grille catégories desktop */}
-            <div className="cats-desktop-grid">
-              {categories.slice(0, 4).map((cat, i) => {
-                const src = imgUrl(cat.image)
-                return (
-                  <motion.div
-                    key={cat.id}
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.07, duration: 0.4 }}
-                    onClick={() => navigate(`/products?category=${cat.id}`)}
-                    style={{
-                      position: 'relative', borderRadius: 12, overflow: 'hidden',
-                      aspectRatio: '1', cursor: 'pointer', transition: 'transform .25s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                  >
-                    {src
-                      ? <img src={src} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Package size={32} color="rgba(255,255,255,0.2)" />
-                        </div>
-                    }
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)' }} />
-                    <p style={{ position: 'absolute', bottom: 12, left: 14, color: '#fff', fontSize: 12, fontWeight: 700 }}>
-                      {cat.name}
-                    </p>
-                  </motion.div>
-                )
-              })}
-            </div>
-          </div>
+            {/* Overlay gradient directionnel */}
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none',
+              background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.25) 100%)',
+            }} />
+            {/* Vignette latérale */}
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none',
+              background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%)',
+            }} />
+            {/* Texture grain */}
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.18,
+              backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E\")",
+              backgroundRepeat: 'repeat',
+            }} />
 
-          {/* Catégories mobile — scroll horizontal */}
-          {categories.length > 0 && (
-            <div
-              className="hero-mobile-cats scrollbar-hide"
-              style={{
-                gap: 8, overflowX: 'auto', paddingBottom: 2,
-                marginTop: 32, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.08)',
-              }}
-            >
-              {categories.map(cat => {
-                const src = imgUrl(cat.image)
-                return (
-                  <Link key={cat.id} to={`/products?category=${cat.id}`}
-                    style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: 56, textDecoration: 'none' }}>
-                    <div style={{
-                      width: 48, height: 48, borderRadius: 12, overflow: 'hidden',
-                      background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
-                      {src
-                        ? <img src={src} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <Package size={18} color="rgba(255,255,255,0.3)" />}
-                    </div>
-                    <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {cat.name}
-                    </span>
-                  </Link>
-                )
-              })}
-              <Link to="/products" style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: 56, textDecoration: 'none' }}>
-                <div style={{
-                  width: 48, height: 48, borderRadius: 12,
-                  border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.04)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <ChevronRight size={18} color="rgba(255,255,255,0.4)" />
+            {/* Contenu centré */}
+            <div style={{
+              position: 'relative', flex: 1,
+              display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+              maxWidth: 860, margin: '0 auto', width: '100%',
+              padding: 'clamp(80px,10vw,140px) clamp(20px,4vw,48px) clamp(32px,5vw,56px)',
+              textAlign: 'center',
+            }}>
+              <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, ease: [0.22,1,0.36,1] }}>
+
+                {/* Badge */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />
+                  <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                    Artisanat camerounais · Fait à la main
+                  </span>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />
                 </div>
-                <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>Tout voir</span>
-              </Link>
+
+                <h1 style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 'clamp(2.8rem, 9vw, 6.5rem)',
+                  fontWeight: 700, lineHeight: 1.0,
+                  color: '#FFFFFF', letterSpacing: '-0.02em', marginBottom: 20,
+                }}>
+                  L'artisanat<br />
+                  <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>du Sahel</em>,<br />
+                  livré chez vous
+                </h1>
+
+                <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 'clamp(13px,2vw,16px)', lineHeight: 1.7, maxWidth: 480, margin: '0 auto 36px' }}>
+                  Sacs en cuir, bijoux, vêtements tissés — directement des mains de nos artisans du Nord Cameroun.
+                </p>
+
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <Link to="/products" className="btn-accent" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    Découvrir <ArrowRight size={14} />
+                  </Link>
+                  <Link to="/register" style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    padding: '13px 24px', borderRadius: 100,
+                    fontSize: 13, fontWeight: 700, letterSpacing: '0.04em',
+                    color: 'rgba(255,255,255,0.8)', border: '1.5px solid rgba(255,255,255,0.2)',
+                    textDecoration: 'none', transition: 'border-color .15s',
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.55)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'}
+                  >
+                    Devenir vendeur
+                  </Link>
+                </div>
+              </motion.div>
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* Catégories — scroll horizontal en bas du hero */}
+            {categories.length > 0 && (
+              <div style={{ position: 'relative', borderTop: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)', background: 'rgba(0,0,0,0.3)' }}>
+                <div
+                  className="scrollbar-hide"
+                  style={{ display: 'flex', overflowX: 'auto', gap: 0, maxWidth: 1280, margin: '0 auto' }}
+                >
+                  {categories.map(cat => {
+                    const src = imgUrl(cat.image)
+                    return (
+                      <Link key={cat.id} to={`/products?category=${cat.id}`}
+                        style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '14px 18px', textDecoration: 'none', transition: 'background .15s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div style={{
+                          width: 36, height: 36, borderRadius: 10, overflow: 'hidden',
+                          background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        }}>
+                          {src
+                            ? <img src={src} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            : <Package size={14} color="rgba(255,255,255,0.3)" />}
+                        </div>
+                        <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.55)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          {cat.name}
+                        </span>
+                      </Link>
+                    )
+                  })}
+                  <Link to="/products"
+                    style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '14px 18px', textDecoration: 'none', transition: 'background .15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 10, border: '1px dashed rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <ChevronRight size={14} color="rgba(255,255,255,0.4)" />
+                    </div>
+                    <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>Tout voir</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* ══════════════════════════════════════════════════════════
           BARRE GARANTIES
