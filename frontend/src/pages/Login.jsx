@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import { Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle, Phone } from 'lucide-react'
 import { setCredentials } from '../store/authSlice.js'
 import { authService } from '../services/auth.service.js'
 
@@ -14,7 +14,7 @@ const REDIRECTS = {
 export default function Login() {
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
-  const [form, setForm]       = useState({ email: '', password: '' })
+  const [form, setForm]       = useState({ phone: '', password: '' })
   const [showPwd, setShowPwd] = useState(false)
   const [err, setErr]         = useState(null)
   const [loading, setLoading] = useState(false)
@@ -23,14 +23,14 @@ export default function Login() {
 
   const handleSubmit = async e => {
     e.preventDefault()
-    if (!form.email || !form.password) { setErr('Veuillez remplir tous les champs.'); return }
+    if (!form.phone || !form.password) { setErr('Veuillez remplir tous les champs.'); return }
     setLoading(true); setErr(null)
     try {
       const res = await authService.login(form)
       dispatch(setCredentials(res.data))
       navigate(REDIRECTS[res.data.user.role] || '/')
     } catch (e) {
-      setErr(e.response?.data?.error || 'Email ou mot de passe incorrect.')
+      setErr(e.response?.data?.error || 'Numéro ou mot de passe incorrect.')
     } finally {
       setLoading(false)
     }
@@ -137,20 +137,23 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
+            <div style={{ position: 'relative' }}>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-2)', display: 'block', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                Adresse e-mail
+                Numéro de téléphone
               </label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={e => set('email', e.target.value)}
-                placeholder="vous@exemple.com"
-                autoComplete="email"
-                style={inputStyle}
-                onFocus={e => e.target.style.borderColor = 'var(--ink)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
-              />
+              <div style={{ position: 'relative' }}>
+                <Phone size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-3)', pointerEvents: 'none' }} />
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={e => set('phone', e.target.value)}
+                  placeholder="+237 6XX XXX XXX"
+                  autoComplete="tel"
+                  style={{ ...inputStyle, paddingLeft: 38 }}
+                  onFocus={e => e.target.style.borderColor = 'var(--ink)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                />
+              </div>
             </div>
 
             <div>

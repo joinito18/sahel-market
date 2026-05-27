@@ -36,16 +36,16 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
+        phone    = request.data.get('phone', '').strip().replace(' ', '')
         password = request.data.get('password')
         try:
-            user_obj = User.objects.get(email=email)
+            user_obj = User.objects.get(phone=phone)
             user = authenticate(username=user_obj.username, password=password)
         except User.DoesNotExist:
             user = None
 
         if not user:
-            return Response({'error': 'Email ou mot de passe incorrect.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Numéro de téléphone ou mot de passe incorrect.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         refresh = RefreshToken.for_user(user)
         return Response({

@@ -6,9 +6,9 @@ import { useDispatch } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useRef, forwardRef } from 'react'  // ← forwardRef ajouté
 import {
-  User, Mail, Lock, Phone, MapPin,
+  Lock, Phone, MapPin,
   Store, ShoppingBag, ArrowRight, ArrowLeft,
-  Upload, Video, X, Check, Eye, EyeOff,
+  Upload, X, Check, Eye, EyeOff,
   FileText, Camera
 } from 'lucide-react'
 import { setCredentials } from '../store/authSlice.js'
@@ -18,8 +18,6 @@ import toast from 'react-hot-toast'
 
 // ─── Schémas validation ────────────────────────────────────────────
 const clientSchema = z.object({
-  username:  z.string().min(3, 'Minimum 3 caractères'),
-  email:     z.string().email('Email invalide'),
   phone:     z.string().min(9, 'Numéro invalide'),
   password:  z.string().min(8, 'Minimum 8 caractères'),
   password2: z.string(),
@@ -29,8 +27,6 @@ const clientSchema = z.object({
 })
 
 const producerSchema = z.object({
-  username:         z.string().min(3, 'Minimum 3 caractères'),
-  email:            z.string().email('Email invalide'),
   phone:            z.string().min(9, 'Numéro invalide'),
   address:          z.string().min(5, 'Adresse requise'),
   password:         z.string().min(8, 'Minimum 8 caractères'),
@@ -253,20 +249,9 @@ function ClientForm({ onBack, onSuccess }) {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Nom d'utilisateur" error={errors.username?.message}>
-            <Input icon={User} placeholder="johndoe"
-              error={errors.username} {...register('username')} />
-          </Field>
-          <Field label="Téléphone" error={errors.phone?.message}>
-            <Input icon={Phone} placeholder="+237 6XX XXX XXX" type="tel"
-              error={errors.phone} {...register('phone')} />
-          </Field>
-        </div>
-
-        <Field label="Email" error={errors.email?.message}>
-          <Input icon={Mail} placeholder="vous@exemple.com" type="email"
-            error={errors.email} {...register('email')} />
+        <Field label="Numéro de téléphone" error={errors.phone?.message}>
+          <Input icon={Phone} placeholder="+237 6XX XXX XXX" type="tel"
+            error={errors.phone} {...register('phone')} />
         </Field>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -438,7 +423,7 @@ function ProducerForm({ onBack }) {
   }
 
   const nextStep = async () => {
-    const fieldsStep1 = ['username', 'email', 'phone', 'address']
+    const fieldsStep1 = ['phone', 'address']
     const fieldsStep2 = ['speciality', 'password', 'password2']
     const ok = await trigger(step === 1 ? fieldsStep1 : fieldsStep2)
     if (ok) setStep(s => s + 1)
@@ -567,20 +552,9 @@ function ProducerForm({ onBack }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Nom d'utilisateur" error={errors.username?.message}>
-                  <Input icon={User} placeholder="votre_nom"
-                    error={errors.username} {...register('username')} />
-                </Field>
-                <Field label="Téléphone" error={errors.phone?.message}>
-                  <Input icon={Phone} placeholder="+237 6XX XXX XXX" type="tel"
-                    error={errors.phone} {...register('phone')} />
-                </Field>
-              </div>
-
-              <Field label="Email" error={errors.email?.message}>
-                <Input icon={Mail} placeholder="vous@exemple.com" type="email"
-                  error={errors.email} {...register('email')} />
+              <Field label="Numéro de téléphone" error={errors.phone?.message}>
+                <Input icon={Phone} placeholder="+237 6XX XXX XXX" type="tel"
+                  error={errors.phone} {...register('phone')} />
               </Field>
 
               <Field label="Adresse / Localisation" error={errors.address?.message}>
