@@ -157,6 +157,7 @@ function PushSetup() {
 }
 
 export default function App() {
+  const location = useLocation()
   return (
     <div className="flex flex-col min-h-screen">
       <ScrollToTop />
