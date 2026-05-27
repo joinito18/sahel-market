@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { productService } from '../services/product.service.js'
 import { imgUrl } from '../utils/media.js'
 import ProductCard from '../components/ProductCard.jsx'
+import { getRecentlyViewed } from '../utils/recentlyViewed.js'
 
 /* ── Section header éditorial ─────────────────────────────────── */
 function SectionHeader({ title, sub, to }) {
@@ -155,6 +156,8 @@ export default function Home() {
   const newProducts = newData?.data?.results  ?? []
 
   // ── Diaporama hero ────────────────────────────────────────────
+  const recentlyViewed = useMemo(() => getRecentlyViewed(), [])
+
   const heroImages = useMemo(() => {
     const imgs = [
       ...featured.slice(0, 6).map(p => imgUrl(p.main_image)),
@@ -420,6 +423,18 @@ export default function Home() {
           <Carousel products={newProducts} loading={loadNew} />
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          RÉCEMMENT CONSULTÉS
+      ══════════════════════════════════════════════════════════ */}
+      {recentlyViewed.length >= 2 && (
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+          <div className="s-gap s-card">
+            <SectionHeader title="Récemment consultés" sub="Vos produits vus" />
+            <Carousel products={recentlyViewed} loading={false} />
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════
           SECTIONS PAR CATÉGORIE

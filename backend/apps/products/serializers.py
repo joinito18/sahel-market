@@ -14,21 +14,29 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class RatingSerializer(serializers.ModelSerializer):
     user_name            = serializers.CharField(source='user.username', read_only=True)
     is_verified_purchase = serializers.SerializerMethodField()
+    photo_url            = serializers.SerializerMethodField()
 
     class Meta:
-        model = Rating
-        fields = ['id', 'user_name', 'score', 'comment', 'created_at', 'is_verified_purchase']
-        read_only_fields = ['id', 'user_name', 'created_at', 'is_verified_purchase']
+        model  = Rating
+        fields = ['id', 'user_name', 'score', 'comment', 'photo', 'photo_url', 'created_at', 'is_verified_purchase']
+        read_only_fields = ['id', 'user_name', 'created_at', 'is_verified_purchase', 'photo_url']
+        extra_kwargs = {'photo': {'write_only': True, 'required': False}}
 
     def get_is_verified_purchase(self, obj):
         from apps.orders.models import OrderItem
         return OrderItem.objects.filter(
-            order__user=obj.user,
-            product=obj.product,
+            order__user=obj.user, product=obj.product,
         ).exists()
+
+    def get_photo_url(self, obj):
+        if obj.photo:
+            request = self.context.get('request')
+            return request.build_absolute_uri(obj.photo.url) if request else obj.photo.url
+        return None
 
 class ProductListSerializer(serializers.ModelSerializer):
     main_image     = serializers.SerializerMethodField()
+    second_image   = serializers.SerializerMethodField()
     average_rating = serializers.FloatField(read_only=True)
     ratings_count  = serializers.IntegerField(source='ratings.count', read_only=True)
     likes_count    = serializers.IntegerField(source='likes.count', read_only=True)
@@ -40,7 +48,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'price', 'stock', 'location', 'is_available',
-                  'main_image', 'average_rating', 'ratings_count', 'likes_count',
+                  'main_image', 'second_image', 'average_rating', 'ratings_count', 'likes_count',
                   'producer_name', 'producer_id', 'category', 'views_count', 'created_at',
                   'is_liked']
 
@@ -52,9 +60,16 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     def get_main_image(self, obj):
         img = obj.images.filter(is_main=True).first() or obj.images.first()
-        if img:
-            return img.image.url
-        return None
+        return img.image.url if img else None
+
+    def get_second_image(self, obj):
+        main = obj.images.filter(is_main=True).first()
+        if main:
+            second = obj.images.exclude(id=main.id).first()
+        else:
+            imgs = list(obj.images.all())
+            second = imgs[1] if len(imgs) >= 2 else None
+        return second.image.url if second else None
 
 class ProductDetailSerializer(ProductListSerializer):
     images       = ProductImageSerializer(many=True, read_only=True)

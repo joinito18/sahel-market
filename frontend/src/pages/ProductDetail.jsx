@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ShoppingCart, MapPin, Eye, ArrowLeft, Heart,
@@ -18,6 +18,7 @@ import ProductCard from '../components/ProductCard.jsx'
 import toast from 'react-hot-toast'
 
 import { imgUrl, fcfa as FCFA } from '../utils/media.js'
+import { addRecentlyViewed } from '../utils/recentlyViewed.js'
 
 function StarDisplay({ score, size = 14 }) {
   return (
@@ -38,10 +39,13 @@ export default function ProductDetail() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const [activeImg, setActiveImg] = useState(0)
-  const [quantity,  setQuantity]  = useState(1)
-  const [liked,     setLiked]     = useState(false)
-  const [adding,    setAdding]    = useState(false)
+  const [activeImg,  setActiveImg]  = useState(0)
+  const [quantity,   setQuantity]   = useState(1)
+  const [liked,      setLiked]      = useState(false)
+  const [adding,     setAdding]     = useState(false)
+  const [zoomOpen,   setZoomOpen]   = useState(false)
+  const [stickyShow, setStickyShow] = useState(false)
+  const ctaRef = useRef(null)
 
   const navTo = useNav()
   const { isAuthenticated, user: me } = useSelector(s => s.auth)
@@ -59,6 +63,18 @@ export default function ProductDetail() {
     enabled:  !!product,
   })
   const related = relatedData?.data ?? []
+
+  /* Enregistrer dans "récemment vus" */
+  useEffect(() => { if (product) addRecentlyViewed(product) }, [product?.id])
+
+  /* Sticky CTA — apparaît quand le CTA principal sort de l'écran */
+  useEffect(() => {
+    const el = ctaRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(([e]) => setStickyShow(!e.isIntersecting), { threshold: 0 })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [ctaRef.current])
 
   /* ── Loading ─────────────────────────────────────────────────── */
   if (isLoading) return (
@@ -170,7 +186,9 @@ export default function ProductDetail() {
 
             {/* Image principale */}
             <div className="relative aspect-square bg-white rounded-3xl overflow-hidden
-                            border border-gray-100 shadow-sm group">
+                            border border-gray-100 shadow-sm group"
+                 onClick={() => mainImage && setZoomOpen(true)}
+                 style={{ cursor: mainImage ? 'zoom-in' : 'default' }}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeImg}
@@ -446,6 +464,7 @@ export default function ProductDetail() {
 
             {/* CTA */}
             <motion.button
+              ref={ctaRef}
               onClick={handleAddToCart}
               disabled={isOutOfStock || adding}
               animate={adding ? {} : {}}
@@ -578,6 +597,62 @@ export default function ProductDetail() {
             </div>
           </div>
         )}
+
+        {/* ════════════════════════════════════════════════════════
+            STICKY CTA MOBILE
+        ════════════════════════════════════════════════════════ */}
+        <AnimatePresence>
+          {stickyShow && !isOutOfStock && (
+            <motion.div
+              initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }}
+              transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+              style={{ position: 'fixed', bottom: 64, left: 0, right: 0, zIndex: 50,
+                padding: '12px 16px', background: '#fff', borderTop: '1px solid #e5e7eb',
+                boxShadow: '0 -4px 20px rgba(0,0,0,0.08)', display: 'flex', gap: 12, alignItems: 'center' }}
+              className="lg:hidden"
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 12, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</p>
+                <p style={{ fontSize: 16, fontWeight: 800, color: '#f97316' }}>{FCFA(product.price * quantity)} FCFA</p>
+              </div>
+              <button onClick={handleAddToCart}
+                style={{ flexShrink: 0, background: '#111', color: '#fff', border: 'none', borderRadius: 14,
+                  padding: '13px 24px', fontWeight: 800, fontSize: 14, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ShoppingCart size={16} /> Ajouter
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ════════════════════════════════════════════════════════
+            LIGHTBOX ZOOM
+        ════════════════════════════════════════════════════════ */}
+        <AnimatePresence>
+          {zoomOpen && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setZoomOpen(false)}
+              style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.92)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, cursor: 'zoom-out' }}
+            >
+              <motion.img
+                src={mainImage}
+                alt={product.name}
+                initial={{ scale: 0.88 }} animate={{ scale: 1 }} exit={{ scale: 0.88 }}
+                transition={{ type: 'spring', damping: 20, stiffness: 250 }}
+                style={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: 12, objectFit: 'contain', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}
+                onClick={e => e.stopPropagation()}
+              />
+              <button onClick={() => setZoomOpen(false)}
+                style={{ position: 'absolute', top: 20, right: 20, width: 44, height: 44, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer',
+                  color: '#fff', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                ✕
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ════════════════════════════════════════════════════════
             RECOMMANDATIONS INTELLIGENTES

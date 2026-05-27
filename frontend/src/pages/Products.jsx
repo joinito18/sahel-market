@@ -468,6 +468,80 @@ export default function Products() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
+          CHIPS FILTRES ACTIFS
+      ══════════════════════════════════════════════════════════ */}
+      {hasFilters && (
+        <div className="w-full px-4 sm:px-6 lg:px-10 pb-3 flex flex-wrap gap-2">
+          {filters.search && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: '#111', color: '#fff', borderRadius: 100,
+              fontSize: 11, fontWeight: 700, padding: '5px 12px' }}>
+              🔍 {filters.search}
+              <button onClick={() => { dispatch(setFilters({ search: '' })); setSearch('') }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', padding: 0 }}>
+                <X size={11} />
+              </button>
+            </span>
+          )}
+          {activeCategory && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: '#f97316', color: '#fff', borderRadius: 100,
+              fontSize: 11, fontWeight: 700, padding: '5px 12px' }}>
+              {activeCategory.name}
+              <button onClick={() => dispatch(setFilters({ category: '' }))}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', padding: 0 }}>
+                <X size={11} />
+              </button>
+            </span>
+          )}
+          {location && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: '#6b7280', color: '#fff', borderRadius: 100,
+              fontSize: 11, fontWeight: 700, padding: '5px 12px' }}>
+              📍 {location}
+              <button onClick={() => setLocation('')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', padding: 0 }}>
+                <X size={11} />
+              </button>
+            </span>
+          )}
+          {priceMin && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: '#6b7280', color: '#fff', borderRadius: 100,
+              fontSize: 11, fontWeight: 700, padding: '5px 12px' }}>
+              Min {Number(priceMin).toLocaleString('fr-FR')} FCFA
+              <button onClick={() => setPriceMin('')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', padding: 0 }}>
+                <X size={11} />
+              </button>
+            </span>
+          )}
+          {priceMax && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: '#6b7280', color: '#fff', borderRadius: 100,
+              fontSize: 11, fontWeight: 700, padding: '5px 12px' }}>
+              Max {Number(priceMax).toLocaleString('fr-FR')} FCFA
+              <button onClick={() => setPriceMax('')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', padding: 0 }}>
+                <X size={11} />
+              </button>
+            </span>
+          )}
+          {minRating > 0 && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: '#f59e0b', color: '#fff', borderRadius: 100,
+              fontSize: 11, fontWeight: 700, padding: '5px 12px' }}>
+              ★ {minRating}+
+              <button onClick={() => setMinRating(0)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', display: 'flex', padding: 0 }}>
+                <X size={11} />
+              </button>
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
           GRILLE PRODUITS
       ══════════════════════════════════════════════════════════ */}
       <div className="w-full px-4 sm:px-6 lg:px-10 py-5 sm:py-8">

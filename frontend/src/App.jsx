@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useSelector, useDispatch } from 'react-redux'
 import { setWishlist, clearWishlist } from './store/wishlistSlice.js'
 import { productService } from './services/product.service.js'
@@ -170,7 +171,15 @@ export default function App() {
       {/* Padding bottom safe-area aware pour la BottomNav fixe */}
       <div className="flex-1 safe-bottom">
         <Suspense fallback={<PageLoader />}>
-          <Routes>
+          <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            style={{ minHeight: '100%' }}
+          >
+          <Routes location={location}>
 
             {/* ── Pages publiques ─────────────────────────────── */}
             <Route path="/"              element={<Home />} />
@@ -234,6 +243,8 @@ export default function App() {
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </motion.div>
+          </AnimatePresence>
         </Suspense>
       </div>
 
