@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight, ChevronLeft, Shield, Truck, Award, Users, MapPin, Package, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { productService } from '../services/product.service.js'
 import { imgUrl } from '../utils/media.js'
 import ProductCard from '../components/ProductCard.jsx'
@@ -154,6 +154,22 @@ export default function Home() {
   const featured    = featData?.data?.results ?? []
   const newProducts = newData?.data?.results  ?? []
 
+  // ── Diaporama hero ────────────────────────────────────────────
+  const heroImages = useMemo(() => {
+    const imgs = [
+      ...featured.slice(0, 6).map(p => imgUrl(p.main_image)),
+      ...categories.slice(0, 4).map(c => imgUrl(c.image)),
+    ].filter(Boolean)
+    return [...new Set(imgs)]
+  }, [featured, categories])
+
+  const [heroIdx, setHeroIdx] = useState(0)
+  useEffect(() => {
+    if (heroImages.length <= 1) return
+    const t = setInterval(() => setHeroIdx(i => (i + 1) % heroImages.length), 5000)
+    return () => clearInterval(t)
+  }, [heroImages.length])
+
   return (
     <div style={{ minHeight: '100vh' }}>
 
@@ -161,20 +177,26 @@ export default function Home() {
           HERO — IMAGE PLEIN FOND + GRAIN
       ══════════════════════════════════════════════════════════ */}
       {(() => {
-        const heroImg = imgUrl(featured[0]?.main_image) || imgUrl(categories[0]?.image) || null
         return (
           <div style={{ position: 'relative', minHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
-            {/* Image de fond */}
-            {heroImg && (
-              <img src={heroImg} alt=""
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.38) saturate(0.8)' }}
-              />
-            )}
-            {/* Fallback si pas d'image */}
-            {!heroImg && (
+            {/* Diaporama — toutes les images empilées, fondu + Ken Burns */}
+            {heroImages.length === 0 && (
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #0d0d0d 0%, #1a1008 50%, #0d0d0d 100%)' }} />
             )}
+            {heroImages.map((src, i) => (
+              <img key={src} src={src} alt=""
+                style={{
+                  position: 'absolute', inset: 0,
+                  width: '100%', height: '100%',
+                  objectFit: 'cover', objectPosition: 'center',
+                  filter: 'brightness(0.38) saturate(0.8)',
+                  opacity: i === heroIdx ? 1 : 0,
+                  transform: i === heroIdx ? 'scale(1.06)' : 'scale(1)',
+                  transition: 'opacity 1.5s ease, transform 6s ease',
+                }}
+              />
+            ))}
 
             {/* Overlay gradient directionnel */}
             <div style={{
@@ -246,6 +268,22 @@ export default function Home() {
                 </div>
               </motion.div>
             </div>
+
+            {/* Dots indicateurs de slide */}
+            {heroImages.length > 1 && (
+              <div style={{ position: 'absolute', bottom: 72, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6, zIndex: 2 }}>
+                {heroImages.map((_, i) => (
+                  <button key={i} onClick={() => setHeroIdx(i)}
+                    style={{
+                      width: i === heroIdx ? 20 : 6, height: 6,
+                      borderRadius: 3, border: 'none', cursor: 'pointer', padding: 0,
+                      background: i === heroIdx ? 'var(--accent)' : 'rgba(255,255,255,0.3)',
+                      transition: 'width .35s ease, background .35s ease',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
 
             {/* Catégories — scroll horizontal en bas du hero */}
             {categories.length > 0 && (
