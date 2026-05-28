@@ -14,4 +14,6 @@ export const productService = {
   getCategories:      ()         => api.get('/products/categories/'),
   getStats:           ()         => api.get('/products/stats/'),
   getRecommendations: (id)       => api.get(`/products/${id}/recommendations/`),
+  toggleAlert:        (id)       => api.post(`/products/${id}/alert/`),
+  getFlash:           ()         => api.get('/products/flash/'),
 }

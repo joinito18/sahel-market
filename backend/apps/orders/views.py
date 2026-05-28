@@ -9,8 +9,8 @@ from django.http import HttpResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from .models import Cart, CartItem, Order, OrderItem, Notification, PromoCode
-from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer, NotificationSerializer
+from .models import Cart, CartItem, Order, OrderItem, Notification, PromoCode, DeliveryZone
+from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CheckoutSerializer, NotificationSerializer, DeliveryZoneSerializer
 from .campay_service import CampayService, CampayError
 from apps.users.push_utils import send_push
 
@@ -94,6 +94,16 @@ def create_order_notification(order, new_status):
         order=order,
     )
     send_push(order.user, title, body, url=f'/orders/{order.id}/track')
+
+class DeliveryZonesView(APIView):
+    """Zones de livraison avec tarifs — endpoint public."""
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request):
+        zones = DeliveryZone.objects.filter(is_active=True)
+        return Response(DeliveryZoneSerializer(zones, many=True).data)
+
 
 class PromoValidateView(APIView):
     permission_classes = [IsAuthenticated]

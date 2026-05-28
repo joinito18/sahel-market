@@ -1,5 +1,18 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, Rating, Like
+from .models import Category, Product, ProductImage, Rating, Like, StockAlert
+
+
+@admin.register(Rating)
+class RatingAdmin(admin.ModelAdmin):
+    list_display  = ['user', 'product', 'score', 'created_at']
+    list_filter   = ['score']
+    search_fields = ['user__username', 'product__name']
+
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display  = ['user', 'product', 'created_at']
+    search_fields = ['user__username', 'product__name']
 
 class ProductImageInline(admin.TabularInline):
     model  = ProductImage
@@ -13,8 +26,19 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display  = ['name', 'producer', 'category', 'price', 'stock', 'location', 'is_available']
+    list_display  = ['name', 'producer', 'category', 'price', 'stock', 'flash_price', 'flash_end', 'location', 'is_available']
     list_filter   = ['category', 'is_available']
     search_fields = ['name', 'description']
-    list_editable = ['price', 'stock', 'is_available']
+    list_editable = ['price', 'stock', 'flash_price', 'flash_end', 'is_available']
     inlines       = [ProductImageInline]
+    fieldsets     = [
+        (None,           {'fields': ['producer', 'category', 'name', 'description', 'price', 'stock', 'location', 'is_available']}),
+        ('Vente Flash',  {'fields': ['flash_price', 'flash_end'], 'classes': ['collapse']}),
+    ]
+
+
+@admin.register(StockAlert)
+class StockAlertAdmin(admin.ModelAdmin):
+    list_display  = ['user', 'product', 'notified', 'created_at']
+    list_filter   = ['notified']
+    search_fields = ['user__username', 'product__name']

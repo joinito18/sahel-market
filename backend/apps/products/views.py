@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from django.db.models import Avg, Count, Q
-from .models import Product, Category, Rating, Like
+from .models import Product, Category, Rating, Like, StockAlert
 from .serializers import (ProductListSerializer, ProductDetailSerializer,
                            ProductCreateSerializer, CategorySerializer, RatingSerializer)
 from apps.users.models import User
@@ -187,6 +187,31 @@ class ProductViewSet(viewsets.ModelViewSet):
             like.delete()
             return Response({'liked': False})
         return Response({'liked': True})
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def alert(self, request, pk=None):
+        """S'abonner / se désabonner à l'alerte de réapprovisionnement."""
+        product = self.get_object()
+        if product.stock > 0:
+            return Response({'error': 'Ce produit est déjà disponible.'}, status=status.HTTP_400_BAD_REQUEST)
+        alert_obj, created = StockAlert.objects.get_or_create(
+            product=product, user=request.user,
+            defaults={'notified': False},
+        )
+        if not created:
+            alert_obj.delete()
+            return Response({'subscribed': False})
+        return Response({'subscribed': True})
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+    def flash(self, request):
+        """Produits en vente flash actifs."""
+        from django.utils import timezone
+        qs = (Product.objects
+              .filter(flash_price__isnull=False, flash_end__gt=timezone.now(), is_available=True)
+              .select_related('producer', 'category')
+              .prefetch_related('images', 'ratings', 'likes'))
+        return Response(ProductListSerializer(qs, many=True, context={'request': request}).data)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def rate(self, request, pk=None):

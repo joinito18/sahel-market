@@ -9,6 +9,7 @@ import {
   Loader2, AlertTriangle,
 } from 'lucide-react'
 import { orderService } from '../services/order.service.js'
+import api from '../services/api.js'
 import { clearCart } from '../store/cartSlice.js'
 import { imgUrl, fcfa } from '../utils/media.js'
 import toast from 'react-hot-toast'
@@ -43,11 +44,12 @@ const PAYMENT_METHODS = [
   },
 ]
 
-const DELIVERY_FEES = [
-  { label: 'Maroua & Extrême-Nord',    fee: 500  },
-  { label: 'Garoua / Ngaoundéré',      fee: 1500 },
-  { label: 'Yaoundé / Douala',         fee: 2500 },
-  { label: 'Autres régions',           fee: 3500 },
+const DEFAULT_ZONES = [
+  { id: 1, name: 'Maroua & Extrême-Nord', cities: 'Maroua, Kousseri, Mokolo', fee: 500  },
+  { id: 2, name: 'Garoua & Nord',         cities: 'Garoua, Guider, Pitoa',    fee: 1500 },
+  { id: 3, name: 'Yaoundé & Centre',      cities: 'Yaoundé, Mbalmayo, Bafia', fee: 2500 },
+  { id: 4, name: 'Douala & Littoral',     cities: 'Douala, Nkongsamba, Edea', fee: 2500 },
+  { id: 5, name: 'Autres régions',        cities: '',                          fee: 3500 },
 ]
 
 /* ── Attente de paiement Campay (USSD push) ──────────────────── */
@@ -323,13 +325,23 @@ export default function Checkout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [paymentMethod, setPaymentMethod] = useState('orange_money')
-  const [deliveryFee, setDeliveryFee]     = useState(1500)
+  const [deliveryFee, setDeliveryFee]     = useState(500)
+  const [deliveryZones, setDeliveryZones] = useState(DEFAULT_ZONES)
   const [confirmed, setConfirmed]         = useState(null)
   const [applyLoyalty, setApplyLoyalty]   = useState(false)
   const [promoInput, setPromoInput]       = useState('')
   const [promoResult, setPromoResult]     = useState(null)
   const [promoLoading, setPromoLoading]   = useState(false)
   const [promoError, setPromoError]       = useState('')
+
+  useEffect(() => {
+    api.get('/orders/delivery-zones/').then(res => {
+      if (res.data?.length) {
+        setDeliveryZones(res.data)
+        setDeliveryFee(Number(res.data[0].fee))
+      }
+    }).catch(() => {})
+  }, [])
 
   const loyaltyPts   = user?.loyalty_points || 0
   const loyaltyValue = Math.floor(loyaltyPts / 100) * 500
@@ -496,26 +508,31 @@ export default function Checkout() {
                 Zone de livraison
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {DELIVERY_FEES.map(({ label, fee }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => setDeliveryFee(fee)}
-                    style={{
-                      padding: '10px 14px', borderRadius: 10, cursor: 'pointer', textAlign: 'left',
-                      border: `2px solid ${deliveryFee === fee ? '#2D6A4F' : '#e5e7eb'}`,
-                      background: deliveryFee === fee ? '#eff8f3' : '#fff',
-                      transition: 'all .15s',
-                    }}
-                  >
-                    <p style={{ fontSize: 12, fontWeight: 600,
-                                 color: deliveryFee === fee ? '#2D6A4F' : '#374151' }}>{label}</p>
-                    <p style={{ fontSize: 12, color: deliveryFee === fee ? '#2D6A4F' : '#9ca3af',
-                                 marginTop: 2 }}>
-                      {fee === 0 ? 'Gratuit' : `${fee.toLocaleString('fr-FR')} FCFA`}
-                    </p>
-                  </button>
-                ))}
+                {deliveryZones.map((zone) => {
+                  const fee = Number(zone.fee)
+                  const active = deliveryFee === fee && deliveryZones.find(z => Number(z.fee) === deliveryFee)?.id === zone.id
+                  return (
+                    <button
+                      key={zone.id}
+                      type="button"
+                      onClick={() => setDeliveryFee(fee)}
+                      style={{
+                        padding: '10px 14px', borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+                        border: `2px solid ${active ? '#2D6A4F' : '#e5e7eb'}`,
+                        background: active ? '#eff8f3' : '#fff',
+                        transition: 'all .15s',
+                      }}
+                    >
+                      <p style={{ fontSize: 12, fontWeight: 600, color: active ? '#2D6A4F' : '#374151' }}>{zone.name}</p>
+                      {zone.cities ? (
+                        <p style={{ fontSize: 10, color: '#9ca3af', marginTop: 1 }}>{zone.cities}</p>
+                      ) : null}
+                      <p style={{ fontSize: 12, color: active ? '#2D6A4F' : '#9ca3af', marginTop: 2, fontWeight: 600 }}>
+                        {fee === 0 ? 'Gratuit' : `${fee.toLocaleString('fr-FR')} FCFA`}
+                      </p>
+                    </button>
+                  )
+                })}
               </div>
             </div>
 

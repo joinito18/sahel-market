@@ -95,6 +95,18 @@ class PromoCode(models.Model):
         return None
 
 
+class DeliveryZone(models.Model):
+    name      = models.CharField(max_length=200)
+    cities    = models.TextField(help_text="Villes couvertes, séparées par des virgules")
+    fee       = models.DecimalField(max_digits=8, decimal_places=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['fee']
+
+    def __str__(self):
+        return f"{self.name} — {int(self.fee)} FCFA"
+
 class Notification(models.Model):
     TYPE_CHOICES = [
         ('order_placed',    'Commande passée'),

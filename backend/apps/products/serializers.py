@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, ProductImage, Rating, Like
+from .models import Product, Category, ProductImage, Rating, Like, StockAlert
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,27 +35,37 @@ class RatingSerializer(serializers.ModelSerializer):
         return None
 
 class ProductListSerializer(serializers.ModelSerializer):
-    main_image     = serializers.SerializerMethodField()
-    second_image   = serializers.SerializerMethodField()
-    average_rating = serializers.FloatField(read_only=True)
-    ratings_count  = serializers.IntegerField(source='ratings.count', read_only=True)
-    likes_count    = serializers.IntegerField(source='likes.count', read_only=True)
-    producer_name  = serializers.CharField(source='producer.username', read_only=True)
-    producer_id    = serializers.IntegerField(source='producer.id', read_only=True)
-    category       = CategorySerializer(read_only=True)
-    is_liked       = serializers.SerializerMethodField()
+    main_image           = serializers.SerializerMethodField()
+    second_image         = serializers.SerializerMethodField()
+    average_rating       = serializers.FloatField(read_only=True)
+    ratings_count        = serializers.IntegerField(source='ratings.count', read_only=True)
+    likes_count          = serializers.IntegerField(source='likes.count', read_only=True)
+    producer_name        = serializers.CharField(source='producer.username', read_only=True)
+    producer_id          = serializers.IntegerField(source='producer.id', read_only=True)
+    producer_is_verified = serializers.BooleanField(source='producer.is_verified', read_only=True)
+    category             = CategorySerializer(read_only=True)
+    is_liked             = serializers.SerializerMethodField()
+    is_flash_active      = serializers.BooleanField(read_only=True)
+    user_has_alert       = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = ['id', 'name', 'price', 'stock', 'location', 'is_available',
                   'main_image', 'second_image', 'average_rating', 'ratings_count', 'likes_count',
-                  'producer_name', 'producer_id', 'category', 'views_count', 'created_at',
-                  'is_liked']
+                  'producer_name', 'producer_id', 'producer_is_verified', 'category',
+                  'views_count', 'created_at', 'is_liked',
+                  'flash_price', 'flash_end', 'is_flash_active', 'user_has_alert']
 
     def get_is_liked(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return obj.likes.filter(user=request.user).exists()
+        return False
+
+    def get_user_has_alert(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.alerts.filter(user=request.user, notified=False).exists()
         return False
 
     def get_main_image(self, obj):

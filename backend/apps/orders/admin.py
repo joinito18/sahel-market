@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, PromoCode
+from .models import Order, OrderItem, PromoCode, DeliveryZone
 
 
 class OrderItemInline(admin.TabularInline):
@@ -21,3 +21,10 @@ class PromoCodeAdmin(admin.ModelAdmin):
     list_display = ['code', 'discount_type', 'discount_value', 'is_active', 'used_count', 'max_uses', 'expiry_date']
     list_filter  = ['discount_type', 'is_active']
     search_fields = ['code', 'description']
+
+
+@admin.register(DeliveryZone)
+class DeliveryZoneAdmin(admin.ModelAdmin):
+    list_display  = ['name', 'fee', 'is_active']
+    list_editable = ['fee', 'is_active']
+    search_fields = ['name', 'cities']
