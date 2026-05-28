@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ShoppingCart, MapPin, Eye, ArrowLeft, Heart,
@@ -39,12 +39,18 @@ export default function ProductDetail() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const [activeImg,  setActiveImg]  = useState(0)
-  const [quantity,   setQuantity]   = useState(1)
-  const [liked,      setLiked]      = useState(false)
-  const [adding,     setAdding]     = useState(false)
-  const [zoomOpen,   setZoomOpen]   = useState(false)
-  const [stickyShow, setStickyShow] = useState(false)
+  const [activeImg,     setActiveImg]     = useState(0)
+  const [quantity,      setQuantity]      = useState(1)
+  const [liked,         setLiked]         = useState(false)
+  const [adding,        setAdding]        = useState(false)
+  const [zoomOpen,      setZoomOpen]      = useState(false)
+  const [zoomScale,     setZoomScale]     = useState(1)
+  const [zoomOffset,    setZoomOffset]    = useState({ x: 0, y: 0 })
+  const [isDragging,    setIsDragging]    = useState(false)
+  const [shareOpen,     setShareOpen]     = useState(false)
+  const [selectedVars,  setSelectedVars]  = useState({})
+  const [stickyShow,    setStickyShow]    = useState(false)
+  const dragStart = useRef(null)
   const ctaRef = useRef(null)
 
   const navTo = useNav()
@@ -133,13 +139,27 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     if (isOutOfStock) return
-    setAdding(true)
-    for (let i = 0; i < quantity; i++) {
-      dispatch(addItem({
-        ...product,
-        main_image: images[0]?.image || product.main_image
-      }))
+    // Vérifier que toutes les variantes requises sont sélectionnées
+    const variantTypes = [...new Set((product.variants || []).map(v => v.type))]
+    const missing = variantTypes.filter(t => !selectedVars[t])
+    if (missing.length > 0) {
+      const labels = { taille: 'Taille', couleur: 'Couleur', matiere: 'Matière', autre: 'Option' }
+      toast.error(`Veuillez choisir : ${missing.map(t => labels[t] || t).join(', ')}`)
+      return
     }
+    setAdding(true)
+    const variantLabel     = Object.values(selectedVars).map(v => v.label).join(' · ')
+    const variantTypeLabel = Object.values(selectedVars).map(v => v.type_label).join(' / ')
+    const variantId        = Object.values(selectedVars).map(v => v.id).sort().join('_')
+    dispatch(addItem({
+      ...product,
+      price:          effectivePrice,
+      main_image:     images[0]?.image || product.main_image,
+      variantId:      variantId || undefined,
+      variantLabel:   variantLabel || undefined,
+      variantTypeLabel: variantTypeLabel || undefined,
+      quantity,
+    }))
     dispatch(openCart())
     toast.success(`${quantity} article${quantity > 1 ? 's' : ''} ajouté${quantity > 1 ? 's' : ''} au panier`)
     setTimeout(() => setAdding(false), 1200)
@@ -165,6 +185,41 @@ export default function ProductDetail() {
       toast.error('Impossible de copier')
     }
   }
+
+  const handleShareFacebook = () => {
+    const url = encodeURIComponent(window.location.href)
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'noopener,noreferrer,width=600,height=400')
+  }
+
+  // Zoom handlers
+  const handleZoomWheel = useCallback((e) => {
+    e.preventDefault()
+    setZoomScale(s => {
+      const next = s + (e.deltaY < 0 ? 0.4 : -0.4)
+      const clamped = Math.max(1, Math.min(5, next))
+      if (clamped <= 1) setZoomOffset({ x: 0, y: 0 })
+      return clamped
+    })
+  }, [])
+
+  const handleZoomMouseDown = (e) => {
+    if (zoomScale <= 1) return
+    setIsDragging(true)
+    dragStart.current = { x: e.clientX - zoomOffset.x, y: e.clientY - zoomOffset.y }
+  }
+
+  const handleZoomMouseMove = (e) => {
+    if (!isDragging || !dragStart.current) return
+    setZoomOffset({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y })
+  }
+
+  const handleZoomMouseUp = () => { setIsDragging(false); dragStart.current = null }
+
+  const closeZoom = () => { setZoomOpen(false); setZoomScale(1); setZoomOffset({ x: 0, y: 0 }) }
+
+  // Variants — calcul du prix avec extra_price
+  const variantExtraTotal = Object.values(selectedVars).reduce((sum, v) => sum + Number(v.extra_price || 0), 0)
+  const effectivePrice    = Number(product?.flash_price && product?.is_flash_active ? product.flash_price : product?.price || 0) + variantExtraTotal
 
   const avgRating    = product.average_rating || 0
   const ratingCount  = product.ratings?.length || 0
@@ -285,6 +340,16 @@ export default function ProductDetail() {
                   WA
                 </button>
                 <button
+                  onClick={handleShareFacebook}
+                  title="Partager sur Facebook"
+                  className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl shadow-md
+                             flex items-center justify-center transition-colors
+                             bg-blue-600 hover:bg-blue-700 text-white"
+                  style={{ fontSize: 11, fontWeight: 900 }}
+                >
+                  FB
+                </button>
+                <button
                   onClick={handleCopyLink}
                   title="Copier le lien"
                   className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl bg-white/90 backdrop-blur-sm shadow-md
@@ -379,12 +444,14 @@ export default function ProductDetail() {
 
             {/* Prix */}
             <div className="flex items-baseline gap-3 py-4 border-y border-gray-100">
-              <span className="price-tag" style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', color: 'var(--ink)' }}>
-                {FCFA(product.price)} <span style={{ fontSize: '0.55em', fontWeight: 600, color: 'var(--ink-2)' }}>FCFA</span>
+              <span className="price-tag" style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', color: product.is_flash_active ? '#DC2626' : 'var(--ink)' }}>
+                {FCFA(effectivePrice)} <span style={{ fontSize: '0.55em', fontWeight: 600, color: 'var(--ink-2)' }}>FCFA</span>
               </span>
+              {product.is_flash_active && (
+                <span className="text-sm line-through text-gray-400">{FCFA(product.price)} FCFA</span>
+              )}
               {isLowStock && (
-                <span className="text-xs font-bold text-red-500 bg-red-50
-                                 px-2 py-1 rounded-full">
+                <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full">
                   Plus que {product.stock} en stock !
                 </span>
               )}
@@ -450,6 +517,55 @@ export default function ProductDetail() {
                 {product.description}
               </p>
             </div>
+
+            {/* Variants */}
+            {product.variants?.length > 0 && (() => {
+              const byType = product.variants.reduce((acc, v) => {
+                if (!acc[v.type]) acc[v.type] = { label: v.type_label, options: [] }
+                acc[v.type].options.push(v)
+                return acc
+              }, {})
+              return Object.entries(byType).map(([type, { label, options }]) => (
+                <div key={type}>
+                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                    {label}
+                    {selectedVars[type] && (
+                      <span className="ml-2 text-orange-500 font-bold">{selectedVars[type].label}</span>
+                    )}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {options.map(v => {
+                      const active = selectedVars[type]?.id === v.id
+                      const outOfStock = v.stock === 0
+                      return (
+                        <button key={v.id} disabled={outOfStock}
+                          onClick={() => setSelectedVars(s => ({ ...s, [type]: active ? undefined : v }))}
+                          style={{
+                            padding: type === 'couleur' ? '0' : '6px 14px',
+                            borderRadius: type === 'couleur' ? '50%' : 8,
+                            width: type === 'couleur' ? 32 : 'auto',
+                            height: type === 'couleur' ? 32 : 'auto',
+                            background: type === 'couleur' ? v.label : active ? '#111' : '#f9f9f9',
+                            border: active ? '2px solid #111' : '2px solid #e5e7eb',
+                            color: type === 'couleur' ? 'transparent' : active ? '#fff' : '#374151',
+                            fontSize: 12, fontWeight: 600, cursor: outOfStock ? 'not-allowed' : 'pointer',
+                            opacity: outOfStock ? 0.4 : 1,
+                            boxShadow: active ? '0 0 0 3px rgba(17,17,17,0.15)' : 'none',
+                            transition: 'all .15s',
+                          }}>
+                          {type !== 'couleur' && v.label}
+                          {Number(v.extra_price) > 0 && type !== 'couleur' && (
+                            <span style={{ fontSize: 10, marginLeft: 4, color: active ? '#ccc' : '#9ca3af' }}>
+                              +{Number(v.extra_price).toLocaleString('fr-FR')}
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))
+            })()}
 
             {/* Quantité */}
             {!isOutOfStock && (
@@ -517,7 +633,7 @@ export default function ProductDetail() {
                     <ShoppingCart size={18} />
                     {isOutOfStock
                       ? 'Rupture de stock'
-                      : `Ajouter au panier · ${FCFA(product.price * quantity)}`
+                      : `Ajouter au panier · ${FCFA(effectivePrice * quantity)}`
                     }
                   </motion.span>
                 )}
@@ -646,28 +762,77 @@ export default function ProductDetail() {
         </AnimatePresence>
 
         {/* ════════════════════════════════════════════════════════
-            LIGHTBOX ZOOM
+            LIGHTBOX ZOOM (scroll pour zoomer, drag pour déplacer)
         ════════════════════════════════════════════════════════ */}
         <AnimatePresence>
           {zoomOpen && (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setZoomOpen(false)}
-              style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.92)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, cursor: 'zoom-out' }}
+              onWheel={handleZoomWheel}
+              onMouseMove={handleZoomMouseMove}
+              onMouseUp={handleZoomMouseUp}
+              onMouseLeave={handleZoomMouseUp}
+              onClick={zoomScale <= 1 ? closeZoom : undefined}
+              style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.95)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-out',
+                userSelect: 'none', overflow: 'hidden' }}
             >
               <motion.img
                 src={mainImage}
                 alt={product.name}
-                initial={{ scale: 0.88 }} animate={{ scale: 1 }} exit={{ scale: 0.88 }}
-                transition={{ type: 'spring', damping: 20, stiffness: 250 }}
-                style={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: 12, objectFit: 'contain', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onMouseDown={handleZoomMouseDown}
                 onClick={e => e.stopPropagation()}
+                style={{
+                  maxWidth: '92vw', maxHeight: '90vh', borderRadius: 8, objectFit: 'contain',
+                  transform: `scale(${zoomScale}) translate(${zoomOffset.x / zoomScale}px, ${zoomOffset.y / zoomScale}px)`,
+                  transition: isDragging ? 'none' : 'transform 0.15s ease',
+                  cursor: zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+                }}
               />
-              <button onClick={() => setZoomOpen(false)}
-                style={{ position: 'absolute', top: 20, right: 20, width: 44, height: 44, borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer',
-                  color: '#fff', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+
+              {/* Navigation images dans le zoom */}
+              {images.length > 1 && (
+                <>
+                  <button onClick={(e) => { e.stopPropagation(); setActiveImg(i => (i - 1 + images.length) % images.length); setZoomScale(1); setZoomOffset({ x:0,y:0 }) }}
+                    style={{ position:'absolute', left:16, top:'50%', transform:'translateY(-50%)', width:44,height:44,borderRadius:'50%',
+                      background:'rgba(255,255,255,0.15)', border:'none', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <ChevronLeft size={22} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); setActiveImg(i => (i + 1) % images.length); setZoomScale(1); setZoomOffset({ x:0,y:0 }) }}
+                    style={{ position:'absolute', right:16, top:'50%', transform:'translateY(-50%)', width:44,height:44,borderRadius:'50%',
+                      background:'rgba(255,255,255,0.15)', border:'none', cursor:'pointer', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <ChevronRight size={22} />
+                  </button>
+                </>
+              )}
+
+              {/* Boutons zoom + / - */}
+              <div style={{ position:'absolute', bottom:20, left:'50%', transform:'translateX(-50%)', display:'flex', gap:8 }}>
+                <button onClick={(e) => { e.stopPropagation(); setZoomScale(s => Math.min(5, s+0.5)) }}
+                  style={{ width:40,height:40,borderRadius:10,background:'rgba(255,255,255,0.15)',border:'none',cursor:'pointer',color:'#fff',fontSize:22, display:'flex',alignItems:'center',justifyContent:'center' }}>+</button>
+                <button onClick={(e) => { e.stopPropagation(); setZoomScale(s => { const n = Math.max(1,s-0.5); if(n<=1) setZoomOffset({x:0,y:0}); return n }) }}
+                  style={{ width:40,height:40,borderRadius:10,background:'rgba(255,255,255,0.15)',border:'none',cursor:'pointer',color:'#fff',fontSize:22, display:'flex',alignItems:'center',justifyContent:'center' }}>−</button>
+                <span style={{ color:'rgba(255,255,255,0.6)', fontSize:12, display:'flex', alignItems:'center', padding:'0 8px' }}>
+                  {Math.round(zoomScale * 100)}%
+                </span>
+              </div>
+
+              {/* Hint */}
+              {zoomScale === 1 && (
+                <p style={{ position:'absolute', top:16, left:'50%', transform:'translateX(-50%)', color:'rgba(255,255,255,0.5)', fontSize:12 }}>
+                  Molette pour zoomer · Clic sur fond pour fermer
+                </p>
+              )}
+
+              {/* Fermer */}
+              <button onClick={closeZoom}
+                style={{ position:'absolute', top:16, right:16, width:44,height:44,borderRadius:'50%',
+                  background:'rgba(255,255,255,0.15)', border:'none', cursor:'pointer',
+                  color:'#fff', fontSize:22, display:'flex', alignItems:'center', justifyContent:'center' }}>
                 ✕
               </button>
             </motion.div>

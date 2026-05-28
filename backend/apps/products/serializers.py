@@ -1,5 +1,13 @@
 from rest_framework import serializers
-from .models import Product, Category, ProductImage, Rating, Like, StockAlert
+from .models import Product, Category, ProductImage, Rating, Like, StockAlert, ProductVariant
+
+class ProductVariantSerializer(serializers.ModelSerializer):
+    type_label = serializers.CharField(source='get_type_display', read_only=True)
+
+    class Meta:
+        model  = ProductVariant
+        fields = ['id', 'type', 'type_label', 'label', 'extra_price', 'stock']
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,12 +92,13 @@ class ProductListSerializer(serializers.ModelSerializer):
 class ProductDetailSerializer(ProductListSerializer):
     images       = ProductImageSerializer(many=True, read_only=True)
     ratings      = RatingSerializer(many=True, read_only=True)
+    variants     = ProductVariantSerializer(many=True, read_only=True)
     user_rating  = serializers.SerializerMethodField()
     user_comment = serializers.SerializerMethodField()
 
     class Meta(ProductListSerializer.Meta):
         fields = ProductListSerializer.Meta.fields + [
-            'description', 'images', 'ratings', 'user_rating', 'user_comment',
+            'description', 'images', 'ratings', 'variants', 'user_rating', 'user_comment',
         ]
 
     def get_user_rating(self, obj):

@@ -112,7 +112,7 @@ export default function CartDrawer() {
                       const src = imgUrl(item.main_image)
                       return (
                         <motion.li
-                          key={item.id}
+                          key={item._key || item.id}
                           layout
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
@@ -141,9 +141,14 @@ export default function CartDrawer() {
                                           transition-colors">
                               {item.name}
                             </p>
-                            <p className="text-xs text-gray-400 mb-2">
+                            <p className="text-xs text-gray-400 mb-1">
                               {FCFA(item.price)} / unité
                             </p>
+                            {item.variantLabel && (
+                              <p className="text-xs text-orange-600 font-semibold mb-1">
+                                {item.variantTypeLabel} : {item.variantLabel}
+                              </p>
+                            )}
 
                             <div className="flex items-center justify-between">
                               {/* Quantité */}
@@ -151,7 +156,7 @@ export default function CartDrawer() {
                                               border border-gray-200 p-0.5">
                                 <button
                                   onClick={() => dispatch(updateQuantity({
-                                    id: item.id,
+                                    id: item._key || item.id,
                                     quantity: item.quantity - 1
                                   }))}
                                   className="w-7 h-7 rounded-lg hover:bg-orange-50
@@ -166,7 +171,7 @@ export default function CartDrawer() {
                                 </span>
                                 <button
                                   onClick={() => dispatch(updateQuantity({
-                                    id: item.id,
+                                    id: item._key || item.id,
                                     quantity: item.quantity + 1
                                   }))}
                                   className="w-7 h-7 rounded-lg hover:bg-orange-50
@@ -184,7 +189,7 @@ export default function CartDrawer() {
                                 </span>
                                 {/* Supprimer */}
                                 <button
-                                  onClick={() => dispatch(removeItem(item.id))}
+                                  onClick={() => dispatch(removeItem(item._key || item.id))}
                                   className="w-7 h-7 rounded-lg hover:bg-red-100
                                              flex items-center justify-center
                                              transition-colors text-gray-300
