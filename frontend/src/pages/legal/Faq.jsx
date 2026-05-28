@@ -5,7 +5,7 @@ import { ChevronDown } from 'lucide-react'
 const FAQS = [
   {
     cat: 'Achats & commandes',
-    color: '#f97316',
+    color: '#2D6A4F',
     items: [
       {
         q: 'Comment passer une commande ?',
@@ -125,7 +125,7 @@ export default function Faq() {
 
       <div style={{ background: '#1a1a1a', padding: '48px 0' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ color: '#f97316', fontSize: 11, fontWeight: 700,
+          <p style={{ color: '#2D6A4F', fontSize: 11, fontWeight: 700,
                        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
             Aide & Support
           </p>
@@ -155,7 +155,7 @@ export default function Faq() {
 
         {/* Contact */}
         <div style={{
-          background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12,
+          background: '#eff8f3', border: '1px solid #add8bc', borderRadius: 12,
           padding: '24px', textAlign: 'center',
         }}>
           <p style={{ fontSize: 15, fontWeight: 700, color: '#92400e', marginBottom: 6 }}>
@@ -167,14 +167,14 @@ export default function Faq() {
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="tel:+237680757871"
               style={{
-                padding: '10px 20px', background: '#f97316', color: '#fff', borderRadius: 10,
+                padding: '10px 20px', background: '#2D6A4F', color: '#fff', borderRadius: 10,
                 textDecoration: 'none', fontSize: 13, fontWeight: 700,
               }}>
               +237 680 757 871
             </a>
             <a href="mailto:sahelmarket@gmail.com"
               style={{
-                padding: '10px 20px', border: '2px solid #f97316', color: '#f97316',
+                padding: '10px 20px', border: '2px solid #2D6A4F', color: '#2D6A4F',
                 borderRadius: 10, textDecoration: 'none', fontSize: 13, fontWeight: 700,
                 background: '#fff',
               }}>
@@ -185,10 +185,10 @@ export default function Faq() {
 
         <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, marginTop: 32,
                        display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <Link to="/how-it-works" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/how-it-works" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             Comment ça marche →
           </Link>
-          <Link to="/legal/terms" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/terms" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             Conditions d'utilisation →
           </Link>
         </div>

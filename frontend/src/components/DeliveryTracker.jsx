@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MapPin, Wifi, WifiOff } from 'lucide-react'
 
-const OR = '#f97316'
+const OR = '#2D6A4F'
 
 export default function DeliveryTracker({ orderId }) {
   const [position,  setPosition]  = useState(null)

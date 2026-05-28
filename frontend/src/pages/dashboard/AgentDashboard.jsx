@@ -8,14 +8,14 @@ import {
 } from 'lucide-react'
 import api from '../../services/api.js'
 
-const OR = '#f97316'
+const OR = '#2D6A4F'
 const BG = '#f0f2f5'
 
 const STATUS = {
   pending:    { label: 'En attente',    bg: '#fef9c3', color: '#92400e' },
   paid:       { label: 'Payé',          bg: '#dbeafe', color: '#1e40af' },
   processing: { label: 'En traitement', bg: '#ede9fe', color: '#5b21b6' },
-  shipped:    { label: 'Expédié',       bg: '#ffedd5', color: '#c2410c' },
+  shipped:    { label: 'Expédié',       bg: '#d6eddf', color: '#194328' },
   delivered:  { label: 'Livré',         bg: '#dcfce7', color: '#15803d' },
   cancelled:  { label: 'Annulé',        bg: '#fee2e2', color: '#dc2626' },
 }
@@ -409,7 +409,7 @@ function ProducersTab() {
             borderBottom: i < producers.length - 1 ? '1px solid #f9fafb' : 'none',
           }}>
             <div style={{
-              width: 40, height: 40, borderRadius: 12, background: '#fff7ed',
+              width: 40, height: 40, borderRadius: 12, background: '#eff8f3',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 800, color: OR, fontSize: 15, flexShrink: 0,
             }}>

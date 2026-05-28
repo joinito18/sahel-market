@@ -4,7 +4,7 @@ function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 32 }}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 10,
-                   paddingBottom: 8, borderBottom: '2px solid #f97316', display: 'inline-block' }}>
+                   paddingBottom: 8, borderBottom: '2px solid #2D6A4F', display: 'inline-block' }}>
         {title}
       </h2>
       <div style={{ fontSize: 14, color: '#374151', lineHeight: 1.75 }}>
@@ -21,7 +21,7 @@ export default function Terms() {
       {/* Header */}
       <div style={{ background: '#1a1a1a', padding: '48px 0' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ color: '#f97316', fontSize: 11, fontWeight: 700,
+          <p style={{ color: '#2D6A4F', fontSize: 11, fontWeight: 700,
                        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
             Informations légales
           </p>
@@ -40,7 +40,7 @@ export default function Terms() {
 
         {/* Intro */}
         <div style={{
-          background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12,
+          background: '#eff8f3', border: '1px solid #add8bc', borderRadius: 12,
           padding: '16px 20px', marginBottom: 32, fontSize: 13, color: '#92400e', lineHeight: 1.6,
         }}>
           En accédant à la plateforme Sahel Market (accessible via <strong>sahelmarket.cm</strong>),
@@ -56,7 +56,7 @@ export default function Terms() {
           </p>
           <p style={{ marginTop: 8 }}>
             Le service est édité par Sahel Market, basé à Maroua (Région de l'Extrême-Nord,
-            Cameroun). Contact : <a href="mailto:sahelmarket@gmail.com" style={{ color: '#f97316' }}>sahelmarket@gmail.com</a> · +237 680 757 871.
+            Cameroun). Contact : <a href="mailto:sahelmarket@gmail.com" style={{ color: '#2D6A4F' }}>sahelmarket@gmail.com</a> · +237 680 757 871.
           </p>
         </Section>
 
@@ -126,13 +126,13 @@ export default function Terms() {
 
         <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, marginTop: 8,
                        display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <Link to="/legal/privacy" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/privacy" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             Politique de confidentialité →
           </Link>
-          <Link to="/legal/returns" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/returns" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             Politique de retour →
           </Link>
-          <Link to="/legal/faq" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/faq" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             FAQ →
           </Link>
         </div>

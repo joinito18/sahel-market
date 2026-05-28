@@ -2,6 +2,20 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
 
+/* ── Palette Vert Sahel — remplace orange partout ─────────────────── */
+@theme {
+  --color-orange-50:  #eff8f3;
+  --color-orange-100: #d6eddf;
+  --color-orange-200: #add8bc;
+  --color-orange-300: #78b892;
+  --color-orange-400: #459c6b;
+  --color-orange-500: #2D6A4F;
+  --color-orange-600: #215638;
+  --color-orange-700: #194328;
+  --color-orange-800: #12301e;
+  --color-orange-900: #0c2015;
+}
+
 /* ── Reset ────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -15,8 +29,8 @@ html { scroll-behavior: smooth; }
   --ink:         #111111;
   --ink-2:       #6B6B6B;
   --ink-3:       #ADADAD;
-  --accent:      #f97316;   /* orange marque — usage très parcimonieux */
-  --accent-muted:#FFF3E8;
+  --accent:      #2D6A4F;   /* vert Sahel — couleur marque */
+  --accent-muted:#eff8f3;
   --border:      #E8E7E2;
   --border-2:    #D4D3CE;
   --dark:        #111111;
@@ -26,15 +40,32 @@ html { scroll-behavior: smooth; }
   --font-serif:  'Cormorant Garamond', Georgia, serif;
 
   /* Espacement sections */
-  --section-gap: 20px;
-  --card-pad:    16px;
-  --grid-gap:    10px;
+  --section-gap: 28px;
+  --card-pad:    20px;
+  --grid-gap:    12px;
+
+  /* Nouveaux tokens d'espacement */
+  --space-xs:    8px;
+  --space-sm:    16px;
+  --space-md:    24px;
+  --space-lg:    40px;
+  --space-xl:    64px;
 }
 @media (min-width: 640px) {
-  :root { --section-gap: 36px; --card-pad: 24px; --grid-gap: 16px; }
+  :root {
+    --section-gap: 44px;
+    --card-pad:    28px;
+    --grid-gap:    16px;
+    --space-lg:    56px;
+    --space-xl:    88px;
+  }
 }
 @media (min-width: 1024px) {
-  :root { --section-gap: 52px; }
+  :root {
+    --section-gap: 64px;
+    --space-lg:    72px;
+    --space-xl:    112px;
+  }
 }
 
 /* ── Base body ───────────────────────────────────────────────────── */
@@ -47,23 +78,56 @@ body {
   min-height: 100vh;
 }
 
-/* ── Typographie utilitaire ──────────────────────────────────────── */
+/* ── Système typographique ───────────────────────────────────────── */
 .font-serif { font-family: var(--font-serif); }
 
+/* Cormorant — display éditorial */
 .display-1 {
   font-family: var(--font-serif);
-  font-size: clamp(2rem, 8vw, 5rem);
+  font-size: clamp(2.4rem, 8vw, 5.5rem);
   font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
 }
 .display-2 {
   font-family: var(--font-serif);
-  font-size: clamp(1.5rem, 5vw, 3rem);
-  font-weight: 600;
+  font-size: clamp(1.7rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+}
+
+/* Cormorant — titres de section et de page */
+.serif-xl {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.01em;
+  color: var(--ink);
 }
+.serif-lg {
+  font-family: var(--font-serif);
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.008em;
+  color: var(--ink);
+}
+.serif-md {
+  font-family: var(--font-serif);
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* Inter — corps et UI */
+.body-lg  { font-size: 15px; line-height: 1.65; color: var(--ink-2); }
+.body-sm  { font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+.caption  { font-size: 11px; line-height: 1.4; color: var(--ink-3); }
+
+/* Label uppercase — étiquettes de rubrique */
 .label-caps {
   font-size: 10px;
   font-weight: 700;
@@ -72,14 +136,36 @@ body {
   color: var(--ink-3);
 }
 
+/* Prix — chiffres tabulaires, jamais en serif */
+.price-tag {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
 /* ── Cartes ──────────────────────────────────────────────────────── */
 .s-card {
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: 20px;
   border: 1px solid var(--border);
   padding: var(--card-pad);
 }
-.s-gap { margin-top: var(--section-gap); }
+.s-gap    { margin-top: var(--section-gap); }
+.s-gap-sm { margin-top: calc(var(--section-gap) * 0.5); }
+.s-gap-lg { margin-top: calc(var(--section-gap) * 1.5); }
+
+/* ── Page wrapper standard ───────────────────────────────────────── */
+.page-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 32px);
+}
+
+/* ── Section header — espacement interne ─────────────────────────── */
+.section-header { margin-bottom: var(--space-md); }
+.section-header .label-caps { margin-bottom: 10px; }
 
 /* ── Clamp texte ────────────────────────────────────────────────── */
 .line-clamp-1 { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
@@ -205,6 +291,27 @@ body {
 
 .stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
 @media(min-width:768px) { .stats-grid { grid-template-columns:repeat(4,1fr); } }
+
+/* Bande impact — pleine largeur, séparateurs verticaux */
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+@media(max-width:767px) {
+  .impact-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .impact-grid > div {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .impact-grid > div:nth-child(odd) {
+    border-right: 1px solid rgba(255,255,255,0.08) !important;
+  }
+  .impact-grid > div:nth-last-child(-n+2) {
+    border-bottom: none !important;
+  }
+}
 
 .partners-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
 @media(min-width:640px) { .partners-grid { grid-template-columns:repeat(4,1fr); } }

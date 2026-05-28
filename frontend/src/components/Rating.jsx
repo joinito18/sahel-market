@@ -37,8 +37,8 @@ export default function Rating({ productId, userRating = 0, userComment = '', on
           <div style={{ display: 'flex', gap: 2 }}>
             {[1,2,3,4,5].map(s => (
               <Star key={s} size={18}
-                color={s <= score ? '#f97316' : '#d1d5db'}
-                fill={s <= score ? '#f97316' : 'none'} />
+                color={s <= score ? '#2D6A4F' : '#d1d5db'}
+                fill={s <= score ? '#2D6A4F' : 'none'} />
             ))}
           </div>
           <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -73,12 +73,12 @@ export default function Rating({ productId, userRating = 0, userComment = '', on
                 transition: 'transform .1s',
               }}
             >
-              <Star size={22} color={active ? '#f97316' : '#d1d5db'} fill={active ? '#f97316' : 'none'} />
+              <Star size={22} color={active ? '#2D6A4F' : '#d1d5db'} fill={active ? '#2D6A4F' : 'none'} />
             </button>
           )
         })}
         {score > 0 && (
-          <span style={{ marginLeft: 8, fontSize: 12, color: '#f97316', fontWeight: 700 }}>
+          <span style={{ marginLeft: 8, fontSize: 12, color: '#2D6A4F', fontWeight: 700 }}>
             {['', 'Très mauvais', 'Mauvais', 'Correct', 'Bien', 'Excellent'][score]}
           </span>
         )}
@@ -93,12 +93,12 @@ export default function Rating({ productId, userRating = 0, userComment = '', on
             rows={3}
             style={{
               width: '100%', padding: '10px 12px', borderRadius: 10,
-              border: '1px solid #fed7aa', outline: 'none',
+              border: '1px solid #add8bc', outline: 'none',
               fontSize: 13, color: '#374151', resize: 'vertical',
               background: '#fff', lineHeight: 1.5, boxSizing: 'border-box',
             }}
-            onFocus={e => e.target.style.borderColor = '#f97316'}
-            onBlur={e => e.target.style.borderColor = '#fed7aa'}
+            onFocus={e => e.target.style.borderColor = '#2D6A4F'}
+            onBlur={e => e.target.style.borderColor = '#add8bc'}
           />
           <button
             onClick={handleSubmit}
@@ -106,7 +106,7 @@ export default function Rating({ productId, userRating = 0, userComment = '', on
             style={{
               alignSelf: 'flex-start',
               padding: '8px 20px', borderRadius: 10, border: 'none',
-              background: loading ? '#e5e7eb' : '#f97316',
+              background: loading ? '#e5e7eb' : '#2D6A4F',
               color: loading ? '#9ca3af' : '#fff',
               fontWeight: 700, fontSize: 13, cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'background .15s',

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import api from '../services/api.js'
 
-const OR = '#f97316'
+const OR = '#2D6A4F'
 
 const STEPS = [
   {

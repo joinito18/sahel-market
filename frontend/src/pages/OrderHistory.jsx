@@ -9,14 +9,14 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import toast from 'react-hot-toast'
 
-const OR = '#f97316'
+const OR = '#2D6A4F'
 const BG = '#f0f2f5'
 
 const STATUS = {
   pending:    { label: 'En attente',    bg: '#fef9c3', color: '#92400e' },
   paid:       { label: 'Payé',          bg: '#dbeafe', color: '#1e40af' },
   processing: { label: 'En traitement', bg: '#ede9fe', color: '#5b21b6' },
-  shipped:    { label: 'Expédié',       bg: '#ffedd5', color: '#c2410c' },
+  shipped:    { label: 'Expédié',       bg: '#d6eddf', color: '#194328' },
   delivered:  { label: 'Livré',         bg: '#dcfce7', color: '#15803d' },
   cancelled:  { label: 'Annulé',        bg: '#fee2e2', color: '#dc2626' },
 }

@@ -133,7 +133,7 @@ export default function ProductCard({ product, index = 0 }) {
 
           {/* Personnes qui regardent */}
           {!isOutOfStock && product.views_count > 5 && (
-            <p style={{ fontSize: 10, color: '#f97316', fontWeight: 600, marginBottom: 4 }}>
+            <p style={{ fontSize: 10, color: '#2D6A4F', fontWeight: 600, marginBottom: 4 }}>
               👁 {watching} personnes regardent
             </p>
           )}
@@ -147,7 +147,7 @@ export default function ProductCard({ product, index = 0 }) {
               <motion.button onClick={handleAddToCart}
                 animate={adding ? { scale: [1, 1.2, 1] } : {}}
                 transition={{ duration: 0.3 }}
-                style={{ width: 32, height: 32, borderRadius: '50%', background: adding ? '#f97316' : '#111',
+                style={{ width: 32, height: 32, borderRadius: '50%', background: adding ? '#2D6A4F' : '#111',
                   border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'background .2s', flexShrink: 0 }}>
                 <AnimatePresence mode="wait">

@@ -34,7 +34,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                 fontSize: '14px',
               },
               success: { iconTheme: { primary: '#2D6A4F', secondary: '#fff' } },
-              error:   { iconTheme: { primary: '#C8732A', secondary: '#fff' } },
+              error:   { iconTheme: { primary: '#2D6A4F', secondary: '#fff' } },
             }}
           />
         </BrowserRouter>

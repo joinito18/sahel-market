@@ -98,10 +98,10 @@ export default function Products() {
     ordering:   filters.ordering  || '-created_at',
     page:       currentPage,
   }
-  const { data, isLoading } = useQuery({
+  const { data, isPending: isLoading } = useQuery({
     queryKey: ['products', qParams],
     queryFn:  () => productService.getAll(qParams),
-    keepPreviousData: true,
+    placeholderData: (prev) => prev,
   })
 
   const products   = data?.data?.results || []
@@ -438,7 +438,7 @@ export default function Products() {
                 />
               )}
               <div>
-                <h1 className="text-lg font-bold leading-tight" style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)', fontSize: 20 }}>
+                <h1 className="serif-md">
                   {filters.search
                     ? `"${filters.search}"`
                     : activeCategory?.name || 'Tous les produits'}
@@ -485,7 +485,7 @@ export default function Products() {
           )}
           {activeCategory && (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
-              background: '#f97316', color: '#fff', borderRadius: 100,
+              background: '#2D6A4F', color: '#fff', borderRadius: 100,
               fontSize: 11, fontWeight: 700, padding: '5px 12px' }}>
               {activeCategory.name}
               <button onClick={() => dispatch(setFilters({ category: '' }))}

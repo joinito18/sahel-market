@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useRef, forwardRef } from 'react'  // ← forwardRef ajouté
 import {
-  Lock, Phone, MapPin,
+  Lock, Phone, MapPin, User,
   Store, ShoppingBag, ArrowRight, ArrowLeft,
   Upload, X, Check, Eye, EyeOff,
   FileText, Camera
@@ -18,15 +18,17 @@ import toast from 'react-hot-toast'
 
 // ─── Schémas validation ────────────────────────────────────────────
 const clientSchema = z.object({
-  phone:     z.string().min(9, 'Numéro invalide'),
-  password:  z.string().min(8, 'Minimum 8 caractères'),
-  password2: z.string(),
+  first_name: z.string().min(2, 'Nom requis (min. 2 caractères)'),
+  phone:      z.string().min(9, 'Numéro invalide'),
+  password:   z.string().min(8, 'Minimum 8 caractères'),
+  password2:  z.string(),
 }).refine(d => d.password === d.password2, {
   message: 'Les mots de passe ne correspondent pas',
   path: ['password2'],
 })
 
 const producerSchema = z.object({
+  first_name:       z.string().min(2, 'Nom requis (min. 2 caractères)'),
   phone:            z.string().min(9, 'Numéro invalide'),
   address:          z.string().min(5, 'Adresse requise'),
   password:         z.string().min(8, 'Minimum 8 caractères'),
@@ -249,6 +251,11 @@ function ClientForm({ onBack, onSuccess }) {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Field label="Votre nom complet" error={errors.first_name?.message}>
+          <Input icon={User} placeholder="Ex : Fatima Oumarou"
+            error={errors.first_name} {...register('first_name')} />
+        </Field>
+
         <Field label="Numéro de téléphone" error={errors.phone?.message}>
           <Input icon={Phone} placeholder="+237 6XX XXX XXX" type="tel"
             error={errors.phone} {...register('phone')} />
@@ -313,12 +320,12 @@ function ProducerSuccess({ username }) {
 
       {/* Alerte validation */}
       <div style={{
-        background: '#fff7ed', border: '1px solid #fed7aa',
+        background: '#eff8f3', border: '1px solid #add8bc',
         borderRadius: 16, padding: '20px 20px', marginBottom: 24, textAlign: 'left',
       }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
           <div style={{
-            width: 36, height: 36, borderRadius: 10, background: '#f97316',
+            width: 36, height: 36, borderRadius: 10, background: '#2D6A4F',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
             <span style={{ fontSize: 18 }}>⏳</span>
@@ -365,7 +372,7 @@ function ProducerSuccess({ username }) {
       <p style={{ fontSize: 12, color: '#9ca3af' }}>
         Des questions ?{' '}
         <a href="tel:+237680757871"
-          style={{ color: '#f97316', fontWeight: 600, textDecoration: 'none' }}>
+          style={{ color: '#2D6A4F', fontWeight: 600, textDecoration: 'none' }}>
           +237 680 757 871
         </a>
       </p>
@@ -423,7 +430,7 @@ function ProducerForm({ onBack }) {
   }
 
   const nextStep = async () => {
-    const fieldsStep1 = ['phone', 'address']
+    const fieldsStep1 = ['first_name', 'phone', 'address']
     const fieldsStep2 = ['speciality', 'password', 'password2']
     const ok = await trigger(step === 1 ? fieldsStep1 : fieldsStep2)
     if (ok) setStep(s => s + 1)
@@ -551,6 +558,11 @@ function ProducerForm({ onBack }) {
                     className="hidden" onChange={handlePhoto} />
                 </div>
               </div>
+
+              <Field label="Votre nom complet" error={errors.first_name?.message}>
+                <Input icon={User} placeholder="Ex : Amadou Bello"
+                  error={errors.first_name} {...register('first_name')} />
+              </Field>
 
               <Field label="Numéro de téléphone" error={errors.phone?.message}>
                 <Input icon={Phone} placeholder="+237 6XX XXX XXX" type="tel"
@@ -742,7 +754,7 @@ export default function Register() {
           style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C8732A' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }}
         />
         <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #C8732A, transparent)' }} />
+          style={{ background: 'radial-gradient(circle, #2D6A4F, transparent)' }} />
 
         <div className="relative z-10 flex flex-col justify-center px-14 py-12">
           <Link to="/" className="flex items-center gap-2.5 mb-12">

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Check, Clock, Package, Truck, MapPin, CreditCard, Star } from 'lucide-react'
 import { orderService } from '../services/order.service.js'
 
-const OR  = '#f97316'
+const OR  = '#2D6A4F'
 const BG  = '#f0f2f5'
 const FCFA = n => Number(n).toLocaleString('fr-FR')
 
@@ -121,7 +121,7 @@ export default function TrackOrder() {
                             style={{
                               width: 40, height: 40, borderRadius: '50%',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              background: isDone ? '#f0fdf4' : isCurrent ? '#fff7ed' : '#f9fafb',
+                              background: isDone ? '#f0fdf4' : isCurrent ? '#eff8f3' : '#f9fafb',
                               border: `2px solid ${isDone ? '#16a34a' : isCurrent ? OR : '#e5e7eb'}`,
                               transition: 'all .3s',
                             }}
@@ -155,7 +155,7 @@ export default function TrackOrder() {
                             {isCurrent && (
                               <span style={{
                                 marginLeft: 8, fontSize: 10, fontWeight: 700,
-                                background: '#fff7ed', color: OR, border: `1px solid #fed7aa`,
+                                background: '#eff8f3', color: OR, border: `1px solid #add8bc`,
                                 borderRadius: 10, padding: '2px 8px',
                               }}>
                                 En cours
@@ -230,7 +230,7 @@ export default function TrackOrder() {
 
             {/* ── Besoin d'aide ──────────────────────────────────── */}
             <div style={{
-              background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 16,
+              background: '#eff8f3', border: '1px solid #add8bc', borderRadius: 16,
               padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               flexWrap: 'wrap', gap: 12,
             }}>

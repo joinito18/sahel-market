@@ -66,7 +66,7 @@ export default function BottomNav() {
                         transition={{ type: 'spring', stiffness: 500, damping: 18 }}
                         style={{
                           position: 'absolute', top: -5, right: -6,
-                          background: '#f97316', color: '#fff',
+                          background: '#2D6A4F', color: '#fff',
                           fontSize: 9, fontWeight: 800,
                           minWidth: 16, height: 16, padding: '0 3px',
                           borderRadius: 8, display: 'flex',

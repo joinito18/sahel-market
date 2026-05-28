@@ -11,18 +11,13 @@ import { getRecentlyViewed } from '../utils/recentlyViewed.js'
 /* ── Section header éditorial ─────────────────────────────────── */
 function SectionHeader({ title, sub, to }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
       <div>
-        {sub && <p className="label-caps" style={{ marginBottom: 6 }}>{sub}</p>}
-        <h2 style={{
-          fontFamily: 'var(--font-serif)', fontSize: 'clamp(20px,4vw,28px)',
-          fontWeight: 700, color: 'var(--ink)', lineHeight: 1.1,
-        }}>
-          {title}
-        </h2>
+        {sub && <p className="label-caps" style={{ marginBottom: 10 }}>{sub}</p>}
+        <h2 className="serif-xl">{title}</h2>
       </div>
       {to && (
-        <Link to={to} className="label-caps" style={{ color: 'var(--ink)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        <Link to={to} className="label-caps" style={{ color: 'var(--ink)', textDecoration: 'none', whiteSpace: 'nowrap', paddingBottom: 3 }}>
           Voir tout →
         </Link>
       )}
@@ -126,9 +121,7 @@ function CatSection({ category }) {
               ? <img src={src} alt={category.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <Package size={15} color="var(--border-2)" />}
           </div>
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 700, color: 'var(--ink)' }}>
-            {category.name}
-          </span>
+          <span className="serif-md">{category.name}</span>
         </div>
         <Link to={`/products?category=${category.id}`} className="label-caps" style={{ color: 'var(--ink)', textDecoration: 'none' }}>
           Tout voir →
@@ -237,12 +230,7 @@ export default function Home() {
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 8px var(--accent)' }} />
                 </div>
 
-                <h1 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 'clamp(2.8rem, 9vw, 6.5rem)',
-                  fontWeight: 700, lineHeight: 1.0,
-                  color: '#FFFFFF', letterSpacing: '-0.02em', marginBottom: 20,
-                }}>
+                <h1 className="display-1" style={{ color: '#FFFFFF', marginBottom: 20 }}>
                   L'artisanat<br />
                   <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>du Sahel</em>,<br />
                   livré chez vous
@@ -362,7 +350,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           TENDANCES
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
         <div className="s-gap s-card">
           <SectionHeader title="Tendances du moment" sub="Les plus consultés" to="/products?ordering=-views_count" />
           <div className="product-grid-home">
@@ -375,38 +363,48 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          CHIFFRES IMPACT
+          CHIFFRES IMPACT — bande pleine largeur
       ══════════════════════════════════════════════════════════ */}
       {stats.artisans !== undefined && (
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
-          <div className="s-gap" style={{
-            background: '#111111', borderRadius: 20,
-            padding: 'clamp(24px,4vw,48px) clamp(20px,4vw,48px)',
+        <div className="s-gap" style={{ background: '#111111', width: '100%' }}>
+          <div style={{
+            maxWidth: 1280, margin: '0 auto',
+            padding: 'clamp(40px,5vw,72px) clamp(16px,4vw,40px)',
           }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 32 }}>
-              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(20px,3vw,28px)', fontWeight: 700, color: '#fff' }}>
-                Notre impact en chiffres
-              </h2>
-              <p className="label-caps" style={{ color: '#ADADAD' }}>Données en temps réel</p>
-            </div>
-            <div className="stats-grid">
+            <div className="impact-grid">
               {[
-                { v: stats.artisans,       label: 'Artisans',  sub: 'actifs'         },
-                { v: stats.produits,       label: 'Créations', sub: 'faites à la main'},
-                { v: stats.commandes || 0, label: 'Commandes', sub: 'livrées'        },
-                { v: stats.regions,        label: 'Régions',   sub: 'couvertes'      },
-              ].map(({ v, label, sub }) => (
-                <div key={label} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 'clamp(16px,2vw,24px)' }}>
+                { v: stats.artisans,       label: 'Artisans',  sub: 'actifs sur la plateforme'  },
+                { v: stats.produits,       label: 'Créations', sub: 'faites à la main'           },
+                { v: stats.commandes || 0, label: 'Commandes', sub: 'livrées avec succès'        },
+                { v: stats.regions,        label: 'Régions',   sub: 'couvertes au Cameroun'      },
+              ].map(({ v, label, sub }, i, arr) => (
+                <div key={label} style={{
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', textAlign: 'center',
+                  padding: 'clamp(20px,3vw,32px) clamp(16px,2vw,24px)',
+                  borderRight: i < arr.length - 1
+                    ? '1px solid rgba(255,255,255,0.08)' : 'none',
+                }}>
                   <p style={{
                     fontFamily: 'var(--font-serif)',
-                    fontSize: 'clamp(2rem,5vw,3.5rem)',
-                    fontWeight: 700, color: '#fff', lineHeight: 1, marginBottom: 4,
+                    fontSize: 'clamp(2.4rem,5vw,4rem)',
+                    fontWeight: 700, color: '#fff',
+                    lineHeight: 1, marginBottom: 10,
+                    letterSpacing: '-0.025em',
                   }}>
                     {Number(v).toLocaleString('fr-FR')}
-                    <span style={{ color: 'var(--accent)', fontSize: '0.55em' }}>+</span>
+                    <span style={{ color: 'var(--accent)', fontSize: '0.45em', verticalAlign: 'super' }}>+</span>
                   </p>
-                  <p style={{ fontWeight: 700, color: '#fff', fontSize: 13, marginBottom: 2 }}>{label}</p>
-                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>{sub}</p>
+                  <p style={{
+                    fontSize: 11, fontWeight: 700, color: '#fff',
+                    textTransform: 'uppercase', letterSpacing: '0.12em',
+                    marginBottom: 6,
+                  }}>
+                    {label}
+                  </p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', lineHeight: 1.4 }}>
+                    {sub}
+                  </p>
                 </div>
               ))}
             </div>
@@ -417,7 +415,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           NOUVELLES CRÉATIONS
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
         <div className="s-gap s-card">
           <SectionHeader title="Nouvelles créations" sub="Tout juste ajoutées" to="/products?ordering=-created_at" />
           <Carousel products={newProducts} loading={loadNew} />
@@ -428,7 +426,7 @@ export default function Home() {
           RÉCEMMENT CONSULTÉS
       ══════════════════════════════════════════════════════════ */}
       {recentlyViewed.length >= 2 && (
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
           <div className="s-gap s-card">
             <SectionHeader title="Récemment consultés" sub="Vos produits vus" />
             <Carousel products={recentlyViewed} loading={false} />
@@ -448,18 +446,14 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           CTA ARTISAN
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 clamp(16px,4vw,32px)' }}>
         <div className="s-gap" style={{
           background: '#111111', borderRadius: 20,
           padding: 'clamp(36px,6vw,72px) 24px', textAlign: 'center',
           marginBottom: 'clamp(32px,5vw,64px)',
         }}>
           <p className="label-caps" style={{ color: '#ADADAD', marginBottom: 16 }}>Pour les artisans</p>
-          <h2 style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 'clamp(1.6rem,4vw,3rem)',
-            fontWeight: 700, color: '#fff', marginBottom: 16, lineHeight: 1.1,
-          }}>
+          <h2 className="display-2" style={{ color: '#fff', marginBottom: 16 }}>
             Vendez vos créations<br />
             <em style={{ color: 'var(--accent)' }}>partout au Cameroun</em>
           </h2>

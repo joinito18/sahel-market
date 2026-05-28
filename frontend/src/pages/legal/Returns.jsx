@@ -5,7 +5,7 @@ function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 32 }}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 10,
-                   paddingBottom: 8, borderBottom: '2px solid #f97316', display: 'inline-block' }}>
+                   paddingBottom: 8, borderBottom: '2px solid #2D6A4F', display: 'inline-block' }}>
         {title}
       </h2>
       <div style={{ fontSize: 14, color: '#374151', lineHeight: 1.75 }}>
@@ -21,7 +21,7 @@ export default function Returns() {
 
       <div style={{ background: '#1a1a1a', padding: '48px 0' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ color: '#f97316', fontSize: 11, fontWeight: 700,
+          <p style={{ color: '#2D6A4F', fontSize: 11, fontWeight: 700,
                        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
             Informations légales
           </p>
@@ -113,7 +113,7 @@ export default function Returns() {
             ].map(({ n, title, desc }) => (
               <div key={n} style={{ display: 'flex', gap: 14 }}>
                 <div style={{
-                  width: 32, height: 32, borderRadius: 8, background: '#f97316',
+                  width: 32, height: 32, borderRadius: 8, background: '#2D6A4F',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0, color: '#fff', fontWeight: 900, fontSize: 14,
                 }}>
@@ -141,7 +141,7 @@ export default function Returns() {
 
         {/* Contact */}
         <div style={{
-          background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12,
+          background: '#eff8f3', border: '1px solid #add8bc', borderRadius: 12,
           padding: '20px 24px', display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
           justifyContent: 'space-between',
         }}>
@@ -157,7 +157,7 @@ export default function Returns() {
             <a href="tel:+237680757871"
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                background: '#f97316', color: '#fff', borderRadius: 8, textDecoration: 'none',
+                background: '#2D6A4F', color: '#fff', borderRadius: 8, textDecoration: 'none',
                 fontSize: 13, fontWeight: 700,
               }}>
               <Phone size={14} /> Appeler
@@ -165,7 +165,7 @@ export default function Returns() {
             <a href="mailto:sahelmarket@gmail.com"
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                border: '2px solid #f97316', color: '#f97316', borderRadius: 8,
+                border: '2px solid #2D6A4F', color: '#2D6A4F', borderRadius: 8,
                 textDecoration: 'none', fontSize: 13, fontWeight: 700, background: '#fff',
               }}>
               <Mail size={14} /> E-mail
@@ -175,10 +175,10 @@ export default function Returns() {
 
         <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, marginTop: 32,
                        display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <Link to="/legal/delivery" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/delivery" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             Livraison & frais →
           </Link>
-          <Link to="/legal/faq" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/faq" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             FAQ →
           </Link>
         </div>

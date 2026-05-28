@@ -149,10 +149,10 @@ export default function Navbar() {
                 >
                   <div style={{
                     width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-                    background: n.is_read ? '#F5F4EF' : '#FFF3E8',
+                    background: n.is_read ? '#F5F4EF' : '#eff8f3',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <ShoppingCart size={14} color={n.is_read ? '#ADADAD' : '#f97316'} />
+                    <ShoppingCart size={14} color={n.is_read ? '#ADADAD' : '#2D6A4F'} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 12, fontWeight: n.is_read ? 500 : 700, color: '#111111', marginBottom: 2 }}>
@@ -166,7 +166,7 @@ export default function Navbar() {
                     </p>
                   </div>
                   {!n.is_read && (
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#f97316', flexShrink: 0, marginTop: 5 }} />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2D6A4F', flexShrink: 0, marginTop: 5 }} />
                   )}
                 </Link>
               ))
@@ -202,10 +202,7 @@ export default function Navbar() {
       }}>
         {/* Wordmark */}
         <Link to="/" style={{ textDecoration: 'none' }}>
-          <span style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: 22, fontWeight: 700, color: '#111111', letterSpacing: '-0.01em',
-          }}>
+          <span className="serif-lg" style={{ letterSpacing: '-0.02em' }}>
             Sahel<em>Market</em>
           </span>
         </Link>
@@ -234,7 +231,7 @@ export default function Navbar() {
                   <span style={{
                     position: 'absolute', top: 7, right: 7,
                     width: 7, height: 7, borderRadius: '50%',
-                    background: '#f97316', border: '1.5px solid #fff',
+                    background: '#2D6A4F', border: '1.5px solid #fff',
                   }} />
                 )}
               </button>
@@ -256,12 +253,9 @@ export default function Navbar() {
             width: 32, height: 32, background: '#111111', borderRadius: 8,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ color: '#fff', fontFamily: "'Cormorant Garamond', serif", fontSize: 19, fontWeight: 700 }}>S</span>
+            <span style={{ color: '#fff', fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 700 }}>S</span>
           </div>
-          <span style={{
-            fontFamily: "'Cormorant Garamond', Georgia, serif",
-            fontSize: 20, fontWeight: 700, color: '#111111', letterSpacing: '-0.01em',
-          }}>
+          <span className="serif-md" style={{ letterSpacing: '-0.02em' }}>
             Sahel<em>Market</em>
           </span>
         </Link>
@@ -407,7 +401,7 @@ export default function Navbar() {
                   <span style={{
                     position: 'absolute', top: 5, right: 5,
                     width: 7, height: 7, borderRadius: '50%',
-                    background: '#f97316', border: '1.5px solid #fff',
+                    background: '#2D6A4F', border: '1.5px solid #fff',
                   }} />
                 )}
               </button>
@@ -449,7 +443,7 @@ export default function Navbar() {
                     transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                     style={{
                       position: 'absolute', top: -7, right: -7,
-                      background: '#f97316', color: '#fff',
+                      background: '#2D6A4F', color: '#fff',
                       fontSize: 9, fontWeight: 800,
                       minWidth: 16, height: 16, padding: '0 3px',
                       borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',

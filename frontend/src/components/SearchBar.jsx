@@ -108,7 +108,7 @@ export default function SearchBar({ placeholder = 'Rechercher un produit...' }) 
           })}
           <button onClick={handleSubmit}
             style={{ width: '100%', padding: '10px 14px', border: 'none', background: '#f9fafb',
-              fontSize: 12, fontWeight: 700, color: '#f97316', cursor: 'pointer', textAlign: 'center' }}>
+              fontSize: 12, fontWeight: 700, color: '#2D6A4F', cursor: 'pointer', textAlign: 'center' }}>
             Voir tous les résultats pour "{query}" →
           </button>
         </div>

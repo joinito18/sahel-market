@@ -5,7 +5,7 @@ import { User, Package, Star, Calendar, MessageCircle } from 'lucide-react'
 import api from '../services/api.js'
 import ProductCard from '../components/ProductCard.jsx'
 
-const OR  = '#f97316'
+const OR  = '#2D6A4F'
 const BG  = '#f0f2f5'
 const FCFA = n => Number(n).toLocaleString('fr-FR')
 
@@ -70,7 +70,7 @@ export default function ProducerPublicProfile() {
             {/* Photo / Avatar */}
             <div style={{
               width: 100, height: 100, borderRadius: 20, overflow: 'hidden', flexShrink: 0,
-              background: '#fff7ed', border: `3px solid ${OR}`,
+              background: '#eff8f3', border: `3px solid ${OR}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               {profile?.workshop_photo
@@ -175,7 +175,7 @@ export default function ProducerPublicProfile() {
 
         {/* Contact */}
         <div style={{
-          background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 16,
+          background: '#eff8f3', border: '1px solid #add8bc', borderRadius: 16,
           padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
         }}>
           <div>

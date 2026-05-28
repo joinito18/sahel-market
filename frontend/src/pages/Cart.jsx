@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Trash2, ShoppingBag, Plus, Minus } from 'lucide-react'
 import { removeItem, updateQuantity } from '../store/cartSlice.js'
 
-const OR  = '#f97316'
+const OR  = '#2D6A4F'
 const BG  = '#f0f2f5'
 const FCFA = n => Number(n).toLocaleString('fr-FR')
 
@@ -60,11 +60,11 @@ export default function Cart() {
 
             {/* Bannière livraison */}
             <div style={{
-              background: deliveryFee === 0 ? '#f0fdf4' : '#fff7ed',
-              border: `1px solid ${deliveryFee === 0 ? '#bbf7d0' : '#fed7aa'}`,
+              background: deliveryFee === 0 ? '#f0fdf4' : '#eff8f3',
+              border: `1px solid ${deliveryFee === 0 ? '#bbf7d0' : '#add8bc'}`,
               borderRadius: 12, padding: '10px 16px',
               fontSize: 13, fontWeight: 600,
-              color: deliveryFee === 0 ? '#15803d' : '#c2410c',
+              color: deliveryFee === 0 ? '#15803d' : '#194328',
             }}>
               {deliveryFee === 0
                 ? '🎉 Livraison offerte sur cette commande !'

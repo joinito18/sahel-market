@@ -16,7 +16,7 @@ import api from '../../services/api.js'
 const FCFA = v => Number(v || 0).toLocaleString('fr-FR')
 
 /* ─── Palette ─── */
-const OR = '#f97316'
+const OR = '#2D6A4F'
 const BG = '#f0f2f5'
 
 /* ─── Requêtes ─── */
@@ -32,7 +32,7 @@ function KpiCard({ icon: Icon, label, value, sub }) {
       padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 6,
     }}>
       <div style={{
-        width: 40, height: 40, borderRadius: 12, background: '#fff7ed',
+        width: 40, height: 40, borderRadius: 12, background: '#eff8f3',
         display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4,
       }}>
         <Icon size={18} color={OR} />
@@ -98,8 +98,8 @@ function Overview({ stats }) {
             {lowStock.map(p => (
               <span key={p.id} style={{
                 fontSize: 11, fontWeight: 700, padding: '3px 10px',
-                background: p.stock === 0 ? '#fef2f2' : '#fff7ed',
-                border: `1px solid ${p.stock === 0 ? '#fecaca' : '#fed7aa'}`,
+                background: p.stock === 0 ? '#fef2f2' : '#eff8f3',
+                border: `1px solid ${p.stock === 0 ? '#fecaca' : '#add8bc'}`,
                 color: p.stock === 0 ? '#dc2626' : '#d97706',
                 borderRadius: 20,
               }}>
@@ -725,7 +725,7 @@ function ProducerProfileTab() {
 const STATUS_COLORS = {
   pending:    { bg: '#fefce8', color: '#ca8a04', border: '#fde68a' },
   paid:       { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
-  processing: { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa' },
+  processing: { bg: '#eff8f3', color: '#194328', border: '#add8bc' },
   shipped:    { bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
   delivered:  { bg: '#f0fdf4', color: '#16a34a', border: '#86efac' },
   cancelled:  { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
@@ -787,7 +787,7 @@ function OrdersTab() {
                 padding: '6px 14px', borderRadius: 20, border: '1px solid',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer',
                 borderColor: filter === f.id ? OR : '#e5e7eb',
-                background:  filter === f.id ? '#fff7ed' : '#fff',
+                background:  filter === f.id ? '#eff8f3' : '#fff',
                 color:       filter === f.id ? OR : '#6b7280',
                 transition: 'all .12s',
               }}
@@ -888,7 +888,7 @@ function PendingValidation({ user }) {
           padding: 40, textAlign: 'center',
         }}>
           <div style={{
-            width: 72, height: 72, borderRadius: '50%', background: '#fff7ed',
+            width: 72, height: 72, borderRadius: '50%', background: '#eff8f3',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 24px',
           }}>
@@ -1010,14 +1010,14 @@ export default function ProducerDashboard() {
           display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, gridColumn: '1/-1', marginBottom: 12 }}>
-            <Calendar size={13} color='#f97316' />
+            <Calendar size={13} color='#2D6A4F' />
             <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)',
                            textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               Performances récentes
             </span>
           </div>
           {[
-            { label: '7 derniers jours', value: stats?.weekly_revenue != null ? `${FCFA(stats.weekly_revenue)} FCFA` : '—', sub: `${stats?.weekly_orders ?? 0} commande${(stats?.weekly_orders ?? 0) !== 1 ? 's' : ''}`, color: '#fb923c', last: false },
+            { label: '7 derniers jours', value: stats?.weekly_revenue != null ? `${FCFA(stats.weekly_revenue)} FCFA` : '—', sub: `${stats?.weekly_orders ?? 0} commande${(stats?.weekly_orders ?? 0) !== 1 ? 's' : ''}`, color: '#459c6b', last: false },
             { label: '30 derniers jours', value: stats?.monthly_revenue != null ? `${FCFA(stats.monthly_revenue)} FCFA` : '—', sub: 'revenus du mois', color: '#34d399', last: false },
             { label: 'Total cumulé', value: stats?.revenue != null ? `${FCFA(stats.revenue)} FCFA` : '—', sub: "depuis l'ouverture", color: '#60a5fa', last: true },
           ].map(({ label, value, sub, color, last }) => (

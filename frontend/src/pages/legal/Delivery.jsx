@@ -5,7 +5,7 @@ function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 32 }}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 10,
-                   paddingBottom: 8, borderBottom: '2px solid #f97316', display: 'inline-block' }}>
+                   paddingBottom: 8, borderBottom: '2px solid #2D6A4F', display: 'inline-block' }}>
         {title}
       </h2>
       <div style={{ fontSize: 14, color: '#374151', lineHeight: 1.75 }}>
@@ -35,7 +35,7 @@ const ZONES = [
     villes: 'Yaoundé, Douala, Obala, Edéa',
     delai: '3 – 5 jours',
     frais: '2 500 – 3 500 FCFA',
-    color: '#f97316',
+    color: '#2D6A4F',
   },
   {
     zone: 'Zone 4 — Autres régions',
@@ -52,7 +52,7 @@ export default function Delivery() {
 
       <div style={{ background: '#1a1a1a', padding: '48px 0' }}>
         <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ color: '#f97316', fontSize: 11, fontWeight: 700,
+          <p style={{ color: '#2D6A4F', fontSize: 11, fontWeight: 700,
                        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
             Informations pratiques
           </p>
@@ -88,7 +88,7 @@ export default function Delivery() {
               Livraison gratuite sur votre 1ère commande
             </p>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, marginTop: 2 }}>
-              Utilisez le code <span style={{ color: '#f97316', fontWeight: 700 }}>SAHEL1</span> — valable pour les nouveaux clients
+              Utilisez le code <span style={{ color: '#2D6A4F', fontWeight: 700 }}>SAHEL1</span> — valable pour les nouveaux clients
             </p>
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function Delivery() {
                 desc: 'Récupérez votre commande à un point de retrait partenaire près de chez vous (boutiques alliées, agences). Option souvent moins chère et plus rapide.',
               },
               {
-                icon: Clock, color: '#f97316',
+                icon: Clock, color: '#2D6A4F',
                 title: 'Livraison express (Maroua)',
                 desc: 'Livraison le jour même en moins de 4h pour les commandes passées avant 12h à Maroua. Supplément de 500 FCFA.',
               },
@@ -184,7 +184,7 @@ export default function Delivery() {
 
         {/* Contact */}
         <div style={{
-          background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12,
+          background: '#eff8f3', border: '1px solid #add8bc', borderRadius: 12,
           padding: '20px 24px', display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
           justifyContent: 'space-between',
         }}>
@@ -197,7 +197,7 @@ export default function Delivery() {
           <a href="tel:+237680757871"
             style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '10px 20px',
-              background: '#f97316', color: '#fff', borderRadius: 10, textDecoration: 'none',
+              background: '#2D6A4F', color: '#fff', borderRadius: 10, textDecoration: 'none',
               fontSize: 13, fontWeight: 700,
             }}>
             <Phone size={14} /> +237 680 757 871
@@ -206,10 +206,10 @@ export default function Delivery() {
 
         <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, marginTop: 32,
                        display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <Link to="/legal/returns" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/returns" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             Politique de retour →
           </Link>
-          <Link to="/legal/faq" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/faq" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             FAQ →
           </Link>
         </div>

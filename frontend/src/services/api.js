@@ -27,7 +27,7 @@ api.interceptors.response.use(
           const { data } = await axios.post(`${import.meta.env.VITE_API_URL || '/api'}/auth/token/refresh/`, { refresh: refreshToken })
           store.dispatch(setCredentials({
             user:   store.getState().auth.user,
-            tokens: { access: data.access, refresh: refreshToken },
+            tokens: { access: data.access, refresh: data.refresh || refreshToken },
           }))
           original.headers.Authorization = `Bearer ${data.access}`
           return api(original)

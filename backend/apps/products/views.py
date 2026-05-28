@@ -1,5 +1,5 @@
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
@@ -9,6 +9,19 @@ from .serializers import (ProductListSerializer, ProductDetailSerializer,
                            ProductCreateSerializer, CategorySerializer, RatingSerializer)
 from apps.users.models import User
 from apps.orders.models import Order, OrderItem
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+
+
+class OptionalJWTAuthentication(JWTAuthentication):
+    """JWT auth that gracefully handles invalid/expired tokens on public endpoints.
+    Instead of raising 401, silently treats the request as anonymous."""
+    def authenticate(self, request):
+        try:
+            return super().authenticate(request)
+        except AuthenticationFailed:
+            return None
+
 
 class IsProducerOrAgent(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -26,6 +39,7 @@ class IsProducerOrAgent(permissions.BasePermission):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.select_related('producer', 'category').prefetch_related('images', 'ratings', 'likes')
     permission_classes = [IsProducerOrAgent]
+    authentication_classes = [OptionalJWTAuthentication]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['category', 'is_available', 'producer']
     ordering_fields  = ['price', 'created_at', 'views_count']
@@ -190,10 +204,12 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
+@authentication_classes([])
 def platform_stats(request):
     """Chiffres clés affichés sur la homepage — endpoint public."""
     return Response({

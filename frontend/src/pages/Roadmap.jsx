@@ -6,7 +6,7 @@ import {
   Bell, Package, Users, Truck, ArrowRight, Rocket, Lock,
 } from 'lucide-react'
 
-const OR = '#f97316'
+const OR = '#2D6A4F'
 
 const PHASES = [
   {

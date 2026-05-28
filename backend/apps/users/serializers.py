@@ -9,7 +9,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = User
-        fields = ['username', 'phone', 'password', 'password2', 'role', 'address']
+        fields = ['username', 'first_name', 'phone', 'password', 'password2', 'role', 'address']
         extra_kwargs = {'username': {'required': False}}
 
     def validate_phone(self, value):

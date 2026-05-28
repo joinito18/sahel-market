@@ -71,12 +71,7 @@ export default function Login() {
           <p style={{ fontSize: 10, fontWeight: 700, color: '#ADADAD', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 28 }}>
             Artisanat Camerounais
           </p>
-          <h1 style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 'clamp(2.2rem, 4vw, 3.5rem)',
-            fontWeight: 700, color: '#FFFFFF',
-            lineHeight: 1.05, letterSpacing: '-0.02em', marginBottom: 20,
-          }}>
+          <h1 className="display-2" style={{ color: '#FFFFFF', marginBottom: 20 }}>
             Sahel<br /><em style={{ color: 'var(--accent)' }}>Market</em>
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 15, lineHeight: 1.7, maxWidth: 300, marginBottom: 48 }}>
@@ -107,17 +102,10 @@ export default function Login() {
 
           {/* Logo mobile */}
           <Link to="/" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: 40 }}>
-            <span style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 24, fontWeight: 700, color: 'var(--ink)',
-            }}>
-              Sahel<em>Market</em>
-            </span>
+            <span className="serif-lg" style={{ letterSpacing: '-0.02em' }}>Sahel<em>Market</em></span>
           </Link>
 
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 700, color: 'var(--ink)', marginBottom: 6 }}>
-            Connexion
-          </h2>
+          <h2 className="serif-xl" style={{ marginBottom: 6 }}>Connexion</h2>
           <p style={{ fontSize: 13, color: 'var(--ink-3)', marginBottom: 28 }}>
             Pas encore de compte ?{' '}
             <Link to="/register" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>

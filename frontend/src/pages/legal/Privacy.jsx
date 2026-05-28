@@ -4,7 +4,7 @@ function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 32 }}>
       <h2 style={{ fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 10,
-                   paddingBottom: 8, borderBottom: '2px solid #f97316', display: 'inline-block' }}>
+                   paddingBottom: 8, borderBottom: '2px solid #2D6A4F', display: 'inline-block' }}>
         {title}
       </h2>
       <div style={{ fontSize: 14, color: '#374151', lineHeight: 1.75 }}>
@@ -20,7 +20,7 @@ export default function Privacy() {
 
       <div style={{ background: '#1a1a1a', padding: '48px 0' }}>
         <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 24px' }}>
-          <p style={{ color: '#f97316', fontSize: 11, fontWeight: 700,
+          <p style={{ color: '#2D6A4F', fontSize: 11, fontWeight: 700,
                        textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
             Informations légales
           </p>
@@ -47,7 +47,7 @@ export default function Privacy() {
         <Section title="1. Responsable du traitement">
           <p>
             Le responsable du traitement est <strong>Sahel Market</strong>, Maroua, Cameroun.<br />
-            Contact : <a href="mailto:sahelmarket@gmail.com" style={{ color: '#f97316' }}>sahelmarket@gmail.com</a> · +237 680 757 871
+            Contact : <a href="mailto:sahelmarket@gmail.com" style={{ color: '#2D6A4F' }}>sahelmarket@gmail.com</a> · +237 680 757 871
           </p>
         </Section>
 
@@ -100,7 +100,7 @@ export default function Privacy() {
             <li><strong>Opposition</strong> : refuser l'utilisation à des fins marketing</li>
           </ul>
           <p style={{ marginTop: 10 }}>
-            Pour exercer ces droits : <a href="mailto:sahelmarket@gmail.com" style={{ color: '#f97316' }}>sahelmarket@gmail.com</a>
+            Pour exercer ces droits : <a href="mailto:sahelmarket@gmail.com" style={{ color: '#2D6A4F' }}>sahelmarket@gmail.com</a>
           </p>
         </Section>
 
@@ -121,10 +121,10 @@ export default function Privacy() {
 
         <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: 24, marginTop: 8,
                        display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <Link to="/legal/terms" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/terms" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             Conditions d'utilisation →
           </Link>
-          <Link to="/legal/faq" style={{ color: '#f97316', fontSize: 13, textDecoration: 'none' }}>
+          <Link to="/legal/faq" style={{ color: '#2D6A4F', fontSize: 13, textDecoration: 'none' }}>
             FAQ →
           </Link>
         </div>

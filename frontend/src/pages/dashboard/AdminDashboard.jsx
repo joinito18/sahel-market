@@ -8,7 +8,7 @@ import {
 import api from '../../services/api.js'
 
 const FCFA = v => Number(v || 0).toLocaleString('fr-FR')
-const OR = '#f97316'
+const OR = '#2D6A4F'
 const BG = '#f0f2f5'
 
 /* ─── Requêtes ─── */
@@ -29,7 +29,7 @@ function KpiCard({ icon: Icon, label, value, accent }) {
       <div style={{
         width: 38, height: 38, borderRadius: 10, display: 'flex',
         alignItems: 'center', justifyContent: 'center', marginBottom: 2,
-        background: accent ? `${accent}18` : '#fff7ed',
+        background: accent ? `${accent}18` : '#eff8f3',
       }}>
         <Icon size={17} color={accent || OR} />
       </div>
@@ -561,7 +561,7 @@ function ValidationTab() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{
-        background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12,
+        background: '#eff8f3', border: '1px solid #add8bc', borderRadius: 12,
         padding: '12px 16px', fontSize: 13, color: '#92400e',
       }}>
         <strong>{pending.length}</strong> compte{pending.length > 1 ? 's' : ''} artisan{pending.length > 1 ? 's' : ''} en attente de validation.
@@ -581,9 +581,9 @@ function ValidationTab() {
             }}>
               {/* Avatar */}
               <div style={{
-                width: 44, height: 44, borderRadius: 12, background: '#fff7ed', flexShrink: 0,
+                width: 44, height: 44, borderRadius: 12, background: '#eff8f3', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 900, color: OR, fontSize: 18, border: `2px solid #fed7aa`,
+                fontWeight: 900, color: OR, fontSize: 18, border: `2px solid #add8bc`,
               }}>
                 {displayName[0].toUpperCase()}
               </div>
@@ -745,10 +745,10 @@ export default function AdminDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {pendingCount > 0 && (
               <div style={{
-                background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 14,
+                background: '#eff8f3', border: '1px solid #add8bc', borderRadius: 14,
                 padding: '16px 20px', display: 'flex', gap: 14, alignItems: 'center',
               }}>
-                <AlertTriangle size={20} color="#f97316" style={{ flexShrink: 0 }} />
+                <AlertTriangle size={20} color="#2D6A4F" style={{ flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 700, color: '#92400e', marginBottom: 2 }}>
                     {pendingCount} compte{pendingCount > 1 ? 's' : ''} artisan{pendingCount > 1 ? 's' : ''} en attente de validation

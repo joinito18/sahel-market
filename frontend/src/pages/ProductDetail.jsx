@@ -50,9 +50,10 @@ export default function ProductDetail() {
   const navTo = useNav()
   const { isAuthenticated, user: me } = useSelector(s => s.auth)
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending, isError, refetch } = useQuery({
     queryKey: ['product', id],
     queryFn:  () => productService.getOne(id),
+    retry: 2,
   })
 
   const product = data?.data
@@ -60,9 +61,23 @@ export default function ProductDetail() {
   const { data: relatedData } = useQuery({
     queryKey: ['recommendations', id],
     queryFn:  () => productService.getRecommendations(id),
-    enabled:  !!product,
+    enabled:  !!id,
+    retry: 1,
+    staleTime: 5 * 60 * 1000,
   })
   const related = relatedData?.data ?? []
+
+  // Fallback : même catégorie — tourne en parallèle, utilisé si recommendations vide
+  const categoryId = product?.category?.id
+  const { data: sameCatData } = useQuery({
+    queryKey: ['similar', categoryId, id],
+    queryFn:  () => productService.getAll({ category: categoryId, is_available: true, ordering: '-views_count' }),
+    enabled:  !!categoryId,
+    select:   (res) => (res.data?.results ?? []).filter(p => String(p.id) !== String(id)).slice(0, 6),
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const displayRelated = related.length > 0 ? related : (sameCatData ?? [])
 
   /* Enregistrer dans "récemment vus" */
   useEffect(() => { if (product) addRecentlyViewed(product) }, [product?.id])
@@ -74,10 +89,11 @@ export default function ProductDetail() {
     const obs = new IntersectionObserver(([e]) => setStickyShow(!e.isIntersecting), { threshold: 0 })
     obs.observe(el)
     return () => obs.disconnect()
-  }, [ctaRef.current])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id])
 
   /* ── Loading ─────────────────────────────────────────────────── */
-  if (isLoading) return (
+  if (isPending) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-3 border-orange-500 border-t-transparent
@@ -87,17 +103,23 @@ export default function ProductDetail() {
     </div>
   )
 
-  /* ── 404 ─────────────────────────────────────────────────────── */
-  if (!product) return (
+  /* ── Erreur / 404 ────────────────────────────────────────────── */
+  if (isError || !product) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
       <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
         <ShoppingCart size={28} className="text-gray-300" />
       </div>
       <p className="font-semibold text-gray-700">Produit introuvable</p>
-      <button onClick={() => navigate(-1)}
-        className="text-sm text-orange-500 hover:underline">
-        ← Retour
-      </button>
+      <div className="flex items-center gap-3">
+        <button onClick={() => refetch()}
+          className="px-4 py-2 bg-orange-500 text-white text-sm font-bold rounded-xl hover:bg-orange-600 transition-colors">
+          Réessayer
+        </button>
+        <button onClick={() => navigate(-1)}
+          className="text-sm text-gray-400 hover:text-gray-600 hover:underline">
+          ← Retour
+        </button>
+      </div>
     </div>
   )
 
@@ -176,8 +198,8 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-10 lg:py-14">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
 
           {/* ════════════════════════════════════════════════════
               GALERIE IMAGES
@@ -323,7 +345,7 @@ export default function ProductDetail() {
           {/* ════════════════════════════════════════════════════
               INFOS PRODUIT
           ════════════════════════════════════════════════════ */}
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-6">
 
             {/* Catégorie + localisation */}
             <div className="flex items-center gap-3 flex-wrap">
@@ -342,9 +364,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Nom */}
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
-              {product.name}
-            </h1>
+            <h1 className="serif-xl">{product.name}</h1>
 
             {/* Rating summary */}
             {avgRating > 0 && (
@@ -358,9 +378,9 @@ export default function ProductDetail() {
             )}
 
             {/* Prix */}
-            <div className="flex items-baseline gap-3 py-3 border-y border-gray-100">
-              <span className="text-3xl font-black text-orange-600 tabular-nums">
-                {FCFA(product.price)}
+            <div className="flex items-baseline gap-3 py-4 border-y border-gray-100">
+              <span className="price-tag" style={{ fontSize: 'clamp(1.5rem,3vw,2rem)', color: 'var(--ink)' }}>
+                {FCFA(product.price)} <span style={{ fontSize: '0.55em', fontWeight: 600, color: 'var(--ink-2)' }}>FCFA</span>
               </span>
               {isLowStock && (
                 <span className="text-xs font-bold text-red-500 bg-red-50
@@ -613,7 +633,7 @@ export default function ProductDetail() {
             >
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 12, color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</p>
-                <p style={{ fontSize: 16, fontWeight: 800, color: '#f97316' }}>{FCFA(product.price * quantity)} FCFA</p>
+                <p style={{ fontSize: 16, fontWeight: 800, color: '#2D6A4F' }}>{FCFA(product.price * quantity)} FCFA</p>
               </div>
               <button onClick={handleAddToCart}
                 style={{ flexShrink: 0, background: '#111', color: '#fff', border: 'none', borderRadius: 14,
@@ -657,26 +677,25 @@ export default function ProductDetail() {
         {/* ════════════════════════════════════════════════════════
             RECOMMANDATIONS INTELLIGENTES
         ════════════════════════════════════════════════════════ */}
-        {related.length > 0 && (
+        {displayRelated.length > 0 && (
           <div style={{
             marginTop: 32, background: 'var(--surface)',
             borderRadius: 20, border: '1px solid var(--border)', padding: 'clamp(20px,3vw,32px)',
           }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--ink-3)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>
-                  Sélectionnés pour vous
+                <p className="label-caps" style={{ marginBottom: 8 }}>
+                  {related.length > 0 ? 'Sélectionnés pour vous' : 'Dans la même catégorie'}
                 </p>
-                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(18px,3vw,24px)', fontWeight: 700, color: 'var(--ink)' }}>
-                  Vous aimerez aussi
-                </h2>
+                <h2 className="serif-lg">Vous aimerez aussi</h2>
               </div>
-              <Link to="/products" style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)', textDecoration: 'none', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <Link to={product?.category ? `/products?category=${product.category}` : '/products'}
+                className="label-caps" style={{ color: 'var(--ink)', textDecoration: 'none' }}>
                 Voir tout →
               </Link>
             </div>
             <div className="product-grid-home">
-              {related.map((p, i) => (
+              {displayRelated.map((p, i) => (
                 <ProductCard key={p.id} product={p} index={i} />
               ))}
             </div>

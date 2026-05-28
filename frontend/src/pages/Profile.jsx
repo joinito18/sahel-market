@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../services/auth.service.js'
 import { updateUser, logout } from '../store/authSlice.js'
 
-const OR = '#f97316'
+const OR = '#2D6A4F'
 const BG = '#f0f2f5'
 
 const ROLE_LABELS = {
@@ -110,7 +110,7 @@ export default function Profile() {
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <div style={{
               width: 80, height: 80, borderRadius: '50%', overflow: 'hidden',
-              background: '#fff7ed', border: `3px solid ${OR}`,
+              background: '#eff8f3', border: `3px solid ${OR}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               {user?.avatar
@@ -142,7 +142,7 @@ export default function Profile() {
             <p style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>{user?.email}</p>
             <span style={{
               display: 'inline-block', marginTop: 8, fontSize: 11, fontWeight: 700,
-              padding: '3px 10px', borderRadius: 20, background: '#fff7ed', color: OR,
+              padding: '3px 10px', borderRadius: 20, background: '#eff8f3', color: OR,
             }}>
               {ROLE_LABELS[user?.role] || 'Membre'}
             </span>

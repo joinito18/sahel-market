@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Send, ArrowLeft, MessageCircle, Store, User } from 'lucide-react'
 import api from '../services/api.js'
 
-const OR = '#f97316'
+const OR = '#2D6A4F'
 const BG = '#f0f2f5'
 
 function avatar(u) {
@@ -25,7 +25,7 @@ function AvatarBubble({ u, size = 40 }) {
     <div style={{
       width: size, height: size, borderRadius: size / 3,
       overflow: 'hidden', flexShrink: 0,
-      background: 'linear-gradient(135deg,#fb923c,#ea580c)',
+      background: 'linear-gradient(135deg,#459c6b,#215638)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       {src
@@ -75,7 +75,7 @@ function ConversationList({ activeId }) {
           style={{
             display: 'flex', alignItems: 'center', gap: 12,
             padding: '12px 16px', textDecoration: 'none',
-            background: activeId === String(c.user_id) ? '#fff7ed' : 'transparent',
+            background: activeId === String(c.user_id) ? '#eff8f3' : 'transparent',
             borderLeft: activeId === String(c.user_id) ? `3px solid ${OR}` : '3px solid transparent',
             transition: 'background .12s',
           }}
@@ -160,7 +160,7 @@ function Thread({ userId }) {
 
   if (isLoading) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 32, height: 32, border: '3px solid #f97316', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 32, height: 32, border: '3px solid #2D6A4F', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
@@ -191,8 +191,8 @@ function Thread({ userId }) {
             style={{
               marginLeft: 'auto', fontSize: 12, fontWeight: 600,
               color: OR, textDecoration: 'none',
-              padding: '5px 12px', background: '#fff7ed',
-              borderRadius: 8, border: '1px solid #fed7aa',
+              padding: '5px 12px', background: '#eff8f3',
+              borderRadius: 8, border: '1px solid #add8bc',
             }}
           >
             Voir le profil →
@@ -327,7 +327,7 @@ export default function Messages() {
             >
               <div style={{
                 width: 64, height: 64, borderRadius: 20,
-                background: '#fff7ed', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: '#eff8f3', display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <MessageCircle size={28} color={OR} />
               </div>

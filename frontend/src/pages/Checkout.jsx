@@ -17,9 +17,9 @@ const PAYMENT_METHODS = [
   {
     id:    'orange_money',
     label: 'Orange Money',
-    color: '#f97316',
-    bg:    '#fff7ed',
-    border:'#fed7aa',
+    color: '#2D6A4F',
+    bg:    '#eff8f3',
+    border:'#add8bc',
     icon:  '🟠',
     desc:  'Paiement instantané via votre compte Orange',
   },
@@ -104,12 +104,12 @@ function PaymentWaiting({ order, paymentMethod, onPaid, onTimeout }) {
         <>
           <div style={{
             width: 80, height: 80, borderRadius: '50%',
-            background: pm?.bg || '#fff7ed',
-            border: `3px solid ${pm?.border || '#fed7aa'}`,
+            background: pm?.bg || '#eff8f3',
+            border: `3px solid ${pm?.border || '#add8bc'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 24px',
           }}>
-            <Loader2 size={36} color={pm?.color || '#f97316'}
+            <Loader2 size={36} color={pm?.color || '#2D6A4F'}
                      style={{ animation: 'spin 1s linear infinite' }} />
           </div>
           <p style={{ fontSize: 20, fontWeight: 900, color: '#111827', marginBottom: 8 }}>
@@ -178,7 +178,7 @@ function Confirmation({ order, paymentMethod, instructions, loyaltyDiscount, pro
           Commande confirmée !
         </h1>
         <p style={{ fontSize: 13, color: '#6b7280' }}>
-          Référence : <strong style={{ color: '#f97316' }}>{order.payment_reference || `CMD-${order.id}`}</strong>
+          Référence : <strong style={{ color: '#2D6A4F' }}>{order.payment_reference || `CMD-${order.id}`}</strong>
         </p>
         {loyaltyDiscount > 0 && (
           <div style={{
@@ -195,11 +195,11 @@ function Confirmation({ order, paymentMethod, instructions, loyaltyDiscount, pro
         {promoDiscount > 0 && (
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            marginTop: 8, background: '#fff7ed', border: '1px solid #fed7aa',
+            marginTop: 8, background: '#eff8f3', border: '1px solid #add8bc',
             borderRadius: 20, padding: '5px 14px',
           }}>
-            <Tag size={13} color="#f97316" />
-            <span style={{ fontSize: 12, color: '#c2410c', fontWeight: 700 }}>
+            <Tag size={13} color="#2D6A4F" />
+            <span style={{ fontSize: 12, color: '#194328', fontWeight: 700 }}>
               {fcfa(promoDiscount)} de remise code promo
             </span>
           </div>
@@ -256,7 +256,7 @@ function Confirmation({ order, paymentMethod, instructions, loyaltyDiscount, pro
           }}>
             <div>
               <p style={{ fontSize: 10, color: '#9ca3af', marginBottom: 2 }}>Référence à indiquer</p>
-              <p style={{ fontSize: 15, fontWeight: 900, color: '#f97316', letterSpacing: '0.05em' }}>
+              <p style={{ fontSize: 15, fontWeight: 900, color: '#2D6A4F', letterSpacing: '0.05em' }}>
                 {instructions.ref}
               </p>
             </div>
@@ -456,7 +456,7 @@ export default function Checkout() {
               <span key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{
                   fontWeight: i === 1 ? 700 : 400,
-                  color: i === 1 ? '#f97316' : i < 1 ? '#16a34a' : '#9ca3af',
+                  color: i === 1 ? '#2D6A4F' : i < 1 ? '#16a34a' : '#9ca3af',
                 }}>{s}</span>
                 {i < 2 && <ChevronRight size={13} color="#d1d5db" />}
               </span>
@@ -478,10 +478,10 @@ export default function Checkout() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10, background: '#fff7ed',
+                width: 36, height: 36, borderRadius: 10, background: '#eff8f3',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <MapPin size={18} color="#f97316" />
+                <MapPin size={18} color="#2D6A4F" />
               </div>
               <div>
                 <p style={{ fontWeight: 700, color: '#111827', fontSize: 15 }}>Adresse de livraison</p>
@@ -503,14 +503,14 @@ export default function Checkout() {
                     onClick={() => setDeliveryFee(fee)}
                     style={{
                       padding: '10px 14px', borderRadius: 10, cursor: 'pointer', textAlign: 'left',
-                      border: `2px solid ${deliveryFee === fee ? '#f97316' : '#e5e7eb'}`,
-                      background: deliveryFee === fee ? '#fff7ed' : '#fff',
+                      border: `2px solid ${deliveryFee === fee ? '#2D6A4F' : '#e5e7eb'}`,
+                      background: deliveryFee === fee ? '#eff8f3' : '#fff',
                       transition: 'all .15s',
                     }}
                   >
                     <p style={{ fontSize: 12, fontWeight: 600,
-                                 color: deliveryFee === fee ? '#f97316' : '#374151' }}>{label}</p>
-                    <p style={{ fontSize: 12, color: deliveryFee === fee ? '#f97316' : '#9ca3af',
+                                 color: deliveryFee === fee ? '#2D6A4F' : '#374151' }}>{label}</p>
+                    <p style={{ fontSize: 12, color: deliveryFee === fee ? '#2D6A4F' : '#9ca3af',
                                  marginTop: 2 }}>
                       {fee === 0 ? 'Gratuit' : `${fee.toLocaleString('fr-FR')} FCFA`}
                     </p>
@@ -554,10 +554,10 @@ export default function Checkout() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10, background: '#fff7ed',
+                width: 36, height: 36, borderRadius: 10, background: '#eff8f3',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Smartphone size={18} color="#f97316" />
+                <Smartphone size={18} color="#2D6A4F" />
               </div>
               <div>
                 <p style={{ fontWeight: 700, color: '#111827', fontSize: 15 }}>Moyen de paiement</p>
@@ -680,7 +680,7 @@ export default function Checkout() {
                         Qté {item.quantity}
                       </p>
                     </div>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: '#f97316', flexShrink: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#2D6A4F', flexShrink: 0 }}>
                       {fcfa(item.price * item.quantity)}
                     </p>
                   </div>
@@ -751,7 +751,7 @@ export default function Checkout() {
                         onClick={applyPromo}
                         disabled={promoLoading || !promoInput.trim()}
                         style={{
-                          padding: '0 14px', background: promoInput.trim() ? '#f97316' : '#e5e7eb',
+                          padding: '0 14px', background: promoInput.trim() ? '#2D6A4F' : '#e5e7eb',
                           color: promoInput.trim() ? '#fff' : '#9ca3af',
                           border: 'none', borderRadius: 8, cursor: promoInput.trim() ? 'pointer' : 'default',
                           fontSize: 12, fontWeight: 700, flexShrink: 0, whiteSpace: 'nowrap',
@@ -799,8 +799,8 @@ export default function Checkout() {
                   border: '1px solid rgba(249,115,22,0.25)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <Star size={13} color="#f97316" fill="#f97316" />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#f97316' }}>
+                    <Star size={13} color="#2D6A4F" fill="#2D6A4F" />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#2D6A4F' }}>
                       {loyaltyPts} points fidélité disponibles
                     </span>
                   </div>
@@ -811,7 +811,7 @@ export default function Checkout() {
                       style={{
                         width: 36, height: 20, borderRadius: 999, border: 'none',
                         cursor: 'pointer', position: 'relative', flexShrink: 0,
-                        background: applyLoyalty ? '#f97316' : 'rgba(255,255,255,0.15)',
+                        background: applyLoyalty ? '#2D6A4F' : 'rgba(255,255,255,0.15)',
                         transition: 'background .2s',
                       }}
                     >
@@ -824,7 +824,7 @@ export default function Checkout() {
                     </button>
                     <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', flex: 1 }}>
                       Utiliser{' '}
-                      <span style={{ color: '#fb923c', fontWeight: 700 }}>
+                      <span style={{ color: '#459c6b', fontWeight: 700 }}>
                         {fcfa(Math.min(loyaltyValue, total))}
                       </span>{' '}
                       de réduction
@@ -844,7 +844,7 @@ export default function Checkout() {
               )}
 
               {promoDiscount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#f97316' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#2D6A4F' }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Tag size={12} /> Code promo
                   </span>
@@ -857,7 +857,7 @@ export default function Checkout() {
                 borderTop: '2px solid #f3f4f6',
               }}>
                 <span style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Total</span>
-                <span style={{ fontSize: 18, fontWeight: 900, color: '#f97316' }}>
+                <span style={{ fontSize: 18, fontWeight: 900, color: '#2D6A4F' }}>
                   {fcfa(grandTotal)}
                 </span>
               </div>
@@ -890,7 +890,7 @@ export default function Checkout() {
 
               <p style={{ fontSize: 11, color: '#9ca3af', textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
                 En confirmant, vous acceptez nos{' '}
-                <Link to="/legal/terms" style={{ color: '#f97316', textDecoration: 'none' }}>
+                <Link to="/legal/terms" style={{ color: '#2D6A4F', textDecoration: 'none' }}>
                   conditions d'utilisation
                 </Link>
               </p>

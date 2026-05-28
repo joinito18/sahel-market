@@ -56,7 +56,7 @@ export default function PwaInstallBanner() {
         background: 'rgba(249,115,22,0.15)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <Download size={20} color="#f97316" />
+        <Download size={20} color="#2D6A4F" />
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -71,7 +71,7 @@ export default function PwaInstallBanner() {
       <button
         onClick={handleInstall}
         style={{
-          flexShrink: 0, padding: '8px 16px', background: '#f97316',
+          flexShrink: 0, padding: '8px 16px', background: '#2D6A4F',
           color: '#fff', border: 'none', borderRadius: 10,
           fontWeight: 700, fontSize: 12, cursor: 'pointer',
           whiteSpace: 'nowrap',
