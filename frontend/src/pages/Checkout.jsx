@@ -416,6 +416,12 @@ export default function Checkout() {
 
   const onSubmit = async (data) => {
     try {
+      // Synchroniser le panier Redux → backend avant de commander
+      const cartRes = await orderService.getCart()
+      const backendItems = cartRes.data?.items || []
+      await Promise.all(backendItems.map(i => orderService.removeFromCart(i.id)))
+      await Promise.all(items.map(i => orderService.addToCart({ product_id: i.id, quantity: i.quantity })))
+
       const res = await orderService.checkout({
         delivery_address: data.address,
         delivery_fee:     deliveryFee,
