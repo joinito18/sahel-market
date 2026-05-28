@@ -165,65 +165,86 @@ export default function Profile() {
         )}
 
         {/* Carte de fidélité */}
-        {user?.loyalty_points !== undefined && (
-          <div style={{
-            background: 'linear-gradient(135deg, #1a1a1a 0%, #2a1800 60%, #1a1a1a 100%)',
-            borderRadius: 20, padding: '24px', overflow: 'hidden', position: 'relative',
-          }}>
+        {user?.loyalty_points !== undefined && (() => {
+          const pts   = user.loyalty_points
+          const value = Math.floor(pts / 100) * 500
+          const TIERS = [
+            { name: 'Bronze', min: 0,    max: 499,  icon: '🥉', color: '#cd7f32', next: 500  },
+            { name: 'Argent', min: 500,  max: 1499, icon: '🥈', color: '#aaaaaa', next: 1500 },
+            { name: 'Or',     min: 1500, max: Infinity, icon: '🥇', color: '#f59e0b', next: null },
+          ]
+          const tier     = TIERS.find(t => pts >= t.min && pts <= t.max)
+          const nextTier = TIERS.find(t => t.min > pts)
+          const progress = nextTier
+            ? Math.min((pts - tier.min) / (nextTier.min - tier.min), 1)
+            : 1
+          const ptsToNext = nextTier ? nextTier.min - pts : 0
+          const ptsToReward = 100 - (pts % 100)
+          return (
             <div style={{
-              position: 'absolute', top: -20, right: -20, width: 120, height: 120,
-              borderRadius: '50%', background: 'rgba(249,115,22,0.08)',
-            }} />
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div>
-                <p style={{ color: '#fdba74', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4 }}>
-                  Programme de fidélité
-                </p>
-                <p style={{ color: '#fff', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                  {user.loyalty_points} <span style={{ fontSize: 14, fontWeight: 600, color: '#9ca3af' }}>points</span>
-                </p>
-              </div>
-              <div style={{
-                width: 44, height: 44, borderRadius: 12, background: 'rgba(249,115,22,0.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Star size={20} color={OR} fill={OR} />
-              </div>
-            </div>
+              background: 'linear-gradient(135deg, #1a1a1a 0%, #2a1800 60%, #1a1a1a 100%)',
+              borderRadius: 20, padding: '24px', overflow: 'hidden', position: 'relative',
+            }}>
+              <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(249,115,22,0.08)' }} />
 
-            {/* Barre de progression vers récompense */}
-            {(() => {
-              const nextReward = 100
-              const progress = Math.min((user.loyalty_points % nextReward) / nextReward, 1)
-              const remaining = nextReward - (user.loyalty_points % nextReward)
-              const value = Math.floor(user.loyalty_points / 100) * 500
-              return (
-                <>
-                  <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 999, height: 6, marginBottom: 8, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', borderRadius: 999, background: OR, width: `${progress * 100}%`, transition: 'width .4s' }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
-                      Encore <span style={{ color: '#fdba74', fontWeight: 700 }}>{remaining} pts</span> pour une récompense
-                    </p>
-                    {value > 0 && (
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        background: 'rgba(249,115,22,0.2)', borderRadius: 20,
-                        padding: '4px 10px',
-                      }}>
-                        <Gift size={11} color={OR} />
-                        <span style={{ color: OR, fontSize: 11, fontWeight: 700 }}>{value.toLocaleString('fr-FR')} FCFA disponibles</span>
-                      </div>
-                    )}
-                  </div>
-                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, marginTop: 10 }}>
-                    1 point offert par tranche de 500 FCFA dépensés · 100 pts = 500 FCFA de réduction
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div>
+                  <p style={{ color: '#fdba74', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 4 }}>
+                    Programme de fidélité
                   </p>
-                </>
-              )
-            })()}
-          </div>
+                  <p style={{ color: '#fff', fontWeight: 900, fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1 }}>
+                    {pts.toLocaleString('fr-FR')} <span style={{ fontSize: 14, fontWeight: 600, color: '#9ca3af' }}>points</span>
+                  </p>
+                </div>
+                {/* Badge niveau */}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 28, lineHeight: 1 }}>{tier.icon}</div>
+                  <p style={{ color: tier.color, fontSize: 10, fontWeight: 800, marginTop: 2, letterSpacing: '0.06em' }}>{tier.name.toUpperCase()}</p>
+                </div>
+              </div>
+
+              {/* Progression vers niveau suivant */}
+              {nextTier && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>
+                      Niveau <span style={{ color: tier.color, fontWeight: 700 }}>{tier.name}</span>
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>
+                      <span style={{ color: nextTier ? '#aaa' : '#f59e0b', fontWeight: 700 }}>{nextTier.name}</span> dans {ptsToNext} pts
+                    </p>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 999, height: 5, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 999, background: `linear-gradient(90deg, ${tier.color}, ${nextTier.color})`, width: `${progress * 100}%`, transition: 'width .5s' }} />
+                  </div>
+                </div>
+              )}
+              {!nextTier && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(245,158,11,0.15)', borderRadius: 20, padding: '4px 10px', marginBottom: 12 }}>
+                  <span style={{ fontSize: 11 }}>🏆</span>
+                  <span style={{ color: '#f59e0b', fontSize: 11, fontWeight: 700 }}>Niveau maximum atteint !</span>
+                </div>
+              )}
+
+              {/* Récompense disponible */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10 }}>
+                  Encore <span style={{ color: '#fdba74', fontWeight: 700 }}>{ptsToReward % 100} pts</span> pour +500 FCFA
+                </p>
+                {value > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'rgba(249,115,22,0.2)', borderRadius: 20, padding: '4px 10px' }}>
+                    <Gift size={11} color={OR} />
+                    <span style={{ color: OR, fontSize: 11, fontWeight: 700 }}>{value.toLocaleString('fr-FR')} FCFA disponibles</span>
+                  </div>
+                )}
+              </div>
+              <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10, marginTop: 10 }}>
+                100 pts = 500 FCFA de réduction · 1 pt par tranche de 5 FCFA dépensés
+              </p>
+            </div>
+          )
+        })()}
         )}
 
         {/* Historique commandes */}

@@ -188,6 +188,27 @@ function OrderCard({ order }) {
                 {Number(order.total_amount).toLocaleString('fr-FR')} FCFA
               </p>
             </div>
+
+            {/* Points gagnés */}
+            {(() => {
+              const pts = Math.floor(Number(order.total_amount) / 500)
+              if (pts <= 0) return null
+              const earned  = order.status === 'delivered'
+              const pending = ['paid','processing','shipped'].includes(order.status)
+              if (!earned && !pending) return null
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10,
+                  background: earned ? '#FFF7ED' : '#F9FAFB', borderRadius: 10, padding: '8px 12px' }}>
+                  <span style={{ fontSize: 14 }}>{earned ? '⭐' : '🕐'}</span>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: earned ? '#EA580C' : '#9ca3af' }}>
+                    {earned
+                      ? `+${pts} points fidélité crédités`
+                      : `+${pts} points fidélité à recevoir à la livraison`
+                    }
+                  </p>
+                </div>
+              )
+            })()}
           </div>
 
           {/* Bouton commander à nouveau */}

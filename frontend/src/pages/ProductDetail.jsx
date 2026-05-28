@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ShoppingCart, MapPin, Eye, ArrowLeft, Heart,
@@ -192,7 +192,7 @@ export default function ProductDetail() {
   }
 
   // Zoom handlers
-  const handleZoomWheel = useCallback((e) => {
+  const handleZoomWheel = (e) => {
     e.preventDefault()
     setZoomScale(s => {
       const next = s + (e.deltaY < 0 ? 0.4 : -0.4)
@@ -200,7 +200,7 @@ export default function ProductDetail() {
       if (clamped <= 1) setZoomOffset({ x: 0, y: 0 })
       return clamped
     })
-  }, [])
+  }
 
   const handleZoomMouseDown = (e) => {
     if (zoomScale <= 1) return
@@ -639,6 +639,27 @@ export default function ProductDetail() {
                 )}
               </AnimatePresence>
             </motion.button>
+
+            {/* Points de fidélité à gagner */}
+            {!isOutOfStock && (() => {
+              const pts = Math.floor(effectivePrice * quantity / 500)
+              if (pts <= 0) return null
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8,
+                  background: '#FFF7ED', borderRadius: 12, padding: '10px 14px',
+                  border: '1px solid #FED7AA' }}>
+                  <span style={{ fontSize: 16 }}>⭐</span>
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#EA580C' }}>
+                      Cette commande vous rapporte {pts} point{pts > 1 ? 's' : ''}
+                    </p>
+                    <p style={{ fontSize: 10, color: '#9ca3af', marginTop: 1 }}>
+                      = {(pts * 5).toLocaleString('fr-FR')} FCFA utilisables sur votre prochaine commande
+                    </p>
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* Garanties */}
             <div className="grid grid-cols-3 gap-2">

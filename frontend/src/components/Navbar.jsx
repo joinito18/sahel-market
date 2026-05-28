@@ -514,6 +514,15 @@ export default function Navbar() {
                         {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username}
                       </p>
                       <p style={{ fontSize: 11, color: '#ADADAD' }}>{ROLE_LABELS[user?.role] || 'Client'}</p>
+                      {user?.loyalty_points !== undefined && (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 6,
+                          background: '#FFF7ED', borderRadius: 20, padding: '3px 8px' }}>
+                          <span style={{ fontSize: 11 }}>⭐</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#EA580C' }}>
+                            {user.loyalty_points.toLocaleString('fr-FR')} pts fidélité
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div style={{ padding: '6px 0' }}>
