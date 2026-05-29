@@ -12,7 +12,6 @@ import ChatWidget        from './components/ChatWidget.jsx'
 import Footer            from './components/Footer.jsx'
 import SuggestionWidget  from './components/SuggestionWidget.jsx'
 import PwaInstallBanner  from './components/PwaInstallBanner.jsx'
-import ThemeToggle       from './components/ThemeToggle.jsx'
 
 // Lazy-loaded pages — code splitting automatique par route
 const Home              = lazy(() => import('./pages/Home.jsx'))
@@ -172,7 +171,6 @@ export default function App() {
       <SuggestionWidget />
 
       <PwaInstallBanner />
-      <ThemeToggle />
       {/* Padding bottom safe-area aware pour la BottomNav fixe */}
       <div className="flex-1 safe-bottom">
         <Suspense fallback={<PageLoader />}>
