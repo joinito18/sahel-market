@@ -22,9 +22,8 @@ class PasswordResetRequestView(APIView):
         if not email:
             return Response({'error': 'Email requis.'}, status=400)
 
-        try:
-            user = User.objects.get(email__iexact=email)
-        except User.DoesNotExist:
+        user = User.objects.filter(email__iexact=email).first()
+        if not user:
             # On renvoie toujours OK pour ne pas révéler si l'email existe
             return Response({'message': 'Si cet email est associé à un compte, vous recevrez un lien de réinitialisation.'})
 

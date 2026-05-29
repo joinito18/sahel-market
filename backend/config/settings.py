@@ -176,13 +176,18 @@ SPECTACULAR_SETTINGS = {
 }
 
 # ── Email ────────────────────────────────────────────────────────────
-EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'
 EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = env('EMAIL_HOST_USER',     default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL  = 'Sahel Market <sahelmarket@gmail.com>'
+# En local (DEBUG=True), afficher les emails dans le terminal
+EMAIL_BACKEND = (
+    'django.core.mail.backends.console.EmailBackend'
+    if DEBUG else
+    'django.core.mail.backends.smtp.EmailBackend'
+)
 
 # ── Campay (paiement Orange Money / MTN MoMo) ───────────────────────
 CAMPAY_USERNAME    = env('CAMPAY_USERNAME',    default='')
