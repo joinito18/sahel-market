@@ -477,37 +477,116 @@ export default function Home() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
-          PARTENAIRES
+          CONFIANCE — TÉMOIGNAGES + PARTENAIRES
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ borderTop: '1px solid var(--border)', background: '#fff' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(28px,4vw,48px) 20px' }}>
-          <p className="label-caps" style={{ textAlign: 'center', marginBottom: 24 }}>Ils nous font confiance</p>
-          <div className="partners-grid">
+      <div style={{ background: 'var(--surface-2)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(40px,6vw,72px) clamp(16px,4vw,32px)' }}>
+
+          {/* En-tête */}
+          <div style={{ textAlign: 'center', marginBottom: 'clamp(32px,5vw,52px)' }}>
+            <p className="label-caps" style={{ marginBottom: 12 }}>Ce qu'ils disent de nous</p>
+            <h2 className="serif-xl">Des artisans qui nous font confiance</h2>
+          </div>
+
+          {/* Témoignages */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 16, marginBottom: 'clamp(40px,5vw,60px)' }}>
             {[
-              { name: 'Orange Cameroun', role: 'Paiement mobile',          color: '#ff6600', initial: 'O'  },
-              { name: 'MTN Cameroun',    role: 'Mobile Money (MoMo)',       color: '#c8960a', initial: 'M'  },
-              { name: 'GIZ',             role: 'Coopération développement', color: '#4a7c3f', initial: 'G'  },
-              { name: 'MINCOMMERCE',     role: 'Ministère du Commerce',     color: '#1e3a8a', initial: 'MC' },
-            ].map(({ name, role, color, initial }) => (
+              {
+                quote: "Avant Sahel Market, je vendais uniquement au marché de Maroua. Aujourd'hui j'ai des clients à Douala et Yaoundé que je n'aurais jamais pu atteindre seul.",
+                name: 'Fatima Adamou',
+                role: 'Artisane broderie',
+                city: 'Maroua',
+                since: 'Membre depuis 2023',
+                color: '#c2785a',
+              },
+              {
+                quote: "L'agent qui m'a accompagné a pris les photos de mes sacs en cuir et créé ma boutique en moins d'une journée. Mes premières commandes sont arrivées la semaine suivante.",
+                name: 'Ibrahim Moussa',
+                role: 'Maroquinier',
+                city: 'Garoua',
+                since: 'Membre depuis 2023',
+                color: '#2D6A4F',
+              },
+              {
+                quote: "Le paiement par Orange Money me convient parfaitement. Je reçois l'argent directement sur mon téléphone dès que la commande est livrée. Très fiable.",
+                name: 'Aïcha Koné',
+                role: 'Tisseuse de pagnes',
+                city: 'Ngaoundéré',
+                since: 'Membre depuis 2024',
+                color: '#7c5c3a',
+              },
+            ].map(({ quote, name, role, city, since, color }) => (
               <div key={name} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: 'clamp(12px,1.5vw,16px)', borderRadius: 12,
-                border: '1px solid var(--border)', background: '#fff',
+                background: '#fff',
+                borderRadius: 16,
+                border: '1px solid var(--border)',
+                padding: 'clamp(20px,2.5vw,28px)',
+                display: 'flex', flexDirection: 'column', gap: 20,
               }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                  background: color, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontWeight: 900, fontSize: initial.length > 1 ? 10 : 15,
-                }}>
-                  {initial}
+                {/* Étoiles */}
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {[1,2,3,4,5].map(i => (
+                    <svg key={i} width="14" height="14" viewBox="0 0 14 14" fill="#F59E0B">
+                      <path d="M7 1l1.545 3.13L12 4.635l-2.5 2.435.59 3.44L7 8.885l-3.09 1.625.59-3.44L2 4.635l3.455-.505L7 1z"/>
+                    </svg>
+                  ))}
                 </div>
-                <div style={{ minWidth: 0 }}>
-                  <p style={{ fontWeight: 700, fontSize: 12, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</p>
-                  <p style={{ fontSize: 10, color: 'var(--ink-3)', lineHeight: 1.4 }}>{role}</p>
+
+                {/* Citation */}
+                <p style={{ fontSize: 14, lineHeight: 1.75, color: 'var(--ink-2)', fontStyle: 'italic', flex: 1 }}>
+                  « {quote} »
+                </p>
+
+                {/* Auteur */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                    background: color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#fff', fontWeight: 800, fontSize: 14,
+                  }}>
+                    {name.charAt(0)}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', lineHeight: 1.3 }}>{name}</p>
+                    <p style={{ fontSize: 11, color: 'var(--ink-3)', lineHeight: 1.4 }}>{role} · {city}</p>
+                    <p style={{ fontSize: 10, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>{since}</p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* Séparateur */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 'clamp(28px,4vw,40px)' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <p className="label-caps">Nos partenaires</p>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          </div>
+
+          {/* Partenaires — bande horizontale */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12 }}>
+            {[
+              { name: 'Orange Cameroun', role: 'Paiement mobile',           color: '#FF6600', dot: '#FF6600' },
+              { name: 'MTN Cameroun',    role: 'Mobile Money MoMo',         color: '#C8960A', dot: '#FFCC00' },
+              { name: 'GIZ',             role: 'Coopération au développement', color: '#2D7D46', dot: '#2D7D46' },
+              { name: 'MINCOMMERCE',     role: 'Ministère du Commerce',     color: '#1E3A8A', dot: '#1E3A8A' },
+            ].map(({ name, role, color, dot }) => (
+              <div key={name} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 18px',
+                borderRadius: 100,
+                background: '#fff',
+                border: '1px solid var(--border)',
+              }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: dot, flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 800, color, letterSpacing: '-0.01em', lineHeight: 1.2 }}>{name}</p>
+                  <p style={{ fontSize: 10, color: 'var(--ink-3)', lineHeight: 1 }}>{role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
 
