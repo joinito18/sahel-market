@@ -53,6 +53,13 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      /* Appliquer le thème avant le rendu React pour éviter le flash */
+      try {
+        var t = localStorage.getItem('sm-theme') || 'sahel'
+        document.documentElement.setAttribute('data-theme', t)
+      } catch(e) {}
+    </script>
     <script type="module" src="/src/main.jsx"></script>
 
     <!-- ── Enregistrement Service Worker ───────────────────────── -->
