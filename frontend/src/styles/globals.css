@@ -18,103 +18,156 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
-/* ══════════════════════════════════════════════════════════════════
-   THÈME A — Sahel Vert (défaut)
-   ══════════════════════════════════════════════════════════════════ */
+/*
+╔══════════════════════════════════════════════════════════════════╗
+║  SYSTÈME DE THÈMES — 4 personnalités visuelles distinctes        ║
+║  Toggle via data-theme sur <html>                                ║
+╚══════════════════════════════════════════════════════════════════╝
+
+  A · sahel     — Magazine éditorial, vert forêt, bouton noir pill
+  B · maroua    — Marché vivant, terracotta fort, ombres chaudes
+  C · indigo    — Artisanat craft, indigo peul, coins carrés nets
+  D · creme     — Galerie ultra-pure, blanc absolu, noir strict
+*/
+
+/* ──────────────────────────────────────────────────────────────────
+   THÈME A · SAHEL VERT
+   Inspiration : Monocle Magazine, Aesop, artisanat éditorial
+   Fond parcheminé / Vert forêt / Bouton noir pill / Coins 20px
+   ────────────────────────────────────────────────────────────────── */
 :root,
 [data-theme="sahel"] {
-  /* Palette */
-  --bg:          #F5F4EF;
-  --surface:     #FFFFFF;
-  --surface-2:   #F0EFE9;
-  --ink:         #111111;
-  --ink-2:       #6B6B6B;
-  --ink-3:       #ADADAD;
-  --accent:      #2D6A4F;
-  --accent-dark: #1e4d38;
-  --accent-muted:#eff8f3;
-  --border:      #E8E7E2;
-  --border-2:    #D4D3CE;
-  --dark:        #111111;
+  --bg:                #F5F4EF;
+  --surface:           #FFFFFF;
+  --surface-2:         #F0EFE9;
+  --ink:               #111111;
+  --ink-2:             #6B6B6B;
+  --ink-3:             #ADADAD;
+  --accent:            #2D6A4F;
+  --accent-dark:       #1e4d38;
+  --accent-muted:      #eff8f3;
+  --border:            #E8E7E2;
+  --border-2:          #D4D3CE;
+  --dark:              #111111;
   --btn-primary-bg:    #111111;
   --btn-primary-hover: #333333;
+  --radius-card:       20px;
+  --radius-btn:        100px;
+  --shadow-card:       none;
+  --card-border:       1px solid var(--border);
+  --img-placeholder:   #F0EFE9;
+  --font-sans:         'Inter', system-ui, sans-serif;
+  --font-serif:        'Cormorant Garamond', Georgia, serif;
+  --section-gap: 28px; --card-pad: 20px; --grid-gap: 12px;
+  --space-xs: 8px; --space-sm: 16px; --space-md: 24px;
+  --space-lg: 40px; --space-xl: 64px;
+}
+@media (min-width: 640px)  { :root,[data-theme="sahel"] { --section-gap:44px;--card-pad:28px;--grid-gap:16px;--space-lg:56px;--space-xl:88px; } }
+@media (min-width: 1024px) { :root,[data-theme="sahel"] { --section-gap:64px;--space-lg:72px;--space-xl:112px; } }
 
-  /* Typographie */
-  --font-sans:   'Inter', system-ui, sans-serif;
-  --font-serif:  'Cormorant Garamond', Georgia, serif;
+/* ──────────────────────────────────────────────────────────────────
+   THÈME B · SOLEIL DE MAROUA
+   Inspiration : Etsy, Headspace, marché africain ouvert
+   Blanc chaud / Terracotta vif / Bouton terracotta / Coins 12px
+   Cartes avec ombre chaude, pas juste une bordure
+   ────────────────────────────────────────────────────────────────── */
+[data-theme="maroua"] {
+  --bg:                #FFFDF8;
+  --surface:           #FFFFFF;
+  --surface-2:         #FFF0E4;
+  --ink:               #1A0802;
+  --ink-2:             #7A4030;
+  --ink-3:             #C4907C;
+  --accent:            #D94F1A;
+  --accent-dark:       #B03A10;
+  --accent-muted:      #FFF0E8;
+  --border:            #F0DDD0;
+  --border-2:          #E4C4AC;
+  --dark:              #1A0802;
+  --btn-primary-bg:    #D94F1A;
+  --btn-primary-hover: #B03A10;
+  --radius-card:       12px;
+  --radius-btn:        10px;
+  --shadow-card:       0 4px 24px rgba(217,79,26,0.10), 0 1px 4px rgba(217,79,26,0.06);
+  --card-border:       1px solid transparent;
+  --img-placeholder:   #F8E8DC;
+  --font-sans:         'Inter', system-ui, sans-serif;
+  --font-serif:        'Cormorant Garamond', Georgia, serif;
+  --section-gap: 28px; --card-pad: 20px; --grid-gap: 12px;
+  --space-xs: 8px; --space-sm: 16px; --space-md: 24px;
+  --space-lg: 40px; --space-xl: 64px;
+}
+@media (min-width: 640px)  { [data-theme="maroua"] { --section-gap:44px;--card-pad:28px;--grid-gap:16px;--space-lg:56px;--space-xl:88px; } }
+@media (min-width: 1024px) { [data-theme="maroua"] { --section-gap:64px;--space-lg:72px;--space-xl:112px; } }
 
-  /* Espacement sections */
-  --section-gap: 28px;
-  --card-pad:    20px;
-  --grid-gap:    12px;
+/* ──────────────────────────────────────────────────────────────────
+   THÈME C · INDIGO PEUL
+   Inspiration : Farfetch, Maisons du Monde, tissage indigo Nord-Cameroun
+   Bleu-gris pâle / Indigo profond / Bouton indigo / Coins 6px carrés
+   ────────────────────────────────────────────────────────────────── */
+[data-theme="indigo"] {
+  --bg:                #EFF2FA;
+  --surface:           #FFFFFF;
+  --surface-2:         #E4E9F6;
+  --ink:               #0C1A3A;
+  --ink-2:             #4A5878;
+  --ink-3:             #8A98B8;
+  --accent:            #1D3F8E;
+  --accent-dark:       #122B6A;
+  --accent-muted:      #EBF0FB;
+  --border:            #CDD5EC;
+  --border-2:          #B0BCD8;
+  --dark:              #0C1A3A;
+  --btn-primary-bg:    #1D3F8E;
+  --btn-primary-hover: #122B6A;
+  --radius-card:       6px;
+  --radius-btn:        6px;
+  --shadow-card:       none;
+  --card-border:       1px solid var(--border);
+  --img-placeholder:   #DDE4F5;
+  --font-sans:         'Inter', system-ui, sans-serif;
+  --font-serif:        'Cormorant Garamond', Georgia, serif;
+  --section-gap: 28px; --card-pad: 20px; --grid-gap: 12px;
+  --space-xs: 8px; --space-sm: 16px; --space-md: 24px;
+  --space-lg: 40px; --space-xl: 64px;
+}
+@media (min-width: 640px)  { [data-theme="indigo"] { --section-gap:44px;--card-pad:28px;--grid-gap:16px;--space-lg:56px;--space-xl:88px; } }
+@media (min-width: 1024px) { [data-theme="indigo"] { --section-gap:64px;--space-lg:72px;--space-xl:112px; } }
 
-  /* Nouveaux tokens d'espacement */
-  --space-xs:    8px;
-  --space-sm:    16px;
-  --space-md:    24px;
-  --space-lg:    40px;
-  --space-xl:    64px;
+/* ──────────────────────────────────────────────────────────────────
+   THÈME D · CRÈME BRÛLÉE
+   Inspiration : Apple, Muji, galerie d'art contemporain
+   Blanc pur / Noir strict / Bouton noir carré / Coins 4px
+   Zéro ombre, zéro bruit, typographie dominante
+   ────────────────────────────────────────────────────────────────── */
+[data-theme="creme"] {
+  --bg:                #FAFAFA;
+  --surface:           #FFFFFF;
+  --surface-2:         #F5F4F2;
+  --ink:               #080706;
+  --ink-2:             #6B6560;
+  --ink-3:             #B0AAA4;
+  --accent:            #080706;
+  --accent-dark:       #302A26;
+  --accent-muted:      #F5F4F2;
+  --border:            #E8E5E0;
+  --border-2:          #D4D0CA;
+  --dark:              #080706;
+  --btn-primary-bg:    #080706;
+  --btn-primary-hover: #302A26;
+  --radius-card:       4px;
+  --radius-btn:        4px;
+  --shadow-card:       none;
+  --card-border:       1px solid var(--border);
+  --img-placeholder:   #F0EDE8;
+  --font-sans:         'Inter', system-ui, sans-serif;
+  --font-serif:        'Cormorant Garamond', Georgia, serif;
+  --section-gap: 28px; --card-pad: 20px; --grid-gap: 12px;
+  --space-xs: 8px; --space-sm: 16px; --space-md: 24px;
+  --space-lg: 40px; --space-xl: 64px;
 }
-@media (min-width: 640px) {
-  :root, [data-theme="sahel"] {
-    --section-gap: 44px;
-    --card-pad:    28px;
-    --grid-gap:    16px;
-    --space-lg:    56px;
-    --space-xl:    88px;
-  }
-}
-@media (min-width: 1024px) {
-  :root, [data-theme="sahel"] {
-    --section-gap: 64px;
-    --space-lg:    72px;
-    --space-xl:    112px;
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   THÈME B — Terracotta & Vivant
-   ══════════════════════════════════════════════════════════════════ */
-[data-theme="terracotta"] {
-  --bg:          #FEFAF6;
-  --surface:     #FFFFFF;
-  --surface-2:   #F7EDE2;
-  --ink:         #1C1208;
-  --ink-2:       #6B5040;
-  --ink-3:       #B89A88;
-  --accent:      #C2542A;
-  --accent-dark: #9E3F1A;
-  --accent-muted:#FEF1E8;
-  --border:      #EDE0D0;
-  --border-2:    #DDD0BC;
-  --dark:        #1C1208;
-  --btn-primary-bg:    #C2542A;
-  --btn-primary-hover: #9E3F1A;
-  --section-gap: 28px;
-  --card-pad:    20px;
-  --grid-gap:    12px;
-  --space-xs:    8px;
-  --space-sm:    16px;
-  --space-md:    24px;
-  --space-lg:    40px;
-  --space-xl:    64px;
-}
-@media (min-width: 640px) {
-  [data-theme="terracotta"] {
-    --section-gap: 44px;
-    --card-pad:    28px;
-    --grid-gap:    16px;
-    --space-lg:    56px;
-    --space-xl:    88px;
-  }
-}
-@media (min-width: 1024px) {
-  [data-theme="terracotta"] {
-    --section-gap: 64px;
-    --space-lg:    72px;
-    --space-xl:    112px;
-  }
-}
+@media (min-width: 640px)  { [data-theme="creme"] { --section-gap:44px;--card-pad:28px;--grid-gap:16px;--space-lg:56px;--space-xl:88px; } }
+@media (min-width: 1024px) { [data-theme="creme"] { --section-gap:64px;--space-lg:72px;--space-xl:112px; } }
 
 /* ── Base body ───────────────────────────────────────────────────── */
 body {
@@ -196,8 +249,9 @@ body {
 /* ── Cartes ──────────────────────────────────────────────────────── */
 .s-card {
   background: var(--surface);
-  border-radius: 20px;
-  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  border: var(--card-border);
+  box-shadow: var(--shadow-card);
   padding: var(--card-pad);
 }
 .s-gap    { margin-top: var(--section-gap); }
@@ -237,10 +291,22 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
-[data-theme="terracotta"] .skeleton {
-  background: linear-gradient(90deg,#EDE0D0 25%,#FEFAF6 50%,#EDE0D0 75%);
+[data-theme="maroua"] .skeleton {
+  background: linear-gradient(90deg, #F0DDD0 25%, #FFFDF8 50%, #F0DDD0 75%);
   background-size: 200% 100%;
 }
+[data-theme="indigo"] .skeleton {
+  background: linear-gradient(90deg, #CDD5EC 25%, #EFF2FA 50%, #CDD5EC 75%);
+  background-size: 200% 100%;
+}
+[data-theme="creme"] .skeleton {
+  background: linear-gradient(90deg, #E8E5E0 25%, #FAFAFA 50%, #E8E5E0 75%);
+  background-size: 200% 100%;
+}
+/* Placeholder image produit par thème */
+[data-theme="maroua"] .product-card-img { background: #F8E8DC; }
+[data-theme="indigo"]  .product-card-img { background: #DDE4F5; }
+[data-theme="creme"]   .product-card-img { background: #F0EDE8; }
 
 /* ── Layouts responsive ─────────────────────────────────────────── */
 .cart-layout-grid { display:grid; grid-template-columns:1fr; gap:20px; align-items:start; }
@@ -302,7 +368,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.04em;
   padding: 14px 28px;
-  border-radius: 100px;
+  border-radius: var(--radius-btn);
   border: none;
   cursor: pointer;
   transition: background .15s, transform .12s;
@@ -320,7 +386,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.04em;
   padding: 13px 28px;
-  border-radius: 100px;
+  border-radius: var(--radius-btn);
   border: 1.5px solid var(--btn-primary-bg);
   cursor: pointer;
   transition: all .15s;
