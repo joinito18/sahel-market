@@ -16,6 +16,8 @@ export function addRecentlyViewed(product) {
 }
 
 export function getRecentlyViewed() {
-  try { return JSON.parse(localStorage.getItem(KEY) || '[]') }
-  catch { return [] }
+  try {
+    const data = JSON.parse(localStorage.getItem(KEY) || '[]')
+    return Array.isArray(data) ? data.filter(p => p && p.id) : []
+  } catch { return [] }
 }
