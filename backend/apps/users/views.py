@@ -4,15 +4,91 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
 from .models import User, ProducerProfile, Message, PushSubscription
 from .serializers import RegisterSerializer, UserSerializer, UpdateProfileSerializer, ProducerProfileSerializer, MessageSerializer
 from django.db import models as djmodels
 from django.core.mail import send_mail
 from django.conf import settings
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email', '').strip().lower()
+        if not email:
+            return Response({'error': 'Email requis.'}, status=400)
+
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            # On renvoie toujours OK pour ne pas révéler si l'email existe
+            return Response({'message': 'Si cet email est associé à un compte, vous recevrez un lien de réinitialisation.'})
+
+        uid   = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'https://sahel-market-gamma.vercel.app')
+        reset_link   = f'{frontend_url}/reset-password/{uid}/{token}/'
+
+        try:
+            send_mail(
+                subject='Réinitialisation de votre mot de passe — Sahel Market',
+                message=f'''Bonjour {user.first_name or user.username},
+
+Vous avez demandé la réinitialisation de votre mot de passe Sahel Market.
+
+Cliquez sur le lien ci-dessous pour choisir un nouveau mot de passe (valable 24h) :
+{reset_link}
+
+Si vous n'avez pas fait cette demande, ignorez ce message.
+
+— L'équipe Sahel Market''',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except Exception:
+            return Response({'error': "Impossible d'envoyer l'email. Réessayez plus tard."}, status=500)
+
+        return Response({'message': 'Si cet email est associé à un compte, vous recevrez un lien de réinitialisation.'})
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        uid           = request.data.get('uid', '')
+        token         = request.data.get('token', '')
+        new_password  = request.data.get('new_password', '')
+        new_password2 = request.data.get('new_password2', '')
+
+        if not all([uid, token, new_password, new_password2]):
+            return Response({'error': 'Tous les champs sont requis.'}, status=400)
+
+        if new_password != new_password2:
+            return Response({'error': 'Les mots de passe ne correspondent pas.'}, status=400)
+
+        if len(new_password) < 8:
+            return Response({'error': 'Le mot de passe doit contenir au moins 8 caractères.'}, status=400)
+
+        try:
+            from django.utils.encoding import force_str
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user    = User.objects.get(pk=user_id)
+        except (TypeError, ValueError, User.DoesNotExist):
+            return Response({'error': 'Lien invalide ou expiré.'}, status=400)
+
+        if not default_token_generator.check_token(user, token):
+            return Response({'error': 'Lien invalide ou expiré.'}, status=400)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Mot de passe réinitialisé avec succès.'})
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()

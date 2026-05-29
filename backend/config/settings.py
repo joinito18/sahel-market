@@ -194,6 +194,8 @@ VAPID_PUBLIC_KEY  = env('VAPID_PUBLIC_KEY',  default='BLiARJVGKmM3RjRRwuh-y5UElP
 VAPID_PRIVATE_KEY = env('VAPID_PRIVATE_KEY', default='').replace('\\n', '\n')
 VAPID_EMAIL       = env('VAPID_EMAIL',       default='sahelmarket@gmail.com')
 
+FRONTEND_URL = env('FRONTEND_URL', default='https://sahel-market-gamma.vercel.app')
+
 # ── Sécurité production (ignoré en DEBUG) ────────────────────────────
 if not DEBUG:
     SECURE_SSL_REDIRECT          = True

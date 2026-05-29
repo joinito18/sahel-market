@@ -18,6 +18,8 @@ from .views import (
     ThreadView,
     PushSubscribeView,
     VapidPublicKeyView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
 )
 
 urlpatterns = [
@@ -50,6 +52,10 @@ urlpatterns = [
     # Messagerie
     path('messages/', ConversationsView.as_view(), name='conversations'),
     path('messages/<int:user_id>/', ThreadView.as_view(), name='thread'),
+
+    # Réinitialisation mot de passe
+    path('password-reset/',         PasswordResetRequestView.as_view(), name='password-reset'),
+    path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
 
     # Push notifications PWA
     path('push-subscribe/', PushSubscribeView.as_view(), name='push-subscribe'),
