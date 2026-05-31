@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/delivery/',  include('apps.delivery.urls')),
     path('api/agents/',    include('apps.agents.urls')),
     path('api/dashboard/', include('apps.dashboard.urls')),
+    path('api/ai/',        include('apps.ai.urls')),
 ] + spectacular_urls + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
