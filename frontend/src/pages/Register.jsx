@@ -45,7 +45,7 @@ const producerSchema = z.object({
 function Field({ label, error, children, required = true, hint }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+      <label className="block text-sm font-semibold text-gray-700 mb-2.5">
         {label}
         {!required && (
           <span className="ml-1.5 text-xs font-normal text-gray-400">(facultatif)</span>
@@ -53,10 +53,10 @@ function Field({ label, error, children, required = true, hint }) {
       </label>
       {children}
       {hint && !error && (
-        <p className="text-xs text-gray-400 mt-1">{hint}</p>
+        <p className="text-xs text-gray-400 mt-2">{hint}</p>
       )}
       {error && (
-        <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+        <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
           <X size={10} /> {error}
         </p>
       )}
@@ -64,7 +64,7 @@ function Field({ label, error, children, required = true, hint }) {
   )
 }
 
-// ─── Input stylisé (CORRIGÉ avec forwardRef) ───────────────────────
+// ─── Input stylisé ─────────────────────────────────────────────────
 const Input = forwardRef(({ icon: Icon, error, type = 'text', ...props }, ref) => {
   const [showPwd, setShowPwd] = useState(false)
   const isPassword = type === 'password'
@@ -76,11 +76,11 @@ const Input = forwardRef(({ icon: Icon, error, type = 'text', ...props }, ref) =
           className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
       )}
       <input
-        ref={ref}  // ← AJOUT CRUCIAL
+        ref={ref}
         type={isPassword ? (showPwd ? 'text' : 'password') : type}
         {...props}
         className={`w-full ${Icon ? 'pl-10' : 'pl-4'} ${isPassword ? 'pr-10' : 'pr-4'}
-                    py-3 text-sm border rounded-xl outline-none transition-all
+                    py-3.5 text-sm border rounded-xl outline-none transition-all
                     bg-white text-gray-800 placeholder-gray-400
                     ${error
                       ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100'
@@ -258,9 +258,9 @@ function ClientForm({ onBack, onSuccess }) {
     <motion.div
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
-      className="space-y-5"
+      className="space-y-7"
     >
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-8">
         <button onClick={onBack}
           className="w-9 h-9 rounded-xl border border-gray-200 flex items-center
                      justify-center hover:bg-gray-50 transition-colors">
@@ -278,7 +278,7 @@ function ClientForm({ onBack, onSuccess }) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Field label="Votre nom complet" error={errors.first_name?.message}>
           <Input icon={User} placeholder="Ex : Fatima Oumarou"
             error={errors.first_name} {...register('first_name')} />
@@ -289,7 +289,7 @@ function ClientForm({ onBack, onSuccess }) {
             error={errors.phone} {...register('phone')} />
         </Field>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <Field label="Mot de passe" error={errors.password?.message}
             hint="Minimum 8 caractères">
             <Input icon={Lock} placeholder="••••••••" type="password"
@@ -303,7 +303,7 @@ function ClientForm({ onBack, onSuccess }) {
 
         {/* Code de parrainage */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-sm font-semibold text-gray-700 mb-2.5">
             Code de parrainage <span className="text-gray-400 font-normal">(facultatif)</span>
           </label>
           <div className="relative">
@@ -543,7 +543,7 @@ function ProducerForm({ onBack }) {
       animate={{ opacity: 1, x: 0 }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-8">
         <button onClick={step === 1 ? onBack : () => setStep(s => s - 1)}
           className="w-9 h-9 rounded-xl border border-gray-200 flex items-center
                      justify-center hover:bg-gray-50 transition-colors flex-shrink-0">
@@ -586,7 +586,7 @@ function ProducerForm({ onBack }) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-4">
+              className="space-y-6">
 
               {/* Photo de profil */}
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl
@@ -651,7 +651,7 @@ function ProducerForm({ onBack }) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-4">
+              className="space-y-6">
 
               <Field label="Votre spécialité artisanale" error={errors.speciality?.message}
                 hint="Ex: Maroquinerie, Poterie, Bijouterie, Tissage...">
@@ -665,7 +665,7 @@ function ProducerForm({ onBack }) {
                   error={errors.years_experience} {...register('years_experience')} />
               </Field>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <Field label="Mot de passe" error={errors.password?.message}
                   hint="Minimum 8 caractères">
                   <Input icon={Lock} placeholder="••••••••" type="password"
@@ -690,7 +690,7 @@ function ProducerForm({ onBack }) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-5">
+              className="space-y-6">
 
               <div className="bg-green-50 border border-green-100 rounded-2xl p-4">
                 <p className="text-sm font-semibold text-green-800 mb-0.5">
@@ -841,7 +841,7 @@ export default function Register() {
           </p>
 
           {/* Avantages */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             {[
               { icon: '🎁', text: '3 mois d\'accompagnement offerts' },
               { icon: '🔒', text: 'Paiements sécurisés en FCFA'     },
@@ -862,7 +862,7 @@ export default function Register() {
 
       {/* Panneau droit — formulaire */}
       <div className="w-full lg:w-1/2 flex items-center justify-center
-                      px-6 py-10 overflow-y-auto">
+                      px-8 py-14 overflow-y-auto">
         <div className="w-full max-w-md">
           <AnimatePresence mode="wait">
             {!role && (
