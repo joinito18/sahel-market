@@ -8,7 +8,22 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Passer phone en null=True pour les utilisateurs existants sans numéro
+        # Nullifier les doublons de téléphone avant d'appliquer l'unicité
+        # (garde le compte avec le plus petit id pour chaque numéro)
+        migrations.RunSQL(
+            sql="""
+                UPDATE users_user
+                SET phone = NULL
+                WHERE id NOT IN (
+                    SELECT MIN(id)
+                    FROM users_user
+                    WHERE phone IS NOT NULL AND phone <> ''
+                    GROUP BY phone
+                )
+                AND phone IS NOT NULL AND phone <> '';
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.AlterField(
             model_name='user',
             name='phone',
