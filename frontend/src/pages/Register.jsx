@@ -45,7 +45,7 @@ const producerSchema = z.object({
 function Field({ label, error, children, required = true, hint }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-2.5">
+      <label className="block text-sm font-semibold text-gray-700 mb-3">
         {label}
         {!required && (
           <span className="ml-1.5 text-xs font-normal text-gray-400">(facultatif)</span>
@@ -80,7 +80,7 @@ const Input = forwardRef(({ icon: Icon, error, type = 'text', ...props }, ref) =
         type={isPassword ? (showPwd ? 'text' : 'password') : type}
         {...props}
         className={`w-full ${Icon ? 'pl-10' : 'pl-4'} ${isPassword ? 'pr-10' : 'pr-4'}
-                    py-3.5 text-sm border rounded-xl outline-none transition-all
+                    py-4 text-sm border rounded-xl outline-none transition-all
                     bg-white text-gray-800 placeholder-gray-400
                     ${error
                       ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100'
@@ -106,9 +106,9 @@ function StepRole({ onSelect }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
+      className="space-y-8"
     >
-      <div className="text-center mb-8">
+      <div className="text-center mb-10">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Bienvenue sur Sahel Market
         </h2>
@@ -258,9 +258,9 @@ function ClientForm({ onBack, onSuccess }) {
     <motion.div
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
-      className="space-y-7"
+      className="space-y-9"
     >
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-10">
         <button onClick={onBack}
           className="w-9 h-9 rounded-xl border border-gray-200 flex items-center
                      justify-center hover:bg-gray-50 transition-colors">
@@ -278,7 +278,7 @@ function ClientForm({ onBack, onSuccess }) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <Field label="Votre nom complet" error={errors.first_name?.message}>
           <Input icon={User} placeholder="Ex : Fatima Oumarou"
             error={errors.first_name} {...register('first_name')} />
@@ -289,7 +289,7 @@ function ClientForm({ onBack, onSuccess }) {
             error={errors.phone} {...register('phone')} />
         </Field>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
           <Field label="Mot de passe" error={errors.password?.message}
             hint="Minimum 8 caractères">
             <Input icon={Lock} placeholder="••••••••" type="password"
@@ -303,7 +303,7 @@ function ClientForm({ onBack, onSuccess }) {
 
         {/* Code de parrainage */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2.5">
+          <label className="block text-sm font-semibold text-gray-700 mb-3">
             Code de parrainage <span className="text-gray-400 font-normal">(facultatif)</span>
           </label>
           <div className="relative">
@@ -543,7 +543,7 @@ function ProducerForm({ onBack }) {
       animate={{ opacity: 1, x: 0 }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-10">
         <button onClick={step === 1 ? onBack : () => setStep(s => s - 1)}
           className="w-9 h-9 rounded-xl border border-gray-200 flex items-center
                      justify-center hover:bg-gray-50 transition-colors flex-shrink-0">
@@ -586,7 +586,7 @@ function ProducerForm({ onBack }) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-6">
+              className="space-y-8">
 
               {/* Photo de profil */}
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl
@@ -651,7 +651,7 @@ function ProducerForm({ onBack }) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-6">
+              className="space-y-8">
 
               <Field label="Votre spécialité artisanale" error={errors.speciality?.message}
                 hint="Ex: Maroquinerie, Poterie, Bijouterie, Tissage...">
@@ -665,7 +665,7 @@ function ProducerForm({ onBack }) {
                   error={errors.years_experience} {...register('years_experience')} />
               </Field>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <Field label="Mot de passe" error={errors.password?.message}
                   hint="Minimum 8 caractères">
                   <Input icon={Lock} placeholder="••••••••" type="password"
@@ -690,7 +690,7 @@ function ProducerForm({ onBack }) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="space-y-6">
+              className="space-y-8">
 
               <div className="bg-green-50 border border-green-100 rounded-2xl p-4">
                 <p className="text-sm font-semibold text-green-800 mb-0.5">
@@ -841,7 +841,7 @@ export default function Register() {
           </p>
 
           {/* Avantages */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {[
               { icon: '🎁', text: '3 mois d\'accompagnement offerts' },
               { icon: '🔒', text: 'Paiements sécurisés en FCFA'     },
@@ -862,7 +862,7 @@ export default function Register() {
 
       {/* Panneau droit — formulaire */}
       <div className="w-full lg:w-1/2 flex items-center justify-center
-                      px-8 py-14 overflow-y-auto">
+                      px-10 py-16 overflow-y-auto">
         <div className="w-full max-w-md">
           <AnimatePresence mode="wait">
             {!role && (

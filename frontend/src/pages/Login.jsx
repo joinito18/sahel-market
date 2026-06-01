@@ -50,7 +50,7 @@ export default function Login() {
         <div style={{ position: 'absolute', width: 240, height: 240, borderRadius: '50%', background: 'rgba(249,115,22,0.06)', bottom: -60, left: -60 }} />
 
         <div style={{ position: 'relative' }}>
-          <p style={{ fontSize: 10, fontWeight: 700, color: '#6b6b6b', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 40 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: '#6b6b6b', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 52 }}>
             Artisanat Camerounais
           </p>
           <h1 className="display-2" style={{ color: '#fff', marginBottom: 24 }}>
@@ -78,18 +78,18 @@ export default function Login() {
       {/* ── Panneau droit — formulaire ───────────────── */}
       <div style={{
         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '60px 32px', background: 'var(--bg)',
+        padding: "72px 40px", background: 'var(--bg)',
       }}>
         <div style={{ width: '100%', maxWidth: 420 }}>
 
           {/* Logo */}
-          <Link to="/" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: 52 }}>
+          <Link to="/" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: 64 }}>
             <span className="serif-lg" style={{ letterSpacing: '-0.02em' }}>Sahel<em>Market</em></span>
           </Link>
 
           {/* Titre */}
-          <h2 className="serif-xl" style={{ marginBottom: 10 }}>Connexion</h2>
-          <p style={{ fontSize: 14, color: 'var(--ink-3)', marginBottom: 40, lineHeight: 1.6 }}>
+          <h2 className="serif-xl" style={{ marginBottom: 16 }}>Connexion</h2>
+          <p style={{ fontSize: 14, color: 'var(--ink-3)', marginBottom: 52, lineHeight: 1.6 }}>
             Pas encore de compte ?{' '}
             <Link to="/register" style={{ color: 'var(--ink)', fontWeight: 700, textDecoration: 'underline' }}>
               S'inscrire gratuitement
@@ -100,7 +100,7 @@ export default function Login() {
           {err && (
             <div style={{
               background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12,
-              padding: '14px 18px', marginBottom: 28,
+              padding: '14px 18px', marginBottom: 36,
               display: 'flex', gap: 10, fontSize: 13, color: '#DC2626', alignItems: 'flex-start',
             }}>
               <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 2 }} />
@@ -109,7 +109,7 @@ export default function Login() {
           )}
 
           {/* Formulaire */}
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
             {/* Téléphone */}
             <div>
