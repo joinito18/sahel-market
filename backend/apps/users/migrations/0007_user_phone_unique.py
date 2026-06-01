@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
         # (garde le compte avec le plus petit id pour chaque numéro)
         migrations.RunSQL(
             sql="""
+                ALTER TABLE users_user ALTER COLUMN phone DROP NOT NULL;
                 UPDATE users_user
                 SET phone = NULL
                 WHERE id NOT IN (
