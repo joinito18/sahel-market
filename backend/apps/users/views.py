@@ -394,3 +394,32 @@ class VapidPublicKeyView(APIView):
     def get(self, request):
         from django.conf import settings
         return Response({'public_key': getattr(settings, 'VAPID_PUBLIC_KEY', '')})
+
+
+class ReferralView(APIView):
+    """Infos de parrainage de l'utilisateur connecté."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'https://sahel-market-gamma.vercel.app')
+        return Response({
+            'code':           user.referral_code,
+            'link':           f'{frontend_url}/register?ref={user.referral_code}',
+            'referral_count': user.referral_count,
+            'points_earned':  user.referral_points_earned,
+        })
+
+
+class ValidateReferralCodeView(APIView):
+    """Vérifie qu'un code de parrainage est valide (utilisé depuis l'inscription)."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        code = request.query_params.get('code', '').strip().upper()
+        if not code:
+            return Response({'valid': False})
+        user = User.objects.filter(referral_code=code).first()
+        if user:
+            return Response({'valid': True, 'parrain': user.first_name or user.username})
+        return Response({'valid': False})

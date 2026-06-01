@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Camera, Check, AlertCircle, LogOut, ShoppingBag, User, Star, Gift } from 'lucide-react'
+import { Camera, Check, AlertCircle, LogOut, ShoppingBag, User, Star, Gift, Copy, Users } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../services/auth.service.js'
 import { updateUser, logout } from '../store/authSlice.js'
+import toast from 'react-hot-toast'
 
 const OR = '#2D6A4F'
 const BG = '#f0f2f5'
@@ -33,6 +34,11 @@ export default function Profile() {
   const [saving, setSaving]   = useState(false)
   const [saved, setSaved]     = useState(false)
   const [err, setErr]         = useState(null)
+  const [referral, setReferral] = useState(null)
+
+  useEffect(() => {
+    authService.getReferral().then(r => setReferral(r.data)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (user) setForm({
@@ -245,6 +251,54 @@ export default function Profile() {
             </div>
           )
         })()}
+        )}
+
+        {/* Section parrainage */}
+        {referral && (
+          <div style={{ background: 'linear-gradient(135deg, #fff7ed, #fff)', borderRadius: 20, border: '1px solid #fed7aa', padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: '#fff7ed', border: '1px solid #fed7aa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Gift size={18} color="#f97316" />
+              </div>
+              <div>
+                <p style={{ fontWeight: 800, fontSize: 14, color: '#111' }}>Inviter un ami</p>
+                <p style={{ fontSize: 11, color: '#9ca3af' }}>Vous gagnez 100 pts · votre ami gagne 50 pts</p>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+              <div style={{ flex: 1, background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', padding: '10px 14px', textAlign: 'center' }}>
+                <p style={{ fontSize: 22, fontWeight: 900, color: '#f97316' }}>{referral.referral_count}</p>
+                <p style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600 }}>Ami(s) parrainé(s)</p>
+              </div>
+              <div style={{ flex: 1, background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', padding: '10px 14px', textAlign: 'center' }}>
+                <p style={{ fontSize: 22, fontWeight: 900, color: '#2D6A4F' }}>{referral.points_earned}</p>
+                <p style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600 }}>Points gagnés</p>
+              </div>
+            </div>
+
+            {/* Code */}
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Votre code personnel</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1, background: '#f9fafb', border: '1px dashed #d1d5db', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 900, letterSpacing: '0.15em', color: '#111' }}>{referral.code}</span>
+              </div>
+              <button
+                onClick={() => { navigator.clipboard.writeText(referral.link); toast.success('Lien copié !') }}
+                style={{ padding: '10px 14px', background: '#111', borderRadius: 10, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#fff', fontSize: 12, fontWeight: 700 }}>
+                <Copy size={14} /> Copier
+              </button>
+            </div>
+
+            {/* Partage WhatsApp */}
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`🌿 Découvre Sahel Market, la marketplace artisanale camerounaise ! Utilise mon code ${referral.code} à l'inscription pour recevoir +50 points de bienvenue : ${referral.link}`)}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10, padding: '11px', background: '#25D366', color: '#fff', borderRadius: 12, textDecoration: 'none', fontSize: 13, fontWeight: 700 }}>
+              <Users size={15} /> Inviter via WhatsApp
+            </a>
+          </div>
         )}
 
         {/* Historique commandes */}

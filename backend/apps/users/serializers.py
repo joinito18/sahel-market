@@ -3,13 +3,14 @@ from django.contrib.auth.password_validation import validate_password
 from .models import User, ProducerProfile, Message
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password  = serializers.CharField(write_only=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True)
-    phone     = serializers.CharField(required=True)
+    password      = serializers.CharField(write_only=True, validators=[validate_password])
+    password2     = serializers.CharField(write_only=True)
+    phone         = serializers.CharField(required=True)
+    referral_code = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model  = User
-        fields = ['username', 'first_name', 'phone', 'password', 'password2', 'role', 'address']
+        fields = ['username', 'first_name', 'phone', 'password', 'password2', 'role', 'address', 'referral_code']
         extra_kwargs = {'username': {'required': False}}
 
     def validate_phone(self, value):
@@ -25,9 +26,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password2')
+        referral_code = validated_data.pop('referral_code', '').strip().upper()
         phone = validated_data.get('phone', '')
 
-        # Auto-générer le username depuis le numéro si absent
         if not validated_data.get('username'):
             digits = ''.join(filter(str.isdigit, phone))
             base = f'user_{digits}'
@@ -43,19 +44,37 @@ class RegisterSerializer(serializers.ModelSerializer):
             validated_data['is_active']   = True
             validated_data['is_verified'] = False
 
+        # Appliquer le parrainage
+        parrain = None
+        if referral_code:
+            parrain = User.objects.filter(referral_code=referral_code).first()
+            if parrain:
+                validated_data['referred_by'] = parrain
+                validated_data['loyalty_points'] = 50  # bonus filleul
+
         user = User.objects.create_user(**validated_data)
+
+        # Créditer le parrain
+        if parrain:
+            parrain.loyalty_points += 100
+            parrain.save(update_fields=['loyalty_points'])
+
         return user
 
 class UserSerializer(serializers.ModelSerializer):
-    loyalty_value = serializers.SerializerMethodField()
+    loyalty_value        = serializers.SerializerMethodField()
+    referral_count       = serializers.IntegerField(read_only=True)
+    referral_points_earned = serializers.IntegerField(read_only=True)
 
     class Meta:
         model  = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'role',
                   'phone', 'address', 'avatar', 'is_verified', 'whatsapp',
-                  'date_joined', 'loyalty_points', 'loyalty_value']
+                  'date_joined', 'loyalty_points', 'loyalty_value',
+                  'referral_code', 'referral_count', 'referral_points_earned']
         read_only_fields = ['id', 'role', 'is_verified', 'date_joined',
-                            'loyalty_points', 'loyalty_value']
+                            'loyalty_points', 'loyalty_value',
+                            'referral_code', 'referral_count', 'referral_points_earned']
 
     def get_loyalty_value(self, obj):
         return (obj.loyalty_points // 100) * 500

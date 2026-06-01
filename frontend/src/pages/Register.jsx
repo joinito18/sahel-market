@@ -1,15 +1,15 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useRef, forwardRef } from 'react'  // ← forwardRef ajouté
+import { useState, useRef, forwardRef, useEffect } from 'react'
 import {
   Lock, Phone, MapPin, User,
   Store, ShoppingBag, ArrowRight, ArrowLeft,
   Upload, X, Check, Eye, EyeOff,
-  FileText, Camera
+  FileText, Camera, Gift
 } from 'lucide-react'
 import { setCredentials } from '../store/authSlice.js'
 import { authService } from '../services/auth.service.js'
@@ -207,18 +207,46 @@ function StepRole({ onSelect }) {
 // ─── Formulaire client (CORRIGÉ) ───────────────────────────────────
 function ClientForm({ onBack, onSuccess }) {
   const dispatch = useDispatch()
-  const navigate = useNavigate()  // ← CORRIGÉ (était useDispatch)
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [referralInfo, setReferralInfo] = useState(null)
+  const [checkingCode, setCheckingCode] = useState(false)
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(clientSchema),
   })
+
+  const referralCodeValue = watch('referral_code', '')
+
+  // Pré-remplir le code depuis l'URL (?ref=CODE)
+  useEffect(() => {
+    const refFromUrl = searchParams.get('ref')
+    if (refFromUrl) {
+      setValue('referral_code', refFromUrl.toUpperCase())
+      validateCode(refFromUrl.toUpperCase())
+    }
+  }, [])
+
+  const validateCode = async (code) => {
+    if (!code || code.length < 6) { setReferralInfo(null); return }
+    setCheckingCode(true)
+    try {
+      const { data } = await authService.validateReferral(code)
+      setReferralInfo(data.valid ? data : null)
+    } catch { setReferralInfo(null) }
+    finally { setCheckingCode(false) }
+  }
 
   const onSubmit = async (data) => {
     try {
       const res = await authService.register({ ...data, role: 'client' })
       dispatch(setCredentials(res.data))
-      toast.success('Compte créé ! Bienvenue 🎉')
-      navigate('/')  // ← CORRIGÉ (était nav)
+      if (data.referral_code && referralInfo?.valid) {
+        toast.success('Compte créé ! +50 points de bienvenue offerts 🎁')
+      } else {
+        toast.success('Compte créé ! Bienvenue 🎉')
+      }
+      navigate('/')
     } catch (err) {
       const errs = err.response?.data
       if (errs) Object.values(errs).flat().forEach(e => toast.error(e))
@@ -271,6 +299,42 @@ function ClientForm({ onBack, onSuccess }) {
             <Input icon={Lock} placeholder="••••••••" type="password"
               error={errors.password2} {...register('password2')} />
           </Field>
+        </div>
+
+        {/* Code de parrainage */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            Code de parrainage <span className="text-gray-400 font-normal">(facultatif)</span>
+          </label>
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Gift size={16} />
+            </div>
+            <input
+              {...register('referral_code')}
+              placeholder="Ex : SAH7K2P1"
+              onChange={e => {
+                const v = e.target.value.toUpperCase()
+                setValue('referral_code', v)
+                validateCode(v)
+              }}
+              className="w-full pl-10 pr-10 py-2.5 border rounded-xl text-sm outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-300 transition uppercase tracking-widest"
+            />
+            {checkingCode && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+            )}
+            {!checkingCode && referralInfo?.valid && (
+              <Check size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500" />
+            )}
+          </div>
+          {referralInfo?.valid && (
+            <p className="mt-1.5 text-xs text-green-600 font-medium flex items-center gap-1">
+              <Gift size={11} /> Code valide — invité par {referralInfo.parrain} · vous recevrez +50 points 🎁
+            </p>
+          )}
+          {referralCodeValue?.length >= 6 && !checkingCode && referralInfo === null && (
+            <p className="mt-1.5 text-xs text-red-500">Code invalide ou inexistant</p>
+          )}
         </div>
 
         <button type="submit" disabled={isSubmitting}

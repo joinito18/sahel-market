@@ -20,6 +20,8 @@ from .views import (
     VapidPublicKeyView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
+    ReferralView,
+    ValidateReferralCodeView,
 )
 
 urlpatterns = [
@@ -60,4 +62,8 @@ urlpatterns = [
     # Push notifications PWA
     path('push-subscribe/', PushSubscribeView.as_view(), name='push-subscribe'),
     path('push-vapid-key/', VapidPublicKeyView.as_view(), name='vapid-key'),
+
+    # Parrainage
+    path('referral/',          ReferralView.as_view(),             name='referral'),
+    path('referral/validate/', ValidateReferralCodeView.as_view(), name='referral-validate'),
 ]

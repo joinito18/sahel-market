@@ -1,5 +1,9 @@
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+def generate_referral_code():
+    return uuid.uuid4().hex[:8].upper()
 
 class User(AbstractUser):
     ROLES = [
@@ -16,6 +20,19 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     whatsapp = models.CharField(max_length=20, blank=True)
     loyalty_points = models.PositiveIntegerField(default=0)
+    referral_code = models.CharField(max_length=10, unique=True, default=generate_referral_code)
+    referred_by = models.ForeignKey(
+        'self', null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='referrals'
+    )
+
+    @property
+    def referral_count(self):
+        return self.referrals.count()
+
+    @property
+    def referral_points_earned(self):
+        return self.referrals.count() * 100
 
     class Meta:
         verbose_name = 'Utilisateur'
