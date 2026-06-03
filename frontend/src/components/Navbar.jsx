@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   ShoppingBag, User, LogOut, LayoutDashboard,
   Search, ChevronDown, Package, Grid3x3, Heart,
-  Bell, CheckCheck, ShoppingCart, MessageCircle
+  Bell, CheckCheck, ShoppingCart, MessageCircle, MapPin
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -338,6 +338,21 @@ export default function Navbar() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Carte des artisans */}
+        <Link to="/artisans"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 12px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+            color: '#111111', textDecoration: 'none', whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}
+          onMouseEnter={e => e.currentTarget.style.background = '#F5F4EF'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+        >
+          <MapPin size={14} />
+          Artisans
+        </Link>
 
         {/* Barre de recherche */}
         <form onSubmit={handleSearch} style={{ flex: 1, maxWidth: 520 }}>
