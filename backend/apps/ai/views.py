@@ -11,83 +11,104 @@ BASE_PROMPT = """Tu es l'assistante IA de Sahel Market — une marketplace artis
 Ton identité : tu es "l'assistante Sahel Market". Ne te présente jamais autrement.
 
 ━━━ TON RÔLE ━━━
-- Guider les clients dans leurs achats et les aider à trouver le bon produit
-- Donner des liens directs vers les pages produits quand un client cherche quelque chose
-- Expliquer les savoir-faire et traditions artisanales africaines
-- Informer sur les commandes, la livraison et le paiement
-- Recommander des produits selon les besoins exprimés par le client
+Tu es un véritable concierge d'achat artisanal. Ton objectif est d'aider chaque client à trouver exactement ce qu'il cherche, en lui proposant des liens directs vers les produits et pages pertinentes. Tu ne te contentes pas de répondre — tu guides, tu recommandes, tu accompagnes.
 
 ━━━ NAVIGATION DU SITE ━━━
-- Catalogue complet       : /products
-- Recherche par mot-clé   : /products?q=MOT
-- Filtre par catégorie    : /products?category=ID
-- Page d'un produit       : /products/ID
-- Comment ça marche       : /how-it-works
-- Devenir artisan         : /register
-- Mes commandes           : /orders
-- Mon profil / points     : /profile
-- Panier                  : (bouton panier en haut de la page)
+- Catalogue complet        : /products
+- Recherche par mot-clé    : /products?q=MOT
+- Filtre par catégorie     : /products?category=ID_CATEGORIE
+- Page d'un produit        : /products/ID_PRODUIT
+- Comment ça marche        : /how-it-works
+- Devenir artisan          : /register
+- Mes commandes            : /orders
+- Mon profil / points      : /profile
 
 ━━━ FORMAT DES LIENS ━━━
-Quand tu mentionnes un produit ou une page, crée un lien en Markdown :
-[Nom du produit ou de la page](/chemin)
+Toujours créer des liens Markdown pour les produits et pages :
+[Nom affiché](/chemin)
 Exemples :
-- [Voir ce bogolan](/products/45)
-- [Explorer le catalogue textile](/products?q=textile)
-- [Comment ça marche](/how-it-works)
+  [Voir ce bogolan](/products/45)
+  [Textiles traditionnels](/products?category=2)
+  [Tout le catalogue](/products)
+  [Comment ça marche](/how-it-works)
 
 ━━━ INFOS PRATIQUES ━━━
 - Livraison partout au Cameroun (Yaoundé, Douala, Bafoussam, Maroua et plus)
 - Paiement : Orange Money, MTN Mobile Money, espèces à la livraison
-- Programme fidélité : points à chaque achat — niveaux Bronze, Argent, Or
+- Programme fidélité : points à chaque achat — Bronze, Argent, Or
 - Tous les artisans sont vérifiés physiquement par un agent Sahel Market
-- Les produits sont fabriqués à la main avec des matériaux locaux
+- Les produits sont fabriqués à la main, matériaux locaux, techniques ancestrales
 
 ━━━ RÈGLES ━━━
 - Réponds en français par défaut, en anglais si le client écrit en anglais
-- Réponses concises (3-5 phrases) sauf si l'utilisateur demande plus de détails
-- Si tu ne connais pas le stock ou le prix exact, renvoie vers la page produit
-- Quand le client cherche quelque chose, propose toujours au moins un lien concret
-- Tu es chaleureuse, professionnelle et passionnée par l'artisanat africain
+- Réponds de manière chaleureuse et guidante (4-6 phrases) — tu es un concierge, pas un FAQ
+- Si quelqu'un cherche un produit, propose toujours au moins 2-3 liens concrets du catalogue
+- Si quelqu'un hésite, pose-lui une question pour affiner sa recherche
+- Ne mens jamais sur les prix ou stocks — renvoie vers la page produit pour confirmation
+- Si une catégorie correspond à la demande, propose le lien filtré /products?category=ID
 """
 
 
 def _build_catalog_context():
-    """Construit le contexte catalogue depuis la base de données."""
+    """Construit le contexte catalogue, catégories et ventes flash depuis la BDD."""
     try:
-        from apps.products.models import Product
+        from apps.products.models import Product, Category
+        from django.utils import timezone
+
+        # ── Catégories ──────────────────────────────────────────────────────
+        categories = Category.objects.all().order_by('name')
+        cat_lines = ["━━━ CATÉGORIES (utilise l'ID pour former /products?category=ID) ━━━"]
+        for c in categories:
+            cat_lines.append(f"ID:{c.id} | {c.name}")
+
+        # ── Ventes flash actives ─────────────────────────────────────────────
+        now = timezone.now()
+        flash_products = Product.objects.filter(
+            is_available=True,
+            stock__gt=0,
+            flash_price__isnull=False,
+            flash_end__gt=now,
+        ).select_related('category', 'producer').order_by('-views_count')[:8]
+
+        flash_lines = []
+        if flash_products.exists():
+            flash_lines.append("\n━━━ VENTES FLASH EN COURS (prix réduits, durée limitée) ━━━")
+            for p in flash_products:
+                prix_normal = f"{int(p.price):,} FCFA".replace(',', ' ')
+                prix_flash  = f"{int(p.flash_price):,} FCFA".replace(',', ' ')
+                flash_lines.append(
+                    f"ID:{p.id} | {p.name} | Flash : {prix_flash} (normal : {prix_normal})"
+                )
+            flash_lines.append("→ Mentionne ces offres en priorité si elles correspondent à la demande.")
+
+        # ── Catalogue principal ──────────────────────────────────────────────
         products = (
             Product.objects
             .filter(is_available=True, stock__gt=0)
             .select_related('category', 'producer')
             .order_by('-views_count')[:40]
         )
-        if not products:
-            return ""
 
-        lines = ["━━━ CATALOGUE ACTUEL (produits disponibles) ━━━"]
+        prod_lines = ["\n━━━ CATALOGUE ACTUEL (top 40 produits disponibles) ━━━"]
         for p in products:
-            price = f"{int(p.price):,} FCFA".replace(',', ' ')
-            cat   = p.category.name if p.category else "Artisanat"
-            producer_name = (
-                p.producer.first_name or p.producer.username
-                if p.producer else ""
-            )
-            line = f"ID:{p.id} | {p.name} | {cat} | {price}"
-            if producer_name:
-                line += f" | artisan : {producer_name}"
-            lines.append(line)
+            prix = f"{int(p.flash_price if p.flash_price and p.flash_end and p.flash_end > now else p.price):,} FCFA".replace(',', ' ')
+            cat  = p.category.name if p.category else "Artisanat"
+            art  = p.producer.first_name or p.producer.username if p.producer else ""
+            line = f"ID:{p.id} | {p.name} | {cat} | {prix}"
+            if art:
+                line += f" | Artisan : {art}"
+            prod_lines.append(line)
 
-        lines.append(
-            "\nPour chaque produit mentionné, génère le lien /products/{ID} correspondant."
-        )
-        return "\n".join(lines)
+        prod_lines.append("\n→ Pour chaque produit mentionné, crée le lien /products/{ID}.")
+
+        return "\n".join(cat_lines) + "\n".join(flash_lines) + "\n".join(prod_lines)
+
     except Exception:
         return ""
 
 
 def _build_system_prompt(user_context: dict) -> str:
-    prompt = BASE_PROMPT
+    prompt  = BASE_PROMPT
     catalog = _build_catalog_context()
     if catalog:
         prompt += "\n\n" + catalog
@@ -96,27 +117,25 @@ def _build_system_prompt(user_context: dict) -> str:
     connected = user_context.get('authenticated', False)
     page      = user_context.get('current_page', '')
 
-    ctx_lines = ["━━━ CONTEXTE SESSION ━━━"]
-    ctx_lines.append(f"Client connecté : {'Oui' if connected else 'Non'}")
+    lines = ["\n━━━ CONTEXTE SESSION ━━━"]
+    lines.append(f"Client connecté : {'Oui' if connected else 'Non'}")
     if name:
-        ctx_lines.append(f"Prénom du client : {name}")
+        lines.append(f"Prénom : {name} — interpelle-le par son prénom si pertinent")
     if page:
-        ctx_lines.append(f"Page actuelle : {page}")
+        lines.append(f"Page actuelle : {page}")
     if not connected:
-        ctx_lines.append(
-            "Le client n'est pas connecté — si pertinent, suggère /register ou /login."
-        )
+        lines.append("Client non connecté → si pertinent, suggère /register ou /login.")
 
-    prompt += "\n\n" + "\n".join(ctx_lines)
+    prompt += "\n".join(lines)
     return prompt
 
 
 _MOCK_RESPONSES = [
-    "Bonjour ! Sahel Market propose une belle sélection de textiles traditionnels : bogolan, tie-dye, broderies faites à la main. Je vous invite à [explorer le catalogue](/products) pour trouver votre bonheur !",
-    "La livraison est disponible partout au Cameroun. Vous pouvez payer par Orange Money, MTN Mobile Money, ou en espèces à la livraison. Votre commande est suivie en temps réel depuis [vos commandes](/orders).",
-    "Nos artisans sont vérifiés physiquement par un agent Sahel Market. Chaque produit est fabriqué à la main avec des matériaux locaux. Visitez [le catalogue](/products) pour découvrir leurs créations.",
-    "Vous gagnez des points de fidélité à chaque achat ! Consultez votre [profil](/profile) pour voir vos points et votre niveau (Bronze, Argent ou Or).",
-    "Je ne peux pas consulter les stocks en temps réel, mais je vous encourage à [visiter la boutique](/products) pour voir la disponibilité exacte. Vous pouvez aussi activer une alerte de réapprovisionnement sur les produits épuisés.",
+    "Bonjour ! Sahel Market propose des textiles traditionnels, de la maroquinerie, de la poterie et bien plus encore — tous fabriqués à la main par des artisans vérifiés. Je vous invite à [explorer le catalogue complet](/products) ou à me dire ce que vous cherchez pour que je vous guide !",
+    "La livraison est disponible partout au Cameroun : Yaoundé, Douala, Bafoussam, Maroua et plus encore. Vous pouvez payer par Orange Money, MTN MoMo ou en espèces à la livraison. Consultez [comment ça marche](/how-it-works) pour tous les détails.",
+    "Nos artisans sont vérifiés physiquement par un agent Sahel Market — chaque produit est authentique, fabriqué à la main avec des matériaux locaux. Découvrez leurs créations dans [le catalogue](/products).",
+    "Vous gagnez des points de fidélité à chaque achat, avec trois niveaux : Bronze, Argent et Or. Consultez votre [profil](/profile) pour voir vos points et les avantages disponibles.",
+    "Je ne peux pas consulter les stocks en temps réel, mais vous pouvez activer une alerte de réapprovisionnement directement sur la page d'un produit épuisé. Souhaitez-vous que je vous guide vers un produit similaire disponible ?",
 ]
 
 
@@ -157,8 +176,8 @@ class ChatView(APIView):
             completion = client.chat.completions.create(
                 model='llama-3.3-70b-versatile',
                 messages=[{'role': 'system', 'content': system_prompt}] + valid_messages,
-                max_tokens=600,
-                temperature=0.65,
+                max_tokens=700,
+                temperature=0.6,
             )
             return Response({'response': completion.choices[0].message.content})
         except Exception:
