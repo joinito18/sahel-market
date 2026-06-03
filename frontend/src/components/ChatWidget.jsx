@@ -1,37 +1,109 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react'
+import { X, Send, Bot, User, Loader2, ShoppingBag, Gift, Truck, Star } from 'lucide-react'
 import api from '../services/api.js'
 
-const WELCOME = "Bonjour ! Je suis **Sahel**, votre assistante IA 🌿\nJe peux vous aider à trouver des produits artisanaux, répondre à vos questions sur les commandes ou vous parler des savoir-faire locaux. Comment puis-je vous aider ?"
+const WELCOME = "Bonjour ! Je suis l'assistante de **Sahel Market** 🌿\nJe peux vous guider dans vos achats, vous proposer des produits avec liens directs, répondre à vos questions sur les commandes et la livraison.\n\nComment puis-je vous aider ?"
 
-function formatMessage(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br/>')
+const SUGGESTIONS = [
+  { icon: ShoppingBag, label: 'Voir le catalogue',   msg: 'Montre-moi ce que vous proposez dans le catalogue.' },
+  { icon: Gift,        label: 'Idée cadeau',          msg: 'Je cherche un cadeau artisanal original, tu peux m\'aider ?' },
+  { icon: Truck,       label: 'Infos livraison',      msg: 'Comment fonctionne la livraison et quelles sont les zones desservies ?' },
+  { icon: Star,        label: 'Programme fidélité',   msg: 'Comment fonctionne le programme de fidélité ?' },
+]
+
+/* ── Convertit le Markdown IA en HTML sécurisé ── */
+function formatMessage(raw) {
+  // 1. Échapper le HTML brut
+  const esc = s => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+
+  // 2. Appliquer le gras
+  const bold = s => s.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+
+  // 3. Convertir les liens Markdown
+  const links = s => s
+    // liens internes [texte](/chemin)
+    .replace(
+      /\[([^\]]+)\]\((\/[^)]*)\)/g,
+      (_, label, href) =>
+        `<a href="${href}" class="chat-link" data-internal="true">${label}</a>`
+    )
+    // liens externes [texte](https://...)
+    .replace(
+      /\[([^\]]+)\]\((https?:\/\/[^)]*)\)/g,
+      (_, label, href) =>
+        `<a href="${href}" class="chat-link chat-link-ext" target="_blank" rel="noopener noreferrer">${label}</a>`
+    )
+
+  const process = s => links(bold(esc(s)))
+
+  // 4. Traiter ligne par ligne pour gérer les listes
+  const lines  = raw.split('\n')
+  const parts  = []
+  let inList   = false
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('• ')
+
+    if (isBullet) {
+      if (!inList) { parts.push('<ul class="chat-ul">'); inList = true }
+      parts.push(`<li>${process(trimmed.slice(2))}</li>`)
+    } else {
+      if (inList) { parts.push('</ul>'); inList = false }
+      if (trimmed === '') {
+        parts.push('<div class="chat-space"></div>')
+      } else {
+        parts.push(`<span>${process(trimmed)}</span><br/>`)
+      }
+    }
+  }
+  if (inList) parts.push('</ul>')
+
+  return parts.join('')
 }
 
 export default function ChatWidget() {
-  const { user } = useSelector(s => s.auth)
-  const [open, setOpen]       = useState(false)
-  const [input, setInput]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: WELCOME },
-  ])
-  const bottomRef = useRef(null)
-  const inputRef  = useRef(null)
+  const { user }   = useSelector(s => s.auth)
+  const navigate   = useNavigate()
+  const location   = useLocation()
+
+  const [open,     setOpen]     = useState(false)
+  const [input,    setInput]    = useState('')
+  const [loading,  setLoading]  = useState(false)
+  const [messages, setMessages] = useState([{ role: 'assistant', content: WELCOME }])
+
+  const bottomRef  = useRef(null)
+  const inputRef   = useRef(null)
+  const msgsRef    = useRef(null)
+
+  const userContext = {
+    authenticated: !!user,
+    name:          user?.first_name || user?.username || '',
+    current_page:  location.pathname + location.search,
+  }
 
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 300)
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 300)
   }, [open])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
+
+  /* Navigation React Router sur les liens internes du chat */
+  const handleMsgClick = useCallback(e => {
+    const a = e.target.closest('a[data-internal]')
+    if (!a) return
+    e.preventDefault()
+    navigate(a.getAttribute('href'))
+    setOpen(false)
+  }, [navigate])
 
   function autoResize(el) {
     if (!el) return
@@ -39,14 +111,15 @@ export default function ChatWidget() {
     el.style.height = Math.min(el.scrollHeight, 96) + 'px'
   }
 
-  async function send() {
-    const text = input.trim()
-    if (!text || loading) return
+  async function send(text) {
+    const msg = (text ?? input).trim()
+    if (!msg || loading) return
 
-    const userMsg = { role: 'user', content: text }
+    const userMsg = { role: 'user', content: msg }
     const history = [...messages, userMsg]
     setMessages(history)
     setInput('')
+    if (inputRef.current) { inputRef.current.style.height = 'auto' }
     setLoading(true)
 
     try {
@@ -54,7 +127,10 @@ export default function ChatWidget() {
         .filter(m => m.content !== WELCOME)
         .map(m => ({ role: m.role, content: m.content }))
 
-      const { data } = await api.post('/ai/chat/', { messages: apiMessages })
+      const { data } = await api.post('/ai/chat/', {
+        messages:     apiMessages,
+        user_context: userContext,
+      })
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
     } catch {
       setMessages(prev => [
@@ -67,15 +143,38 @@ export default function ChatWidget() {
   }
 
   function onKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      send()
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
+
+  const showSuggestions = messages.length === 1 && !loading
 
   return (
     <>
-      {/* Bouton flottant */}
+      <style>{`
+        .chat-link {
+          color: #b45309;
+          font-weight: 600;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+          cursor: pointer;
+        }
+        .chat-link:hover { color: #92400e; }
+        .chat-ul {
+          margin: 6px 0 4px 0;
+          padding-left: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+        .chat-ul li { font-size: 13px; line-height: 1.5; }
+        .chat-space { height: 6px; }
+        @keyframes sahelPulse {
+          0%, 80%, 100% { transform: scale(0.55); opacity: 0.3; }
+          40%           { transform: scale(1);    opacity: 1;   }
+        }
+      `}</style>
+
+      {/* ── Bouton flottant ── */}
       <motion.button
         onClick={() => setOpen(v => !v)}
         initial={{ scale: 0 }}
@@ -84,21 +183,22 @@ export default function ChatWidget() {
         whileTap={{ scale: 0.94 }}
         className="fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full shadow-xl flex items-center justify-center"
         style={{ background: 'linear-gradient(135deg, #d97706, #b45309)' }}
-        title="Assistant IA Sahel"
-        aria-label="Ouvrir l'assistant IA"
+        aria-label="Ouvrir l'assistant Sahel Market"
       >
         <AnimatePresence mode="wait" initial={false}>
           {open
-            ? <motion.span key="x"  initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.18 }}>
+            ? <motion.span key="x"
+                initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.18 }}>
                 <X size={24} color="white" />
               </motion.span>
-            : <motion.span key="chat" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.18 }}>
+            : <motion.span key="chat"
+                initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.18 }}>
                 <Bot size={24} color="white" />
               </motion.span>
           }
         </AnimatePresence>
-
-        {/* Indicateur "IA" */}
         {!open && (
           <span className="absolute -top-1 -right-1 text-[9px] font-black bg-white text-amber-700 rounded-full px-1 leading-4 shadow">
             IA
@@ -106,7 +206,7 @@ export default function ChatWidget() {
         )}
       </motion.button>
 
-      {/* Fenêtre de chat */}
+      {/* ── Fenêtre de chat ── */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -115,25 +215,30 @@ export default function ChatWidget() {
             exit={{ opacity: 0, y: 24, scale: 0.95 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
             className="fixed bottom-44 right-4 z-50 w-[340px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-amber-100"
-            style={{ height: '460px' }}
+            style={{ height: '500px' }}
           >
+
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 text-white flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, #d97706, #b45309)' }}>
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
                 <Bot size={20} color="white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm leading-tight">Sahel — Assistant IA</p>
-                <p className="text-[11px] text-amber-100">Assistante Sahel · Disponible 24h/24</p>
+                <p className="font-bold text-sm leading-tight">Sahel Market</p>
+                <p className="text-[11px] text-amber-100">Assistante IA · Disponible 24h/24</p>
               </div>
-              <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition-colors">
+              <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition-colors flex-shrink-0">
                 <X size={18} />
               </button>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-amber-50/30">
+            <div
+              ref={msgsRef}
+              onClick={handleMsgClick}
+              className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-amber-50/30"
+            >
               {messages.map((msg, i) => (
                 <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                   {/* Avatar */}
@@ -141,24 +246,39 @@ export default function ChatWidget() {
                     ${msg.role === 'user' ? 'bg-amber-500' : 'bg-amber-700'}`}>
                     {msg.role === 'user'
                       ? (user?.username?.[0]?.toUpperCase() || <User size={13} />)
-                      : <Bot size={13} />
-                    }
+                      : <Bot size={13} />}
                   </div>
                   {/* Bulle */}
-                  <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm leading-relaxed
-                    ${msg.role === 'user'
-                      ? 'bg-amber-600 text-white rounded-tr-sm'
-                      : 'bg-white text-gray-800 shadow-sm border border-amber-100 rounded-tl-sm'
-                    }`}
+                  <div
+                    className={`max-w-[78%] px-3 py-2 rounded-2xl text-sm leading-relaxed
+                      ${msg.role === 'user'
+                        ? 'bg-amber-600 text-white rounded-tr-sm'
+                        : 'bg-white text-gray-800 shadow-sm border border-amber-100 rounded-tl-sm'}`}
                     dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
                   />
                 </div>
               ))}
 
+              {/* Chips de suggestion */}
+              {showSuggestions && (
+                <div className="flex flex-col gap-2 pt-1">
+                  {SUGGESTIONS.map(({ icon: Icon, label, msg }) => (
+                    <button
+                      key={label}
+                      onClick={() => send(msg)}
+                      className="flex items-center gap-2 text-left px-3 py-2 rounded-xl border border-amber-200 bg-white text-xs font-semibold text-amber-800 hover:bg-amber-50 hover:border-amber-400 transition-all"
+                    >
+                      <Icon size={13} className="text-amber-600 flex-shrink-0" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Indicateur de frappe */}
               {loading && (
                 <div className="flex gap-2 flex-row">
-                  <div className="w-7 h-7 rounded-full bg-amber-700 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-amber-700 flex items-center justify-center flex-shrink-0">
                     <Bot size={13} color="white" />
                   </div>
                   <div className="bg-white shadow-sm border border-amber-100 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
@@ -169,12 +289,6 @@ export default function ChatWidget() {
                         animation: `sahelPulse 1.2s ease-in-out ${delay}ms infinite`,
                       }} />
                     ))}
-                    <style>{`
-                      @keyframes sahelPulse {
-                        0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
-                        40%           { transform: scale(1);   opacity: 1;    }
-                      }
-                    `}</style>
                   </div>
                 </div>
               )}
@@ -194,15 +308,14 @@ export default function ChatWidget() {
                 style={{ lineHeight: '1.4', overflowY: 'hidden' }}
               />
               <button
-                onClick={send}
+                onClick={() => send()}
                 disabled={!input.trim() || loading}
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-white transition disabled:opacity-40 flex-shrink-0"
                 style={{ background: 'linear-gradient(135deg, #d97706, #b45309)' }}
               >
                 {loading
                   ? <Loader2 size={16} className="animate-spin" />
-                  : <Send size={16} />
-                }
+                  : <Send size={16} />}
               </button>
             </div>
           </motion.div>
