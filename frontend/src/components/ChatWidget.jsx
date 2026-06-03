@@ -300,7 +300,7 @@ export default function ChatWidget() {
                     boxShadow: '0 0 4px rgba(45,106,79,0.6)',
                   }} />
                   <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                    Concierge artisanal · En ligne
+                    Votre guide artisanal
                   </p>
                 </div>
               </div>
@@ -326,12 +326,14 @@ export default function ChatWidget() {
               className="chat-msgs"
               onClick={handleMsgClick}
               style={{
-                flex: 1, overflowY: 'auto',
-                padding: '16px 14px',
-                display: 'flex', flexDirection: 'column', gap: 12,
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'hidden',
                 background: '#F5F4EF',
+                /* PAS de display:flex ici — ça casse le scroll sur mobile */
               }}
             >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 14px' }}>
               {messages.map((msg, i) => (
                 <div key={i} style={{
                   display: 'flex',
@@ -379,47 +381,6 @@ export default function ChatWidget() {
                 </div>
               ))}
 
-              {/* ── Chips de suggestion ─────────────────────────────── */}
-              {showSuggestions && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4 }}>
-                  {SUGGESTIONS.map(({ icon: Icon, label, msg }) => (
-                    <button
-                      key={label}
-                      onClick={() => send(msg)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 7,
-                        padding: '9px 11px',
-                        background: '#FFFFFF',
-                        border: '1px solid #E8E7E2',
-                        borderRadius: 10,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        transition: 'all .15s',
-                        fontSize: 12, fontWeight: 600, color: '#111111',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.borderColor = '#d97706'
-                        e.currentTarget.style.background  = '#FFFBF5'
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = '#E8E7E2'
-                        e.currentTarget.style.background  = '#FFFFFF'
-                      }}
-                    >
-                      <span style={{
-                        width: 24, height: 24, borderRadius: 6,
-                        background: '#F5F4EF',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                      }}>
-                        <Icon size={12} color="#b45309" strokeWidth={2} />
-                      </span>
-                      <span style={{ lineHeight: 1.3 }}>{label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
               {/* ── Indicateur de frappe ────────────────────────────── */}
               {loading && (
                 <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
@@ -445,6 +406,51 @@ export default function ChatWidget() {
               )}
 
               <div ref={bottomRef} />
+              </div>{/* fin wrapper flex interne */}
+            </div>
+
+            {/* ── SUGGESTIONS RAPIDES (barre permanente) ────────────── */}
+            <div style={{
+              flexShrink: 0,
+              background: '#FFFFFF',
+              borderTop: '1px solid #F0EFE9',
+              padding: '8px 12px',
+              display: 'flex', gap: 6,
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+            }}>
+              <style>{`.sugg-strip::-webkit-scrollbar{display:none}`}</style>
+              {SUGGESTIONS.map(({ icon: Icon, label, msg }) => (
+                <button
+                  key={label}
+                  onClick={() => send(msg)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '5px 10px',
+                    background: '#F5F4EF',
+                    border: '1px solid #E8E7E2',
+                    borderRadius: 20,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    fontSize: 11, fontWeight: 600, color: '#6B6B6B',
+                    transition: 'all .15s',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = '#d97706'
+                    e.currentTarget.style.color       = '#b45309'
+                    e.currentTarget.style.background  = '#FFFBF5'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = '#E8E7E2'
+                    e.currentTarget.style.color       = '#6B6B6B'
+                    e.currentTarget.style.background  = '#F5F4EF'
+                  }}
+                >
+                  <Icon size={11} strokeWidth={2} />
+                  {label}
+                </button>
+              ))}
             </div>
 
             {/* ── INPUT ─────────────────────────────────────────────── */}
