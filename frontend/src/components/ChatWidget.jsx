@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, ShoppingBag, Gift, Truck, Star } from 'lucide-react'
+import { X, Send, Loader2, ShoppingBag, Gift, Truck, Star } from 'lucide-react'
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
