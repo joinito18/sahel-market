@@ -2,8 +2,9 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Loader2, ShoppingBag, Gift, Truck, Star, ExternalLink } from 'lucide-react'
-import api from '../services/api.js'
+import { X, Send, ShoppingBag, Gift, Truck, Star } from 'lucide-react'
+
+const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 /* ── Message de bienvenue ──────────────────────────────────────────── */
 const WELCOME = "Bonjour ! Je suis l'assistante de **Sahel Market**.\nJe peux vous guider dans vos achats, vous proposer des produits avec liens directs, vous renseigner sur la livraison ou le suivi de commande.\n\nQue puis-je faire pour vous ?"
@@ -68,17 +69,19 @@ function AvatarSM({ size = 32 }) {
    COMPOSANT PRINCIPAL
 ═══════════════════════════════════════════════════════════════════ */
 export default function ChatWidget() {
-  const { user }  = useSelector(s => s.auth)
+  const { user, accessToken } = useSelector(s => s.auth)
   const navigate  = useNavigate()
   const location  = useLocation()
 
-  const [open,     setOpen]     = useState(false)
-  const [input,    setInput]    = useState('')
-  const [loading,  setLoading]  = useState(false)
-  const [messages, setMessages] = useState([{ role: 'assistant', content: WELCOME }])
+  const [open,      setOpen]      = useState(false)
+  const [input,     setInput]     = useState('')
+  const [loading,   setLoading]   = useState(false)   // true = points de frappe visibles
+  const [streaming, setStreaming] = useState(false)   // true = texte en cours d'écriture
+  const [messages,  setMessages]  = useState([{ role: 'assistant', content: WELCOME }])
 
-  const bottomRef = useRef(null)
-  const inputRef  = useRef(null)
+  const bottomRef  = useRef(null)
+  const inputRef   = useRef(null)
+  const abortRef   = useRef(null)  // pour annuler un stream en cours
 
   const userCtx = {
     authenticated: !!user,
@@ -111,32 +114,90 @@ export default function ChatWidget() {
 
   async function send(text) {
     const msg = (text ?? input).trim()
-    if (!msg || loading) return
+    if (!msg || loading || streaming) return
+
+    /* Annuler un éventuel stream précédent */
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
 
     const userMsg = { role: 'user', content: msg }
     const history = [...messages, userMsg]
-    setMessages(history)
+
+    /* Ajouter le message utilisateur + placeholder assistant vide */
+    setMessages([...history, { role: 'assistant', content: '', streaming: true }])
     setInput('')
     if (inputRef.current) inputRef.current.style.height = 'auto'
     setLoading(true)
 
-    try {
-      const apiMsgs = history
-        .filter(m => m.content !== WELCOME)
-        .map(m => ({ role: m.role, content: m.content }))
+    const apiMsgs = history
+      .filter(m => m.content !== WELCOME)
+      .map(m => ({ role: m.role, content: m.content }))
 
-      const { data } = await api.post('/ai/chat/', {
-        messages:     apiMsgs,
-        user_context: userCtx,
+    const headers = { 'Content-Type': 'application/json' }
+    if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`
+
+    try {
+      const res = await fetch(`${API_BASE}/ai/chat/stream/`, {
+        method:  'POST',
+        headers,
+        body:    JSON.stringify({ messages: apiMsgs, user_context: userCtx }),
+        signal:  controller.signal,
       })
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
-    } catch {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: "Désolée, je suis temporairement indisponible. Réessayez dans un instant 🙏",
-      }])
+
+      if (!res.ok) throw new Error('stream_error')
+
+      const reader  = res.body.getReader()
+      const decoder = new TextDecoder()
+      let   buffer  = ''
+      let   started = false
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop()  // garder la ligne incomplète
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const payload = line.slice(6).trim()
+          if (payload === '[DONE]') break
+
+          try {
+            const { c } = JSON.parse(payload)
+            if (!c) continue
+
+            /* Premier chunk : cacher les points de frappe */
+            if (!started) { started = true; setLoading(false); setStreaming(true) }
+
+            /* Ajouter le chunk au dernier message */
+            setMessages(prev => {
+              const last = prev[prev.length - 1]
+              return [
+                ...prev.slice(0, -1),
+                { ...last, content: last.content + c },
+              ]
+            })
+          } catch { /* chunk JSON invalide, on ignore */ }
+        }
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return
+      setMessages(prev => [
+        ...prev.slice(0, -1),
+        { role: 'assistant', content: "Désolée, je suis temporairement indisponible. Réessayez dans un instant 🙏", streaming: false },
+      ])
     } finally {
+      /* Marquer le message comme terminé (retire le curseur clignotant) */
+      setMessages(prev => {
+        const last = prev[prev.length - 1]
+        if (last?.streaming) return [...prev.slice(0, -1), { ...last, streaming: false }]
+        return prev
+      })
       setLoading(false)
+      setStreaming(false)
     }
   }
 
@@ -144,7 +205,7 @@ export default function ChatWidget() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
-  const showSuggestions = messages.length === 1 && !loading
+  const showSuggestions = messages.length === 1 && !loading && !streaming
 
   /* ── Initiales utilisateur ── */
   const userInitial = user?.first_name?.[0]?.toUpperCase()
@@ -177,10 +238,25 @@ export default function ChatWidget() {
         .cmsg-ul { margin: 4px 0; padding-left: 14px; display:flex; flex-direction:column; gap:3px; }
         .cmsg-ul li { font-size: 13px; line-height: 1.5; }
 
-        /* Animation points frappe */
+        /* Animation points frappe (avant 1er chunk) */
         @keyframes sahelPulse {
           0%,80%,100% { transform:scale(.55); opacity:.25; }
           40%         { transform:scale(1);   opacity:1;   }
+        }
+
+        /* Curseur clignotant pendant le streaming */
+        .stream-cursor {
+          display: inline-block;
+          width: 2px; height: 13px;
+          background: #d97706;
+          border-radius: 1px;
+          vertical-align: middle;
+          margin-left: 1px;
+          animation: cursorBlink .7s step-end infinite;
+        }
+        @keyframes cursorBlink {
+          0%,100% { opacity: 1; }
+          50%     { opacity: 0; }
         }
 
         /* Scrollbar du chat */
@@ -375,9 +451,14 @@ export default function ChatWidget() {
                       color: '#FFFFFF',
                       fontSize: 13,
                     }),
-                  }}
-                    dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-                  />
+                  }}>
+                    {/* Pendant le streaming : curseur clignotant à la fin */}
+                    {msg.streaming && !msg.content
+                      ? <span style={{ color: '#ADADAD', fontStyle: 'italic', fontSize: 12 }}>…</span>
+                      : <span dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                    }
+                    {msg.streaming && msg.content && <span className="stream-cursor" />}
+                  </div>
                 </div>
               ))}
 

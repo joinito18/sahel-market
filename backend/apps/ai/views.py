@@ -1,6 +1,8 @@
 import random
+import json
 from groq import Groq
 from django.conf import settings
+from django.http import StreamingHttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -182,3 +184,68 @@ class ChatView(APIView):
             return Response({'response': completion.choices[0].message.content})
         except Exception:
             return Response({'response': random.choice(_MOCK_RESPONSES), 'demo': True})
+
+
+class ChatStreamView(APIView):
+    """Même logique que ChatView mais en streaming SSE."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        messages     = request.data.get('messages', [])
+        user_context = request.data.get('user_context', {})
+
+        valid_messages = []
+        for msg in messages[-14:]:
+            if (isinstance(msg, dict)
+                    and msg.get('role') in ('user', 'assistant')
+                    and msg.get('content')):
+                valid_messages.append({
+                    'role':    msg['role'],
+                    'content': str(msg['content'])[:2000],
+                })
+
+        if not valid_messages:
+            return Response({'error': 'Messages invalides'}, status=400)
+
+        # ── Mode démo (pas de clé) — simule un stream ────────────────────
+        if not _api_key_is_valid():
+            mock_text = random.choice(_MOCK_RESPONSES)
+
+            def mock_gen():
+                for ch in mock_text:
+                    yield f"data: {json.dumps({'c': ch})}\n\n"
+                yield "data: [DONE]\n\n"
+
+            r = StreamingHttpResponse(mock_gen(), content_type='text/event-stream; charset=utf-8')
+            r['Cache-Control']      = 'no-cache'
+            r['X-Accel-Buffering'] = 'no'
+            return r
+
+        # ── Mode réel — stream Groq ───────────────────────────────────────
+        system_prompt = _build_system_prompt(user_context)
+
+        def groq_gen():
+            try:
+                client = Groq(api_key=settings.GROQ_API_KEY)
+                stream = client.chat.completions.create(
+                    model='llama-3.3-70b-versatile',
+                    messages=[{'role': 'system', 'content': system_prompt}] + valid_messages,
+                    max_tokens=700,
+                    temperature=0.6,
+                    stream=True,
+                )
+                for chunk in stream:
+                    content = chunk.choices[0].delta.content
+                    if content:
+                        yield f"data: {json.dumps({'c': content})}\n\n"
+            except Exception:
+                fallback = random.choice(_MOCK_RESPONSES)
+                for ch in fallback:
+                    yield f"data: {json.dumps({'c': ch})}\n\n"
+            finally:
+                yield "data: [DONE]\n\n"
+
+        r = StreamingHttpResponse(groq_gen(), content_type='text/event-stream; charset=utf-8')
+        r['Cache-Control']      = 'no-cache'
+        r['X-Accel-Buffering'] = 'no'
+        return r
