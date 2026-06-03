@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Loader2, Package, Info } from 'lucide-react'
+import { X, Send, Loader2, Package } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api.js'
@@ -97,7 +97,7 @@ export default function CustomOrderModal({ open, onClose, producer, product }) {
                     Commander sur-mesure
                   </p>
                   <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
-                    Votre demande sera transmise via Sahel Market
+                    Demande à {producerName}
                   </p>
                 </div>
                 <button
@@ -112,20 +112,6 @@ export default function CustomOrderModal({ open, onClose, producer, product }) {
                 >
                   <X size={14} color="rgba(255,255,255,0.6)" />
                 </button>
-              </div>
-
-              {/* Info bannière */}
-              <div style={{
-                background: '#FFF7ED',
-                borderBottom: '1px solid #FED7AA',
-                padding: '10px 20px',
-                display: 'flex', alignItems: 'flex-start', gap: 8,
-              }}>
-                <Info size={13} color="#d97706" style={{ marginTop: 1, flexShrink: 0 }} />
-                <p style={{ fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
-                  Toutes les communications passent par <strong>Sahel Market</strong>.
-                  Aucune coordonnée personnelle n'est partagée.
-                </p>
               </div>
 
               {/* Corps */}

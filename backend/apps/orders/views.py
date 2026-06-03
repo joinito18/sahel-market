@@ -434,28 +434,38 @@ class CampayWebhookView(View):
 
         return HttpResponse(status=200)
 
+
 # ── Commandes sur-mesure ─────────────────────────────────────────────
 from .models import CustomOrder
-
-class CustomOrderSerializer_inline:
-    """Sérialiseur inline pour éviter un fichier séparé."""
-    pass
-
+from apps.products.models import Product as ProductModel
 from rest_framework import serializers as drf_serializers
+
 
 class CustomOrderSerializer(drf_serializers.ModelSerializer):
     client_name   = drf_serializers.SerializerMethodField()
     producer_name = drf_serializers.SerializerMethodField()
     product_name  = drf_serializers.SerializerMethodField()
+    product       = drf_serializers.PrimaryKeyRelatedField(
+        queryset=ProductModel.objects.all(), allow_null=True, required=False
+    )
+    budget        = drf_serializers.DecimalField(
+        max_digits=10, decimal_places=0, allow_null=True, required=False
+    )
 
     class Meta:
         model  = CustomOrder
         fields = [
-            'id', 'client', 'client_name', 'producer', 'producer_name',
-            'product', 'product_name', 'description', 'budget', 'quantity',
-            'status', 'estimated_price', 'artisan_note', 'created_at', 'updated_at',
+            'id', 'client_name', 'producer_name',
+            'product', 'product_name',
+            'description', 'budget', 'quantity',
+            'status', 'estimated_price', 'artisan_note',
+            'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'client', 'status', 'estimated_price', 'artisan_note', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id', 'client_name', 'producer_name', 'product_name',
+            'status', 'estimated_price', 'artisan_note',
+            'created_at', 'updated_at',
+        ]
 
     def get_client_name(self, obj):
         return obj.client.first_name or obj.client.username
@@ -473,30 +483,44 @@ class CustomOrderView(APIView):
     def get(self, request):
         user = request.user
         if user.role == 'producer':
-            qs = CustomOrder.objects.filter(producer=user).select_related('client', 'producer', 'product')
+            qs = CustomOrder.objects.filter(
+                producer=user
+            ).select_related('client', 'producer', 'product')
         else:
-            qs = CustomOrder.objects.filter(client=user).select_related('client', 'producer', 'product')
+            qs = CustomOrder.objects.filter(
+                client=user
+            ).select_related('client', 'producer', 'product')
         return Response(CustomOrderSerializer(qs, many=True).data)
 
     def post(self, request):
         from apps.users.models import User as UserModel
+
         producer_id = request.data.get('producer_id')
+        if not producer_id:
+            return Response({'error': 'producer_id requis.'}, status=400)
+
         try:
             producer = UserModel.objects.get(id=producer_id, role='producer')
         except UserModel.DoesNotExist:
             return Response({'error': 'Artisan introuvable.'}, status=400)
 
-        if request.user == producer:
-            return Response({'error': 'Vous ne pouvez pas vous envoyer une demande.'}, status=400)
+        if request.user.id == producer.id:
+            return Response({'error': 'Action non autorisée.'}, status=400)
 
         serializer = CustomOrderSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
         obj = serializer.save(client=request.user, producer=producer)
+
         Notification.objects.create(
             user    = producer,
             type    = 'new_order',
             title   = 'Nouvelle demande sur-mesure',
-            message = f'{request.user.first_name or request.user.username} vous a envoyé une demande de création sur-mesure.',
+            message = (
+                f'{request.user.first_name or request.user.username} '
+                f'vous a envoyé une demande de création sur-mesure.'
+            ),
         )
         return Response(CustomOrderSerializer(obj).data, status=201)
 
@@ -511,20 +535,25 @@ class CustomOrderDetailView(APIView):
             return Response(status=404)
 
         user = request.user
-        if user.role == 'producer' and obj.producer == user:
-            allowed = ['status', 'estimated_price', 'artisan_note']
-            data = {k: v for k, v in request.data.items() if k in allowed}
-            if 'status' in data and data['status'] not in ('accepted', 'declined', 'completed'):
-                return Response({'error': 'Statut invalide.'}, status=400)
-            for k, v in data.items():
-                setattr(obj, k, v)
-            obj.save()
-            Notification.objects.create(
-                user    = obj.client,
-                type    = 'new_order',
-                title   = 'Réponse à votre demande sur-mesure',
-                message = f'Votre demande a été {obj.get_status_display().lower()} par l\'artisan.',
-            )
-            return Response(CustomOrderSerializer(obj).data)
+        if user.role != 'producer' or obj.producer_id != user.id:
+            return Response({'error': 'Non autorisé.'}, status=403)
 
-        return Response({'error': 'Non autorisé.'}, status=403)
+        allowed = {'status', 'estimated_price', 'artisan_note'}
+        for k, v in request.data.items():
+            if k in allowed:
+                setattr(obj, k, v)
+
+        if obj.status not in ('pending', 'accepted', 'declined', 'completed'):
+            return Response({'error': 'Statut invalide.'}, status=400)
+
+        obj.save()
+        Notification.objects.create(
+            user    = obj.client,
+            type    = 'new_order',
+            title   = 'Réponse à votre demande sur-mesure',
+            message = (
+                f'Votre demande a été '
+                f'{obj.get_status_display().lower()} par l\'artisan.'
+            ),
+        )
+        return Response(CustomOrderSerializer(obj).data)
