@@ -437,7 +437,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           SECTIONS PAR CATÉGORIE
       ══════════════════════════════════════════════════════════ */}
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 'var(--section-gap)' }}>
+      <div className="s-gap" style={{ maxWidth: 1280, margin: '0 auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 'var(--section-gap)' }}>
         {categories.map(cat => (
           <CatSection key={cat.id} category={cat} />
         ))}
