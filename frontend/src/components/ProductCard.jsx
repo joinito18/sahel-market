@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Heart, ShoppingBag, Flame, BadgeCheck, Bell, BellOff } from 'lucide-react'
+import { Heart, ShoppingBag, Flame, BadgeCheck, Bell, BellOff, Eye } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { addItem, openCart } from '../store/cartSlice.js'
@@ -192,8 +192,8 @@ export default function ProductCard({ product, index = 0 }) {
           </p>
 
           {!isOutOfStock && product.views_count > 5 && (
-            <p style={{ fontSize: 10, color: '#2D6A4F', fontWeight: 600, marginBottom: 4 }}>
-              👁 {watching} personnes regardent
+            <p style={{ fontSize: 10, color: '#2D6A4F', fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Eye size={10} color="#2D6A4F" strokeWidth={2} /> {watching} personnes regardent
             </p>
           )}
 

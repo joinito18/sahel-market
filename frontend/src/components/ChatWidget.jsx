@@ -33,6 +33,12 @@ export default function ChatWidget() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
+  function autoResize(el) {
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 96) + 'px'
+  }
+
   async function send() {
     const text = input.trim()
     if (!text || loading) return
@@ -119,7 +125,7 @@ export default function ChatWidget() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm leading-tight">Sahel — Assistant IA</p>
-                <p className="text-[11px] text-amber-100">Propulsé par Claude · Toujours disponible</p>
+                <p className="text-[11px] text-amber-100">Assistante Sahel · Disponible 24h/24</p>
               </div>
               <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition-colors">
                 <X size={18} />
@@ -155,10 +161,20 @@ export default function ChatWidget() {
                   <div className="w-7 h-7 rounded-full bg-amber-700 flex items-center justify-center">
                     <Bot size={13} color="white" />
                   </div>
-                  <div className="bg-white shadow-sm border border-amber-100 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="bg-white shadow-sm border border-amber-100 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
+                    {[0, 160, 320].map(delay => (
+                      <span key={delay} style={{
+                        width: 7, height: 7, borderRadius: '50%', background: '#d97706',
+                        display: 'inline-block',
+                        animation: `sahelPulse 1.2s ease-in-out ${delay}ms infinite`,
+                      }} />
+                    ))}
+                    <style>{`
+                      @keyframes sahelPulse {
+                        0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
+                        40%           { transform: scale(1);   opacity: 1;    }
+                      }
+                    `}</style>
                   </div>
                 </div>
               )}
@@ -170,12 +186,12 @@ export default function ChatWidget() {
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={e => { setInput(e.target.value); autoResize(e.target) }}
                 onKeyDown={onKey}
                 placeholder="Posez votre question…"
                 rows={1}
-                className="flex-1 resize-none rounded-xl border border-amber-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-300 transition max-h-24 bg-amber-50/50 placeholder-gray-400"
-                style={{ lineHeight: '1.4' }}
+                className="flex-1 resize-none rounded-xl border border-amber-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-300 transition bg-amber-50/50 placeholder-gray-400"
+                style={{ lineHeight: '1.4', overflowY: 'hidden' }}
               />
               <button
                 onClick={send}

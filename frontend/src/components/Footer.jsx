@@ -196,15 +196,15 @@ export default function Footer() {
                   />
                   <button type="submit"
                     style={{
-                      background: '#2D6A4F', color: '#fff',
+                      background: '#d97706', color: '#fff',
                       fontWeight: 700, fontSize: 13,
                       padding: '13px', borderRadius: 10,
                       border: 'none', cursor: 'pointer',
                       letterSpacing: '0.04em',
                       transition: 'background .2s',
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#215638'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#2D6A4F'}>
+                    onMouseEnter={e => e.currentTarget.style.background = '#b45309'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#d97706'}>
                     S'abonner →
                   </button>
                 </form>
