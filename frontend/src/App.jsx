@@ -39,6 +39,7 @@ const Messages          = lazy(() => import('./pages/Messages.jsx'))
 const Roadmap           = lazy(() => import('./pages/Roadmap.jsx'))
 const ForgotPassword    = lazy(() => import('./pages/ForgotPassword.jsx'))
 const ResetPassword     = lazy(() => import('./pages/ResetPassword.jsx'))
+const ArtisansMap       = lazy(() => import('./pages/ArtisansMap.jsx'))
 
 function PageLoader() {
   return (
@@ -194,6 +195,7 @@ export default function App() {
             <Route path="/reset-password/:uid/:token"    element={<ResetPassword />} />
             <Route path="/how-it-works"      element={<HowItWorks />} />
             <Route path="/roadmap"           element={<Roadmap />} />
+            <Route path="/artisans"          element={<ArtisansMap />} />
             <Route path="/artisans/:username" element={<ProducerPublicProfile />} />
 
             {/* ── Pages légales ───────────────────────────────── */}

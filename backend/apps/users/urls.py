@@ -22,6 +22,7 @@ from .views import (
     PasswordResetConfirmView,
     ReferralView,
     ValidateReferralCodeView,
+    ArtisansMapView,
 )
 
 urlpatterns = [
@@ -66,4 +67,7 @@ urlpatterns = [
     # Parrainage
     path('referral/',          ReferralView.as_view(),             name='referral'),
     path('referral/validate/', ValidateReferralCodeView.as_view(), name='referral-validate'),
+
+    # Carte des artisans
+    path('artisans/map/', ArtisansMapView.as_view(), name='artisans-map'),
 ]

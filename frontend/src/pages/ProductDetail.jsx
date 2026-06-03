@@ -7,10 +7,11 @@ import {
   ShoppingCart, MapPin, Eye, ArrowLeft, Heart,
   Star, Share2, Shield, Truck, RotateCcw,
   ChevronLeft, ChevronRight, Minus, Plus, Check, BadgeCheck, Package,
-  Flame, Users, MessageCircle
+  Flame, Users, Sparkles
 } from 'lucide-react'
 import { Link, useNavigate as useNav } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import CustomOrderModal from '../components/CustomOrderModal.jsx'
 import { productService } from '../services/product.service.js'
 import { addItem, openCart } from '../store/cartSlice.js'
 import Rating from '../components/Rating.jsx'
@@ -47,9 +48,10 @@ export default function ProductDetail() {
   const [zoomScale,     setZoomScale]     = useState(1)
   const [zoomOffset,    setZoomOffset]    = useState({ x: 0, y: 0 })
   const [isDragging,    setIsDragging]    = useState(false)
-  const [shareOpen,     setShareOpen]     = useState(false)
-  const [selectedVars,  setSelectedVars]  = useState({})
-  const [stickyShow,    setStickyShow]    = useState(false)
+  const [shareOpen,      setShareOpen]      = useState(false)
+  const [selectedVars,   setSelectedVars]   = useState({})
+  const [stickyShow,     setStickyShow]     = useState(false)
+  const [customModal,    setCustomModal]    = useState(false)
   const dragStart = useRef(null)
   const ctaRef = useRef(null)
 
@@ -230,6 +232,7 @@ export default function ProductDetail() {
   const watching = ((product.id * 7 + 13) % 18) + 5
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
 
       {/* ── Breadcrumb / retour ───────────────────────────────── */}
@@ -482,16 +485,22 @@ export default function ProductDetail() {
               </span>
             </Link>
 
-            {/* Contacter l'artisan */}
-            {isAuthenticated && me?.id !== product.producer_id && (
+            {/* Commander sur-mesure */}
+            {me?.id !== product.producer_id && (
               <button
-                onClick={() => navTo(`/messages/${product.producer_id}`)}
-                className="flex items-center gap-2 w-full py-2.5 px-4 rounded-xl
-                           border border-orange-200 bg-orange-50 text-orange-700
-                           font-semibold text-sm hover:bg-orange-100 transition-colors"
+                onClick={() => setCustomModal(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  width: '100%', padding: '11px 16px', borderRadius: 12,
+                  border: '1.5px solid #E8E7E2', background: '#F5F4EF',
+                  fontSize: 13, fontWeight: 700, color: '#111111',
+                  cursor: 'pointer', transition: 'all .15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor='#d97706'; e.currentTarget.style.background='#FFF7ED' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor='#E8E7E2'; e.currentTarget.style.background='#F5F4EF' }}
               >
-                <MessageCircle size={15} />
-                Contacter l'artisan pour une commande sur-mesure
+                <Sparkles size={15} color="#d97706" />
+                Commander sur-mesure
               </button>
             )}
 
@@ -889,5 +898,14 @@ export default function ProductDetail() {
         )}
       </div>
     </div>
+
+      {/* Modal commande sur-mesure */}
+      <CustomOrderModal
+        open={customModal}
+        onClose={() => setCustomModal(false)}
+        producer={{ id: product.producer_id, username: product.producer_name, name: product.producer_name }}
+        product={product}
+      />
+    </>
   )
 }

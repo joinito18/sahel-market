@@ -1,9 +1,11 @@
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import { User, Package, Star, Calendar, MessageCircle } from 'lucide-react'
+import { useState } from 'react'
+import { User, Package, Star, Calendar, Sparkles } from 'lucide-react'
 import api from '../services/api.js'
 import ProductCard from '../components/ProductCard.jsx'
+import CustomOrderModal from '../components/CustomOrderModal.jsx'
 
 const OR  = '#2D6A4F'
 const BG  = '#f0f2f5'
@@ -23,6 +25,7 @@ const fetchProducerDetail = (userId) =>
 export default function ProducerPublicProfile() {
   const { username } = useParams()
   const { isAuthenticated } = useSelector(s => s.auth)
+  const [modalOpen, setModalOpen] = useState(false)
 
   const { data: user, isLoading: loadingUser, error } = useQuery({
     queryKey: ['producer-public', username],
@@ -179,49 +182,31 @@ export default function ProducerPublicProfile() {
           padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
         }}>
           <div>
-            <p style={{ fontWeight: 700, color: '#92400e', fontSize: 14 }}>Contacter {displayName}</p>
-            <p style={{ color: '#b45309', fontSize: 13, marginTop: 4 }}>Pour des commandes personnalisées ou des questions</p>
+            <p style={{ fontWeight: 700, color: '#92400e', fontSize: 14 }}>Vous avez un projet sur-mesure ?</p>
+            <p style={{ color: '#b45309', fontSize: 13, marginTop: 4 }}>
+              Envoyez votre demande via Sahel Market — toutes les communications restent sur la plateforme.
+            </p>
           </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {isAuthenticated && (
-              <Link
-                to={`/messages/${user.id}`}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 7,
-                  padding: '10px 18px', background: OR, color: '#fff', borderRadius: 10,
-                  textDecoration: 'none', fontWeight: 700, fontSize: 13,
-                }}
-              >
-                <MessageCircle size={15} />
-                Envoyer un message
-              </Link>
-            )}
-            {user.whatsapp && (
-              <a
-                href={`https://wa.me/${user.whatsapp.replace(/\D/g, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 7,
-                  padding: '10px 18px', background: '#16a34a', color: '#fff', borderRadius: 10,
-                  textDecoration: 'none', fontWeight: 700, fontSize: 13,
-                }}
-              >
-                WhatsApp
-              </a>
-            )}
-            {user.phone && (
-              <a href={`tel:${user.phone}`} style={{
-                padding: '10px 18px', background: '#f3f4f6', color: '#374151', borderRadius: 10,
-                textDecoration: 'none', fontWeight: 700, fontSize: 13,
-                border: '1px solid #e5e7eb',
-              }}>
-                📞 {user.phone}
-              </a>
-            )}
-          </div>
+          <button
+            onClick={() => setModalOpen(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '11px 20px', background: '#111111', color: '#fff',
+              border: 'none', borderRadius: 10, cursor: 'pointer',
+              fontWeight: 700, fontSize: 13, flexShrink: 0,
+            }}
+          >
+            <Sparkles size={15} />
+            Commander sur-mesure
+          </button>
         </div>
       </div>
+
+      <CustomOrderModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        producer={user}
+      />
     </div>
   )
 }

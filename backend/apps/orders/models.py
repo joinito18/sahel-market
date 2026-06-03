@@ -108,6 +108,32 @@ class DeliveryZone(models.Model):
     def __str__(self):
         return f"{self.name} — {int(self.fee)} FCFA"
 
+class CustomOrder(models.Model):
+    STATUS_CHOICES = [
+        ('pending',   'En attente'),
+        ('accepted',  'Acceptée'),
+        ('declined',  'Refusée'),
+        ('completed', 'Terminée'),
+    ]
+    client          = models.ForeignKey(User, on_delete=models.CASCADE, related_name='custom_orders_sent')
+    producer        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='custom_orders_received')
+    product         = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='custom_orders')
+    description     = models.TextField()
+    budget          = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
+    quantity        = models.PositiveIntegerField(default=1)
+    status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    estimated_price = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
+    artisan_note    = models.TextField(blank=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
+    updated_at      = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Sur-mesure #{self.id} — {self.client.username} → {self.producer.username}"
+
+
 class Notification(models.Model):
     TYPE_CHOICES = [
         ('order_placed',    'Commande passée'),

@@ -3,11 +3,12 @@ import { Mail, Phone, MapPin, Instagram, Facebook } from 'lucide-react'
 import { useState } from 'react'
 
 const NAV = [
-  { to: '/',             label: 'Accueil'           },
-  { to: '/products',     label: 'Catalogue'          },
-  { to: '/how-it-works', label: 'Comment ça marche' },
-  { to: '/register',     label: 'Devenir artisan'    },
-  { to: '/roadmap',      label: 'Notre roadmap'      },
+  { to: '/',             label: 'Accueil'            },
+  { to: '/products',     label: 'Catalogue'           },
+  { to: '/artisans',     label: 'Carte des artisans'  },
+  { to: '/how-it-works', label: 'Comment ça marche'  },
+  { to: '/register',     label: 'Devenir artisan'     },
+  { to: '/roadmap',      label: 'Notre roadmap'       },
 ]
 
 const LEGAL = [

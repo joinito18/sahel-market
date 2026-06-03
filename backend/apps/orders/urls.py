@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import CartView, CartItemView, CheckoutView, OrderViewSet, ManageOrdersView, ManageOrderDetailView, NotificationsView, PromoValidateView, CampayWebhookView, DeliveryZonesView
+from .views import CartView, CartItemView, CheckoutView, OrderViewSet, ManageOrdersView, ManageOrderDetailView, NotificationsView, PromoValidateView, CampayWebhookView, DeliveryZonesView, CustomOrderView, CustomOrderDetailView
 
 router = DefaultRouter()
 router.register('history', OrderViewSet, basename='order')
@@ -16,5 +16,7 @@ urlpatterns = [
     path('delivery-zones/', DeliveryZonesView.as_view(), name='delivery-zones'),
     path('promo/validate/', PromoValidateView.as_view(), name='promo-validate'),
     path('payment/webhook/', CampayWebhookView.as_view(), name='campay-webhook'),
+    path('custom/', CustomOrderView.as_view(), name='custom-orders'),
+    path('custom/<int:pk>/', CustomOrderDetailView.as_view(), name='custom-order-detail'),
     path('', include(router.urls)),
 ]

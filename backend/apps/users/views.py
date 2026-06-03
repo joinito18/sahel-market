@@ -423,3 +423,83 @@ class ValidateReferralCodeView(APIView):
         if user:
             return Response({'valid': True, 'parrain': user.first_name or user.username})
         return Response({'valid': False})
+
+# ── Carte des artisans ───────────────────────────────────────────────
+CITY_COORDS = {
+    'maroua':       (10.5900, 14.3200),
+    'garoua':       (9.3000,  13.3967),
+    'ngaoundere':   (7.3167,  13.5833),
+    'ngaoundéré':   (7.3167,  13.5833),
+    'bafoussam':    (5.4737,  10.4179),
+    'yaounde':      (3.8480,  11.5021),
+    'yaoundé':      (3.8480,  11.5021),
+    'douala':       (4.0500,   9.7000),
+    'bertoua':      (4.5783,  13.6881),
+    'foumban':      (5.7291,  10.9044),
+    'bamenda':      (5.9527,  10.1582),
+    'ebolowa':      (2.9000,  11.1500),
+    'kribi':        (2.9425,   9.9069),
+    'limbe':        (4.0167,   9.2167),
+    'buea':         (4.1597,   9.2408),
+    'kumba':        (4.6333,   9.4500),
+    'mokolo':       (10.7489, 13.7992),
+    'kousseri':     (12.0769, 15.0296),
+    'tibati':       (6.4667,  12.6333),
+    'meiganga':     (6.5167,  14.2833),
+    'batouri':      (4.4333,  14.3667),
+    'nkongsamba':   (4.9500,   9.9333),
+    'edea':         (3.8007,  10.1334),
+    'guider':       (9.9314,  13.9498),
+}
+
+def _resolve_coords(location_str):
+    if not location_str:
+        return None
+    key = location_str.strip().lower()
+    if key in CITY_COORDS:
+        return CITY_COORDS[key]
+    for city, coords in CITY_COORDS.items():
+        if city in key or key in city:
+            return coords
+    return None
+
+
+class ArtisansMapView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from apps.products.models import Product
+        from django.db.models import Count, Max
+
+        producers = User.objects.filter(
+            role='producer', is_active=True, is_verified=True,
+        ).prefetch_related('products')
+
+        result = []
+        for p in producers:
+            products = p.products.filter(is_available=True)
+            if not products.exists():
+                continue
+
+            location = (
+                products.exclude(location='').values_list('location', flat=True).first()
+                or ''
+            )
+            coords = _resolve_coords(location)
+            if not coords:
+                continue
+
+            profile = getattr(p, 'producer_profile', None)
+            result.append({
+                'id':           p.id,
+                'username':     p.username,
+                'name':         p.first_name or p.username,
+                'speciality':   profile.speciality if profile else '',
+                'city':         location,
+                'product_count':products.count(),
+                'avatar':       request.build_absolute_uri(p.avatar.url) if p.avatar else None,
+                'lat':          coords[0],
+                'lng':          coords[1],
+            })
+
+        return Response(result)
